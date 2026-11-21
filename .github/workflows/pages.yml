@@ -49,6 +49,9 @@ jobs:
         if: steps.check.outputs.enabled == 'true'
         with:
           path: _site
+      - name: Give GitHub a moment to register the upload
+        if: steps.check.outputs.enabled == 'true'
+        run: sleep 15
       - id: deploy
         if: steps.check.outputs.enabled == 'true'
         uses: actions/deploy-pages@v5
