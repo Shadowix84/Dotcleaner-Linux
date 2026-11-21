@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: shellcheck -s sh dotcleaner.sh tests/run_tests.sh
+
+  test:
+    name: Tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tests with sh
+        run: sh tests/run_tests.sh
+      - name: Tests with bash
+        run: sh tests/run_tests.sh bash
+
+  busybox:
+    name: Tests (BusyBox, like on a console)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y busybox
+      - name: Tests with BusyBox sh and BusyBox tools only
+        run: |
+          BB=$(command -v busybox)
+          mkdir -p "$RUNNER_TEMP/bb"
+          "$BB" --install -s "$RUNNER_TEMP/bb"
+          PATH="$RUNNER_TEMP/bb" "$BB" sh tests/run_tests.sh "$BB sh"
