@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧹 dotcleaner
+# 🧹 Dotcleaner
 
 **Remove the junk files macOS leaves on your emulation handheld's SD card.**<br>
 `._*` · `.DS_Store` · `.Spotlight-V100` · `.Trashes` · `.fseventsd` · `__MACOSX` …
