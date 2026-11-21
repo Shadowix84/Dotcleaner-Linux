@@ -193,6 +193,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write          # to start the website deploy (pushes made here do not trigger it)
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v4
@@ -208,3 +209,6 @@ jobs:
           git diff --cached --quiet && { echo "Screenshots unchanged"; exit 0; }
           git commit -m "docs: update app screenshots (macOS)"
           git push
+          gh workflow run pages.yml --ref "${GITHUB_REF_NAME}"
+        env:
+          GH_TOKEN: ${{ github.token }}
