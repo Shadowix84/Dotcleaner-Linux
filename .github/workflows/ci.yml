@@ -10,7 +10,7 @@ jobs:
     name: ShellCheck & version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: ShellCheck
         run: shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh tests/macos_card.sh
       - name: Same VERSION in the script, the app and the CHANGELOG
@@ -37,7 +37,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Tests with sh
         run: sh tests/run_tests.sh
       - name: Tests with bash
@@ -54,7 +54,7 @@ jobs:
     name: Tests (BusyBox, like on a console)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: sudo apt-get update && sudo apt-get install -y busybox
       - name: Tests with BusyBox sh and BusyBox tools only
         run: |
