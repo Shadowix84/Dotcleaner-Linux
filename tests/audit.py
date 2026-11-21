@@ -212,6 +212,25 @@ def fuzz_card(root, outside, rng):
             pass
 
 
+def big_card(root, outside, rng):
+    """Hundreds of junk files next to games: exercises the batch deletion paths
+    (find -exec ... {} +, and 32 items per rm in the console launcher)."""
+    for system, n in (("gba", 90), ("snes", 70), ("psx", 45)):
+        d = os.path.join(root, "roms", system)
+        for i in range(n):
+            touch(os.path.join(d, f"Game {i} (USA).zip"), 1)
+            if rng.random() < 0.9:
+                touch(os.path.join(d, f"._Game {i} (USA).zip"), 1)
+        touch(os.path.join(d, ".DS_Store"), 1)
+        os.makedirs(os.path.join(d, "__MACOSX", "x"), exist_ok=True)
+    for j in range(40):                               # many junk folders too
+        os.makedirs(os.path.join(root, "roms", "arcade", f"set{j}", "__MACOSX"), exist_ok=True)
+        touch(os.path.join(root, "roms", "arcade", f"set{j}", f"set{j}.zip"), 1)
+    os.makedirs(os.path.join(root, ".Spotlight-V100", "Store-V2"), exist_ok=True)
+    touch(os.path.join(root, ".Trashes", "501", "old.gba"), 1)
+    os.symlink(outside, os.path.join(root, "roms", "link-out"), target_is_directory=True)
+
+
 def make_outside(base):
     out = os.path.join(base, "outside")
     os.makedirs(out, exist_ok=True)
@@ -329,6 +348,14 @@ def main():
             os.makedirs(card)
             realistic_card(card, outside)
             check_card(a.shell, card, outside, opts, f"realistic card {opts}", failures, stats)
+            stats["cards"] += 1
+        for k, opts in enumerate(variants):
+            work = os.path.join(base, f"big{k}")
+            outside = make_outside(work)
+            card = os.path.join(work, "SHARE")
+            os.makedirs(card)
+            big_card(card, outside, rng)
+            check_card(a.shell, card, outside, opts, f"big card {opts}", failures, stats)
             stats["cards"] += 1
         for i in range(a.cards):
             opts = variants[i % len(variants)]

@@ -224,6 +224,10 @@ Everything is built and tested by GitHub Actions on every change:
   BusyBox, real exFAT/FAT32 cards mounted on macOS.
 - [`apps.yml`](.github/workflows/apps.yml) — app engine audit and app tests on macOS, Windows and Linux,
   then builds and launches the `.dmg` and the `.exe`.
+- [`full-check.yml`](.github/workflows/full-check.yml) — every Monday, [`tests/full_check.py`](tests/full_check.py)
+  checks every version at once: 8 shells + BusyBox, the 3 engines audited file by file and compared with
+  each other, extreme cards (10 000 junk files, 120 nested folders, Unicode…), the menu, the app, and
+  deliberate bugs that the audit must catch.
 - [`release.yml`](.github/workflows/release.yml) — **Actions → Release → Run workflow** publishes the
   release with the `.dmg`, the `.exe`, the zip and the script.
 

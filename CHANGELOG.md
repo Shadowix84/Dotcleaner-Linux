@@ -2,6 +2,18 @@
 
 All notable changes to dotcleaner.
 
+## [2.2.1] — 2026-11-21
+
+### Full check of every version
+- New `tests/full_check.py`, also run every Monday by GitHub Actions (`full-check.yml`): static checks,
+  8 shells + BusyBox, the 3 engines (shell, app, console) audited file by file and compared with each
+  other, extreme cards, the interactive menu, the desktop app, and 11 deliberate bugs that must be caught.
+- The audit now also uses big cards (hundreds of junk files), so batch deletion is covered.
+
+### Fixed
+- Console launcher: cleaning with the progress bar is about **20 times faster** on big cards
+  (10 000 junk files: 1 s instead of 24 s): items are deleted 32 at a time.
+
 ## [2.2.0] — 2026-11-21
 
 ### On the console

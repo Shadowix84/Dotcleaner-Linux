@@ -227,6 +227,10 @@ Tout est fabriqué et testé par GitHub Actions à chaque modification :
   BusyBox, vraies cartes exFAT/FAT32 montées sur macOS.
 - [`apps.yml`](.github/workflows/apps.yml) — audit du moteur et tests de l'application sur macOS,
   Windows et Linux, puis fabrication et lancement du `.dmg` et du `.exe`.
+- [`full-check.yml`](.github/workflows/full-check.yml) — chaque lundi, [`tests/full_check.py`](tests/full_check.py)
+  vérifie toutes les versions d'un coup : 8 shells + BusyBox, les 3 moteurs audités fichier par fichier et
+  comparés entre eux, cartes extrêmes (10 000 parasites, 120 dossiers imbriqués, Unicode…), le menu,
+  l'application, et des bugs volontaires que l'audit doit détecter.
 - [`release.yml`](.github/workflows/release.yml) — **Actions → Release → Run workflow** publie la
   version avec le `.dmg`, le `.exe`, le zip et le script.
 

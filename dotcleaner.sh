@@ -14,7 +14,7 @@
 
 set -u
 
-VERSION="2.2.0"
+VERSION="2.2.1"
 PROG=${0##*/}
 
 # --- What gets removed (keep in sync with app/dotcleaner_core.py) ------------
@@ -123,7 +123,7 @@ set_rules() {
 # junk_find ROOT MODE
 #   MODE = print    -> print every junk item
 #          delete   -> delete every junk item
-#          progress -> delete every junk item, printing one "." per item
+#          progress -> delete every junk item, printing how many were deleted
 #          size   -> disk usage (KB) of every junk item
 # Never follows symlinks and never leaves the drive's filesystem (-xdev).
 # Two passes (folders, then files) on purpose: BusyBox find, used by most
@@ -170,15 +170,16 @@ _jf_run() {
       print)  find "$@" -print ;;
       delete) find "$@" -exec rm -rf {} + ;;
       size)   find "$@" -exec du -sk {} + ;;
-      # one "." per deleted item, for the progress bar (names never parsed)
-      progress) find "$@" -exec sh -c 'for f do rm -rf "$f" && echo .; done' sh {} + ;;
+      # prints how many items it deleted, batch after batch, for the progress
+      # bar (names are never parsed); 32 items per rm keeps it fast
+      progress) find "$@" -exec sh -c 'while [ $# -ge 32 ]; do rm -rf "${1}" "${2}" "${3}" "${4}" "${5}" "${6}" "${7}" "${8}" "${9}" "${10}" "${11}" "${12}" "${13}" "${14}" "${15}" "${16}" "${17}" "${18}" "${19}" "${20}" "${21}" "${22}" "${23}" "${24}" "${25}" "${26}" "${27}" "${28}" "${29}" "${30}" "${31}" "${32}"; echo 32; shift 32; done; for f do rm -rf "$f" && echo 1; done' sh {} + ;;
     esac
   else
     case $_jf_mode in                  # old BusyBox: one command per item
       print)  find "$@" -print ;;
       delete) find "$@" -exec rm -rf {} \; ;;
       size)   find "$@" -exec du -sk {} \; ;;
-      progress) find "$@" -exec sh -c 'rm -rf "$1" && echo .' sh {} \; ;;
+      progress) find "$@" -exec sh -c 'rm -rf "$1" && echo 1' sh {} \; ;;
     esac
   fi
 }
@@ -644,7 +645,8 @@ console_mode() {
       junk_find "$_root" progress 2>/dev/null | {
         _d=0 _last=-1
         while IFS= read -r _x; do
-          _d=$((_d + 1))
+          case $_x in ''|*[!0-9]*) continue ;; esac
+          _d=$((_d + _x))
           _p=$((_d * 100 / _total))
           if [ "$_p" -ne "$_last" ]; then
             _last=$_p
