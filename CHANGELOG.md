@@ -2,6 +2,18 @@
 
 All notable changes to dotcleaner.
 
+## [1.2.0] — 2026-11-21
+
+### Safety
+- **Mac disks (APFS, HFS+) are refused** and hidden from the card list: consoles cannot read
+  them, and there `.DocumentRevisions-V100`, `.fseventsd`… hold real data. `--force` overrides.
+- `-k` now leaves the card's Trash **completely** untouched (before, `._*` files inside it were removed).
+
+### Tests
+- New deletion audit (`tests/audit.py`): every path of realistic and randomly generated cards is
+  compared, before and after, with an independent referee — on macOS, Ubuntu and BusyBox.
+- New end-to-end test on real exFAT and FAT32 cards mounted on macOS, including eject.
+
 ## [1.1.0] — 2026-11-21
 
 ### Added

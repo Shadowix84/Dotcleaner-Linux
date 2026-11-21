@@ -11,7 +11,7 @@
 
 set -u
 
-VERSION="1.1.0"
+VERSION="1.2.0"
 PROG=${0##*/}
 
 # --- What gets removed (edit here to add more) -------------------------------
@@ -31,6 +31,7 @@ VERBOSE=0
 QUIET=0
 KEEP_TRASH=0
 SHOW_HELP=0
+FORCE=0
 
 # --- Language: English by default, French with --lang fr ---------------------
 # (or DOTCLEANER_LANG=fr in the environment)
@@ -87,7 +88,8 @@ Options :
   -n, --dry-run     simulation : affiche ce qui serait supprimé, ne supprime rien
   -y, --yes         ne pas demander de confirmation
   -w, --windows     supprimer aussi les fichiers Windows (Thumbs.db, desktop.ini)
-  -k, --keep-trash  garder la corbeille de la carte (.Trashes)
+  -k, --keep-trash  ne pas toucher à la corbeille de la carte (.Trashes)
+      --force       accepter aussi un disque Mac (APFS/HFS+), refusé par défaut
   -e, --eject       éjecter la carte à la fin (macOS)
   -v, --verbose     afficher chaque élément supprimé
   -q, --quiet       n'afficher que les erreurs
@@ -118,7 +120,8 @@ Options:
   -n, --dry-run     preview: show what would be deleted, delete nothing
   -y, --yes         do not ask for confirmation
   -w, --windows     also remove Windows files (Thumbs.db, desktop.ini)
-  -k, --keep-trash  keep the card's Trash (.Trashes)
+  -k, --keep-trash  leave the card's Trash (.Trashes) untouched
+      --force       also accept a Mac disk (APFS/HFS+), refused by default
   -e, --eject       eject the card when done (macOS)
   -v, --verbose     list every deleted item
   -q, --quiet       only print errors
@@ -162,8 +165,12 @@ junk_find() {
   set -f  # the '._*' pattern must reach find untouched
   # shellcheck disable=SC2086  # $_jf_or is meant to vanish when empty
   {
+    set -- "$_jf_root" -xdev
+    # With -k the card's Trash is skipped entirely, content included
+    if [ "$KEEP_TRASH" -eq 1 ]; then set -- "$@" -type d -name .Trashes -prune -o; fi
+
     # Pass 1: junk folders (pruned, so their content is not listed twice)
-    set -- "$_jf_root" -xdev -type d \(
+    set -- "$@" -type d \(
     _jf_or=''
     for _jf_n in $JUNK_DIRS; do set -- "$@" $_jf_or -name "$_jf_n"; _jf_or='-o'; done
     set -- "$@" \) -prune
@@ -244,6 +251,25 @@ is_forbidden() {
   return 1
 }
 
+# fs_type PATH -> filesystem type (apfs, hfs, msdos, exfat, ext4, vfat...), or nothing
+fs_type() {
+  if [ "$(uname -s 2>/dev/null)" = Darwin ]; then
+    _ft_dev=$(stat -f %Sd "$1" 2>/dev/null) || return 0
+    mount | awk -v d="/dev/$_ft_dev" '$1 == d { sub(/.*\(/, ""); sub(/[,)].*/, ""); print; exit }'
+  else
+    stat -f -c %T "$1" 2>/dev/null || true
+  fi
+}
+
+# Mac disks (APFS, HFS+) are not console cards: consoles cannot read them, and
+# there .Spotlight-V100, .fseventsd or .DocumentRevisions-V100 hold real data.
+is_mac_disk() {
+  case $(fs_type "$1") in
+    apfs|hfs|hfsplus|hfs+) return 0 ;;
+  esac
+  return 1
+}
+
 eject_volume() {
   if [ "$(uname -s 2>/dev/null)" != Darwin ]; then
     warn "  $(t '--eject only works on macOS: unmount the card from your file manager.' "--eject ne fonctionne que sur macOS : démontez la carte depuis votre gestionnaire de fichiers.")"
@@ -269,6 +295,7 @@ candidate_dirs() {
     for _cd in /Volumes/*; do
       if [ ! -d "$_cd" ] || [ -L "$_cd" ]; then continue; fi   # skip "Macintosh HD" (symlink to /)
       case ${_cd##*/} in com.apple.*) continue ;; esac
+      if is_mac_disk "$_cd"; then continue; fi            # backup drives etc.: not a card
       printf '%s\n' "$_cd"
     done
   else
@@ -326,6 +353,11 @@ clean_target() {
       return 1
     fi
   done
+
+  if [ "$FORCE" -eq 0 ] && is_mac_disk "$_root"; then
+    err "$(t "$_root is on a Mac disk ($(fs_type "$_root")), not on a console SD card: nothing was touched. There, folders like .DocumentRevisions-V100 hold real data. Add --force only if you are sure." "$_root est sur un disque Mac ($(fs_type "$_root")), pas sur une carte SD de console : rien n'a été touché. Là, des dossiers comme .DocumentRevisions-V100 contiennent de vraies données. Ajoutez --force seulement si vous êtes sûr.")"
+    return 1
+  fi
 
   say ""
   say "${C_BOLD}$_root${C_OFF}"
@@ -427,6 +459,7 @@ main() {
       -v|--verbose) VERBOSE=1 ;;
       -q|--quiet)   QUIET=1 ;;
       -k|--keep-trash) KEEP_TRASH=1 ;;
+      --force)      FORCE=1 ;;
       --lang=*)
         set_lang "${_arg#--lang=}" || die_usage "$(t "unknown language: ${_arg#--lang=} (use en or fr)" "langue inconnue : ${_arg#--lang=} (en ou fr)")" ;;
       --lang)

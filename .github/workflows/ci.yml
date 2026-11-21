@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: ShellCheck
-        run: shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh
+        run: shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh tests/macos_card.sh
       - name: VERSION matches the latest CHANGELOG entry
         run: |
           script=$(sed -n 's/^VERSION="\(.*\)"$/\1/p' dotcleaner.sh)
@@ -33,6 +33,13 @@ jobs:
         run: sh tests/run_tests.sh
       - name: Tests with bash
         run: sh tests/run_tests.sh bash
+      - name: Deletion audit (sh)
+        run: python3 tests/audit.py --shell sh --cards 300 --seed ${{ github.run_number }}
+      - name: Deletion audit (bash)
+        run: python3 tests/audit.py --shell bash --cards 300 --seed 7${{ github.run_number }}
+      - name: Real exFAT / FAT32 cards (macOS only)
+        if: runner.os == 'macOS'
+        run: sh tests/macos_card.sh
 
   busybox:
     name: Tests (BusyBox, like on a console)
@@ -46,3 +53,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/bb"
           "$BB" --install -s "$RUNNER_TEMP/bb"
           PATH="$RUNNER_TEMP/bb" "$BB" sh tests/run_tests.sh "$BB sh"
+      - name: Deletion audit with BusyBox tools
+        run: |
+          BB=$(command -v busybox)
+          PATH="$RUNNER_TEMP/bb:$PATH" python3 tests/audit.py --shell "$BB sh" --cards 300 --seed 9${{ github.run_number }}

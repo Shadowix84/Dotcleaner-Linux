@@ -33,7 +33,8 @@ le scraping et prendre de la place. **dotcleaner** les supprime en une commande 
 - 💾 **Choix et éjection** — liste les cartes branchées, nettoie, puis éjecte (`-e`)
 - 🖱️ **Lanceur double-clic** pour macOS — aucune commande à taper
 - 🐧 **Partout** — macOS, Linux et sur la console elle-même (`sh` POSIX pur, compatible BusyBox)
-- ✅ **Testé** — 50 tests automatiques sur macOS, Ubuntu et BusyBox à chaque modification
+- 🛡️ **Refuse les disques Mac** — un disque de sauvegarde choisi par erreur n'est jamais touché (APFS/HFS+)
+- ✅ **Audité** — à chaque modification, des milliers de cartes sont vérifiées fichier par fichier sur macOS, Ubuntu et BusyBox, plus de vraies cartes exFAT/FAT32
 
 Les messages sont en anglais ; ajoutez `--lang fr` pour les avoir en français.
 
@@ -89,7 +90,8 @@ dotcleaner /Volumes/BOOT /Volumes/EASYROMS   # plusieurs partitions d'un coup
 | `-n`, `--dry-run` | Simulation : affiche ce qui serait supprimé, ne supprime rien |
 | `-y`, `--yes` | Ne pas demander de confirmation |
 | `-w`, `--windows` | Supprimer aussi `Thumbs.db`, `ehthumbs.db`, `desktop.ini` |
-| `-k`, `--keep-trash` | Garder la corbeille de la carte (`.Trashes`) |
+| `-k`, `--keep-trash` | Ne pas toucher à la corbeille de la carte (`.Trashes`) |
+| `--force` | Accepter aussi un disque Mac (APFS/HFS+), refusé par défaut |
 | `-e`, `--eject` | Éjecter la carte à la fin (macOS) |
 | `-v`, `--verbose` | Afficher chaque élément supprimé |
 | `-q`, `--quiet` | N'afficher que les erreurs |
@@ -128,7 +130,8 @@ Mettez le chemin entre guillemets s'il contient des espaces : `"/Volumes/NO NAME
 
 **Jamais touché :** vos ROM, sauvegardes, BIOS, et tout autre fichier, caché ou non (`.keep`, fichiers de config…).
 Les liens symboliques ne sont pas suivis et le script ne sort jamais de la carte. Il refuse de
-s'exécuter sur les dossiers système ou sur votre dossier personnel.
+s'exécuter sur les dossiers système, sur votre dossier personnel et sur les disques Mac (APFS/HFS+),
+où ces dossiers contiennent de vraies données.
 
 ## FAQ
 
@@ -137,6 +140,11 @@ s'exécuter sur les dossiers système ou sur votre dossier personnel.
 
 Non. Il ne supprime que les noms exacts listés ci-dessus. Un fichier comme `Jeu._beta.gba` ou une
 sauvegarde cachée comme `.jeu.srm` est conservé. Lancez d'abord avec `-n` pour voir la liste complète.
+
+C'est vérifié à chaque modification par un audit ([`tests/audit.py`](tests/audit.py)) : des cartes
+réalistes (ArkOS, Knulli, PortMaster…) et des centaines de cartes aléatoires remplies de noms piégés
+sont scannées chemin par chemin avant et après nettoyage, puis comparées à un arbitre indépendant.
+Un seul fichier supprimé à tort, ou un seul parasite oublié, et l'audit échoue.
 </details>
 
 <details>

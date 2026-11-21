@@ -24,10 +24,14 @@ Messages are written with `t "English" "Français"` so both languages stay in sy
 ## Running the checks
 
 ```sh
-shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh
+shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh tests/macos_card.sh
 sh tests/run_tests.sh            # default sh
 sh tests/run_tests.sh bash       # another shell
+python3 tests/audit.py           # deletion audit: nothing wrongly deleted, nothing left behind
+sh tests/macos_card.sh           # macOS only: real exFAT/FAT32 cards, eject, APFS refusal
 ```
+
+If you change what gets deleted, update the referee at the top of `tests/audit.py` too.
 
 GitHub Actions runs the same checks on Ubuntu, macOS and BusyBox for every push and pull request.
 

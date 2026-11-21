@@ -33,7 +33,8 @@ waste space. **dotcleaner** removes them in one command — and **only them**.
 - 💾 **Pick & eject** — lists the plugged-in cards, cleans, then ejects (`-e`)
 - 🖱️ **Double-click launcher** for macOS — no Terminal commands needed
 - 🐧 **Runs anywhere** — macOS, Linux and on the console itself (pure POSIX `sh`, BusyBox-compatible)
-- ✅ **Tested** — 50 automated tests on macOS, Ubuntu and BusyBox at every change
+- 🛡️ **Refuses Mac disks** — a backup drive picked by mistake is never touched (APFS/HFS+)
+- ✅ **Audited** — at every change, thousands of cards are checked file by file on macOS, Ubuntu and BusyBox, plus real exFAT/FAT32 cards
 
 ## Quick start
 
@@ -87,7 +88,8 @@ dotcleaner /Volumes/BOOT /Volumes/EASYROMS   # several partitions at once
 | `-n`, `--dry-run` | Preview: show what would be deleted, delete nothing |
 | `-y`, `--yes` | Do not ask for confirmation |
 | `-w`, `--windows` | Also remove `Thumbs.db`, `ehthumbs.db`, `desktop.ini` |
-| `-k`, `--keep-trash` | Keep the card's Trash (`.Trashes`) |
+| `-k`, `--keep-trash` | Leave the card's Trash (`.Trashes`) untouched |
+| `--force` | Also accept a Mac disk (APFS/HFS+), refused by default |
 | `-e`, `--eject` | Eject the card when done (macOS) |
 | `-v`, `--verbose` | List every deleted item |
 | `-q`, `--quiet` | Only print errors |
@@ -126,7 +128,7 @@ Quote the path if it contains spaces: `"/Volumes/NO NAME"`.
 
 **Never touched:** your ROMs, saves, BIOS, and every other file, hidden or not (`.keep`, config files…).
 Symlinks are not followed and the script never leaves the card. It refuses to run on system
-folders or your home folder.
+folders, on your home folder and on Mac disks (APFS/HFS+), where these folders hold real data.
 
 ## FAQ
 
@@ -135,6 +137,11 @@ folders or your home folder.
 
 No. It only deletes the exact names listed above. A file like `Game._beta.gba` or a hidden save
 like `.game.srm` is kept. Run with `-n` first to see the full list before anything is deleted.
+
+This is checked at every change by an audit ([`tests/audit.py`](tests/audit.py)): realistic cards
+(ArkOS, Knulli, PortMaster…) and hundreds of random cards full of tricky names are scanned path by
+path before and after cleaning, and compared with an independent referee. One file deleted by
+mistake, or one junk file left behind, and the audit fails.
 </details>
 
 <details>
