@@ -764,11 +764,15 @@ def screenshots(out_dir):
         set_kind(w.drive_info, "path")
         for _ in range(3):
             app.processEvents()
+        # Grab the content itself, at its full height: on a small screen (CI runners) the window
+        # would be clipped by the screen size.
         content = w._scroll.widget()
-        w.resize(720, content.sizeHint().height() + 2)
-        for _ in range(3):
+        w._scroll.setWidgetResizable(False)
+        for _ in range(2):
+            content.resize(720, content.heightForWidth(720) if content.hasHeightForWidth()
+                           else content.sizeHint().height())
             app.processEvents()
-        w.grab().save(os.path.join(out_dir, name))
+        content.grab().save(os.path.join(out_dir, name))
 
     scan = core.scan(core.check_target(card), windows=False)
     for code in LANGUAGES:
