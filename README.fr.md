@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧹 dotcleaner
+# 🧹 Dotcleaner
 
 **Supprime les fichiers parasites que macOS laisse sur la carte SD de votre console d'émulation.**<br>
 `._*` · `.DS_Store` · `.Spotlight-V100` · `.Trashes` · `.fseventsd` · `__MACOSX` …
