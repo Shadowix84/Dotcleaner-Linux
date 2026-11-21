@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-dotcleaner — desktop app (macOS .dmg, Windows .exe).
+Dotcleaner — desktop app (macOS .dmg, Windows .exe).
 
 Same menu as the shell version:  1. Choose a drive · 2. Options · 3. Scan · 4. Clean · Help · Quit
 plus a language menu: English, Français, Español, 中文, हिन्दी.
@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dotcleaner_core as core                                          # noqa: E402
 from i18n import LANGUAGES, T, UNITS, items as items_text, tr          # noqa: E402
 
-REPO_URL = "https://github.com/Shadowix84/Dotcleaner-Linux-Handheld"
+REPO_URL = "https://github.com/Shadowix84/Dotcleaner-Multi-Software"
 CATEGORIES = ("appledouble", "ds_store", "system", "windows")
 
 
@@ -86,7 +86,7 @@ class MainWindow(QWidget):
         head.addWidget(logo)
         titles = QVBoxLayout()
         titles.setSpacing(0)
-        name = QLabel(f"dotcleaner <span style='color:gray;font-weight:normal'>{core.VERSION}</span>")
+        name = QLabel(f"Dotcleaner <span style='color:gray;font-weight:normal'>{core.VERSION}</span>")
         f = name.font()
         f.setPointSizeF(f.pointSizeF() * 1.6)
         f.setBold(True)
@@ -227,7 +227,7 @@ class MainWindow(QWidget):
         return core.human_size(n, units, dec)
 
     def retranslate(self):
-        self.setWindowTitle("dotcleaner")
+        self.setWindowTitle("Dotcleaner")
         self.tagline.setText(self.t("tagline"))
         self.lang_label.setText(self.t("language"))
         self.t_drive.setText(self.t("step_drive"))
@@ -605,7 +605,7 @@ def main():
         except Exception:
             pass
     app = QApplication(sys.argv)
-    app.setApplicationName("dotcleaner")
+    app.setApplicationName("Dotcleaner")
     app.setOrganizationName("Shadowix84")
     app.setWindowIcon(QIcon(resource("assets", "icon.png")))
     w = MainWindow()

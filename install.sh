@@ -2,10 +2,10 @@
 #
 # dotcleaner installer — installs the "dotcleaner" command.
 #
-#   curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Linux-Handheld/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Multi-Software/main/install.sh | sh
 #
 # Uninstall:
-#   curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Linux-Handheld/main/install.sh | sh -s -- --uninstall
+#   curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Multi-Software/main/install.sh | sh -s -- --uninstall
 #
 # Environment:
 #   PREFIX=/usr/local      install to $PREFIX/bin (default /usr/local)
@@ -13,7 +13,7 @@
 
 set -eu
 
-URL="https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Linux-Handheld/main/dotcleaner.sh"
+URL="https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Multi-Software/main/dotcleaner.sh"
 PREFIX=${PREFIX:-/usr/local}
 BIN_DIR="$PREFIX/bin"
 DEST="$BIN_DIR/dotcleaner"

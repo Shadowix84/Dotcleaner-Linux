@@ -46,32 +46,32 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install PySide6-Essentials pyinstaller
-      - name: Build dotcleaner.app
+      - name: Build Dotcleaner.app
         run: |
-          pyinstaller --noconfirm --windowed --name dotcleaner \
+          pyinstaller --noconfirm --windowed --name Dotcleaner \
             --icon assets/icon.icns \
             --osx-bundle-identifier io.github.shadowix84.dotcleaner \
             --add-data "assets/icon.png:assets" \
             app/dotcleaner_gui.py
       - name: Self-test of the app
-        run: dist/dotcleaner.app/Contents/MacOS/dotcleaner --selftest
+        run: dist/Dotcleaner.app/Contents/MacOS/Dotcleaner --selftest
       - name: Build the .dmg
         run: |
           VERSION=$(sed -n 's/^VERSION = "\(.*\)"$/\1/p' app/dotcleaner_core.py)
           mkdir dmg
-          cp -R dist/dotcleaner.app dmg/
+          cp -R dist/Dotcleaner.app dmg/
           ln -s /Applications dmg/Applications
-          hdiutil create -volname "dotcleaner $VERSION" -srcfolder dmg -ov -format UDZO "dotcleaner-$VERSION-macos.dmg"
+          hdiutil create -volname "Dotcleaner $VERSION" -srcfolder dmg -ov -format UDZO "dotcleaner-$VERSION-macos.dmg"
           echo "DMG=dotcleaner-$VERSION-macos.dmg" >> "$GITHUB_ENV"
       - name: Test the .dmg (mount it, run the app from it, unmount)
         run: |
           hdiutil attach -nobrowse -mountpoint /tmp/dcdmg "$DMG"
-          /tmp/dcdmg/dotcleaner.app/Contents/MacOS/dotcleaner --selftest
+          /tmp/dcdmg/Dotcleaner.app/Contents/MacOS/Dotcleaner --selftest
           test -L /tmp/dcdmg/Applications
           hdiutil detach /tmp/dcdmg
           ls -lh "$DMG"
       - name: Screenshots (native macOS look)
-        run: dist/dotcleaner.app/Contents/MacOS/dotcleaner --screenshots screenshots-macos
+        run: dist/Dotcleaner.app/Contents/MacOS/Dotcleaner --screenshots screenshots-macos
       - uses: actions/upload-artifact@v4
         with:
           name: dotcleaner-macos

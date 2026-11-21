@@ -4,7 +4,7 @@ Thanks for helping! Bug reports, ideas and pull requests are welcome.
 
 ## Reporting a bug
 
-Open an [issue](https://github.com/Shadowix84/Dotcleaner-Linux-Handheld/issues/new/choose) and include:
+Open an [issue](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new/choose) and include:
 
 - your console and firmware (e.g. R36S + ArkOS, RG40XXV + Knulli),
 - the computer you ran it on (macOS version, Linux distro, or the console itself),

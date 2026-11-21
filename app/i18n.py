@@ -75,7 +75,7 @@ T = {
         "choose_first": "Choose a drive first.",
         "help": "Help",
         "quit": "Quit",
-        "help_title": "How dotcleaner works",
+        "help_title": "How Dotcleaner works",
         "help_text": (
             "When you copy files from a Mac to an SD card or USB drive, macOS adds hidden files: "
             "a “._” twin for every file, “.DS_Store” in every folder, and “.Spotlight-V100”, "
@@ -138,7 +138,7 @@ T = {
         "choose_first": "Choisissez d'abord un lecteur.",
         "help": "Aide",
         "quit": "Quitter",
-        "help_title": "Comment fonctionne dotcleaner",
+        "help_title": "Comment fonctionne Dotcleaner",
         "help_text": (
             "Quand on copie des fichiers d'un Mac vers une carte SD ou une clé USB, macOS ajoute des fichiers cachés : "
             "un jumeau « ._ » pour chaque fichier, un « .DS_Store » dans chaque dossier, et des dossiers "
@@ -201,7 +201,7 @@ T = {
         "choose_first": "Elige primero una unidad.",
         "help": "Ayuda",
         "quit": "Salir",
-        "help_title": "Cómo funciona dotcleaner",
+        "help_title": "Cómo funciona Dotcleaner",
         "help_text": (
             "Al copiar archivos de un Mac a una tarjeta SD o memoria USB, macOS añade archivos ocultos: "
             "un gemelo «._» por cada archivo, un «.DS_Store» en cada carpeta y las carpetas «.Spotlight-V100», "
@@ -264,7 +264,7 @@ T = {
         "choose_first": "请先选择一个磁盘。",
         "help": "帮助",
         "quit": "退出",
-        "help_title": "dotcleaner 如何工作",
+        "help_title": "Dotcleaner 如何工作",
         "help_text": (
             "从 Mac 向 SD 卡或 U 盘复制文件时，macOS 会添加隐藏文件：每个文件都有一个“._”副本，"
             "每个文件夹里有一个“.DS_Store”，还有“.Spotlight-V100”“.Trashes”“.fseventsd”等文件夹。"
@@ -327,7 +327,7 @@ T = {
         "choose_first": "पहले एक ड्राइव चुनें।",
         "help": "सहायता",
         "quit": "बंद करें",
-        "help_title": "dotcleaner कैसे काम करता है",
+        "help_title": "Dotcleaner कैसे काम करता है",
         "help_text": (
             "जब आप Mac से SD कार्ड या USB ड्राइव पर फ़ाइलें कॉपी करते हैं, तो macOS छिपी हुई फ़ाइलें जोड़ देता है: "
             "हर फ़ाइल के लिए एक “._” जुड़वाँ फ़ाइल, हर फ़ोल्डर में “.DS_Store”, और “.Spotlight-V100”, "

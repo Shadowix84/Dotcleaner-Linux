@@ -7,7 +7,7 @@
 # Run it without arguments for the interactive menu, or see --help.
 # Plain POSIX sh: runs on macOS, Linux and on the consoles themselves (BusyBox).
 #
-# https://github.com/Shadowix84/Dotcleaner-Linux-Handheld
+# https://github.com/Shadowix84/Dotcleaner-Multi-Software
 # MIT License — Copyright (c) 2026 Shadowix84
 
 set -u
@@ -497,7 +497,7 @@ On a console they can show up as ghost games that won't launch.
 Your ROMs, saves, BIOS and every other file are never touched.
 On Mac-formatted drives (APFS, HFS+) only junk files are removed.
 
-More: https://github.com/Shadowix84/Dotcleaner-Linux-Handheld
+More: https://github.com/Shadowix84/Dotcleaner-Multi-Software
 EOF
   pause
 }
