@@ -27,7 +27,7 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 
 JUNK_FILES = (".DS_Store", ".apdisk")          # plus every name starting with "._"
 SYSTEM_DIRS = (".Spotlight-V100", ".Trashes", ".fseventsd", ".TemporaryItems",

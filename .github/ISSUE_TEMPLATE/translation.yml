@@ -1,0 +1,30 @@
+name: 🌍 Translation
+description: Fix a translation of the app, or ask for a new language
+labels: [translation, app]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The app is translated in English, Français, Español, 中文（简体） and हिन्दी.
+        All texts are in [`app/i18n.py`](https://github.com/Shadowix84/Dotcleaner-Multi-Software/blob/main/app/i18n.py).
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What would you like?
+      options: [Fix a translation, Add a new language]
+    validations:
+      required: true
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      placeholder: e.g. Español, Português, Deutsch
+    validations:
+      required: true
+  - type: textarea
+    id: texts
+    attributes:
+      label: Texts
+      description: The current text and your proposal (or your full translation of the English block).
+    validations:
+      required: true

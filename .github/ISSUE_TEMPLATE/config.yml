@@ -1,1 +1,8 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discord
+    url: https://discord.gg/4FbhkuhRMm
+    about: Questions and chat with other users
+  - name: 📖 FAQ
+    url: https://github.com/Shadowix84/Dotcleaner-Multi-Software#faq
+    about: First launch, ._ files coming back, the drive's Trash…

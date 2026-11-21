@@ -12,7 +12,7 @@
 
 set -u
 
-VERSION="2.0.0"
+VERSION="2.0.1"
 PROG=${0##*/}
 
 # --- What gets removed (keep in sync with app/dotcleaner_core.py) ------------

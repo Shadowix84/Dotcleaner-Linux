@@ -2,6 +2,20 @@
 
 All notable changes to dotcleaner.
 
+## [2.0.1] — 2026-11-21
+
+### Downloads
+- Stable file names: **Dotcleaner-macOS.dmg** and **Dotcleaner-Windows.exe** — the "latest" download links never change.
+- `SHA256SUMS.txt` in every release to check the downloads.
+- The macOS app shows its real version, copyright and category; the Windows `.exe` shows its version,
+  product name and copyright in *Properties → Details*.
+- Release notes with a download table and first-launch help.
+
+### Project
+- Project website (GitHub Pages) in 5 languages, with a download button that detects Mac or Windows.
+- New README (direct download buttons, contents), security policy, code of conduct, support page,
+  issue forms for bugs, ideas and translations.
+
 ## [2.0.0] — 2026-11-21
 
 ### New: desktop app for macOS (.dmg) and Windows (.exe)

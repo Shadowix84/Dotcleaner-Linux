@@ -58,16 +58,29 @@ jobs:
             --osx-bundle-identifier io.github.shadowix84.dotcleaner \
             --add-data "assets/icon.png:assets" \
             app/dotcleaner_gui.py
+      - name: Version, copyright and category in the app (Info.plist), then sign again
+        run: |
+          VERSION=$(sed -n 's/^VERSION = "\(.*\)"$/\1/p' app/dotcleaner_core.py)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          PLIST=dist/Dotcleaner.app/Contents/Info.plist
+          plutil -replace CFBundleShortVersionString -string "$VERSION" "$PLIST"
+          plutil -replace CFBundleVersion -string "$VERSION" "$PLIST"
+          plutil -replace CFBundleDisplayName -string "Dotcleaner" "$PLIST"
+          plutil -replace NSHumanReadableCopyright -string "© 2026 Shadowix84 · MIT License" "$PLIST"
+          plutil -replace LSApplicationCategoryType -string "public.app-category.utilities" "$PLIST"
+          plutil -replace NSRemovableVolumesUsageDescription -string "Dotcleaner cleans the junk files on your SD cards and USB drives." "$PLIST"
+          codesign --force --deep --sign - dist/Dotcleaner.app
+          codesign --verify --deep --strict dist/Dotcleaner.app
+          test "$(plutil -extract CFBundleShortVersionString raw "$PLIST")" = "$VERSION"
       - name: Self-test of the app
         run: dist/Dotcleaner.app/Contents/MacOS/Dotcleaner --selftest
       - name: Build the .dmg
         run: |
-          VERSION=$(sed -n 's/^VERSION = "\(.*\)"$/\1/p' app/dotcleaner_core.py)
           mkdir dmg
           cp -R dist/Dotcleaner.app dmg/
           ln -s /Applications dmg/Applications
-          hdiutil create -volname "Dotcleaner $VERSION" -srcfolder dmg -ov -format UDZO "dotcleaner-$VERSION-macos.dmg"
-          echo "DMG=dotcleaner-$VERSION-macos.dmg" >> "$GITHUB_ENV"
+          hdiutil create -volname "Dotcleaner $VERSION" -srcfolder dmg -ov -format UDZO Dotcleaner-macOS.dmg
+          echo "DMG=Dotcleaner-macOS.dmg" >> "$GITHUB_ENV"
       - name: Test the .dmg (mount it, run the app from it, unmount)
         run: |
           hdiutil attach -nobrowse -mountpoint /tmp/dcdmg "$DMG"
@@ -96,20 +109,20 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install PySide6-Essentials pyinstaller
-      - name: Build dotcleaner.exe
-        run: >
-          pyinstaller --noconfirm --onefile --windowed --name dotcleaner
-          --icon assets/icon.ico
-          --add-data "assets/icon.png;assets"
-          app/dotcleaner_gui.py
+      - name: Build dotcleaner.exe (with version, product name and copyright)
+        run: |
+          python tools/win_version.py
+          pyinstaller --noconfirm --onefile --windowed --name dotcleaner --icon assets/icon.ico --version-file build/version_info.txt --add-data "assets/icon.png;assets" app/dotcleaner_gui.py
       - name: Self-test of the .exe
         shell: pwsh
         run: |
           $p = Start-Process -FilePath dist\dotcleaner.exe -ArgumentList '--selftest' -Wait -PassThru
           if ($p.ExitCode -ne 0) { Write-Error "selftest failed ($($p.ExitCode))"; exit 1 }
           $v = (Select-String -Path app\dotcleaner_core.py -Pattern '^VERSION = "(.*)"').Matches[0].Groups[1].Value
-          Copy-Item dist\dotcleaner.exe "dotcleaner-$v-windows.exe"
-          Get-Item "dotcleaner-$v-windows.exe" | Format-List Name, Length
+          Copy-Item dist\dotcleaner.exe Dotcleaner-Windows.exe
+          $info = (Get-Item Dotcleaner-Windows.exe).VersionInfo
+          $info | Format-List ProductName, ProductVersion, FileDescription, LegalCopyright
+          if ($info.ProductVersion -ne $v -or $info.ProductName -ne 'Dotcleaner') { Write-Error "wrong version info"; exit 1 }
       - name: Screenshots (native Windows look)
         shell: pwsh
         run: |

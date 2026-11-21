@@ -1,12 +1,19 @@
-name: Feature request
-description: Suggest an idea, or a junk file that should be cleaned
+name: 💡 Feature request
+description: Suggest an idea, or a junk file Dotcleaner should clean
 labels: [enhancement]
 body:
+  - type: dropdown
+    id: where
+    attributes:
+      label: For which version?
+      options: [The app (macOS / Windows), The shell version, Both]
+    validations:
+      required: true
   - type: textarea
     id: idea
     attributes:
       label: Your idea
-      description: What should dotcleaner do, and why would it help?
+      description: What should Dotcleaner do, and why would it help?
     validations:
       required: true
   - type: input

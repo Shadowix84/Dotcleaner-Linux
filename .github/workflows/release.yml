@@ -36,12 +36,37 @@ jobs:
       - name: Run the tests
         run: sh tests/run_tests.sh
 
-      - name: Release notes from CHANGELOG.md
+      - name: Release notes (download table, first launch, CHANGELOG section)
         env:
           VERSION: ${{ steps.v.outputs.version }}
         run: |
-          awk -v v="[$VERSION]" '/^## \[/ { if (p) exit; if (index($0, v)) { p = 1; next } } p' CHANGELOG.md > notes.md
-          if [ ! -s notes.md ]; then echo "::error::No '## [$VERSION]' section in CHANGELOG.md"; exit 1; fi
+          awk -v v="[$VERSION]" '/^## \[/ { if (p) exit; if (index($0, v)) { p = 1; next } } p' CHANGELOG.md > changes.md
+          if [ ! -s changes.md ]; then echo "::error::No '## [$VERSION]' section in CHANGELOG.md"; exit 1; fi
+          DL="https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION"
+          RAW="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main"
+          {
+            echo "## ⬇️ Download"
+            echo
+            echo "| Platform | File |"
+            echo "| --- | --- |"
+            echo "| 🍎 **macOS** (Apple Silicon) | [**Dotcleaner-macOS.dmg**]($DL/Dotcleaner-macOS.dmg) |"
+            echo "| 🪟 **Windows** 10 / 11 | [**Dotcleaner-Windows.exe**]($DL/Dotcleaner-Windows.exe) |"
+            echo "| ⌨️ **Shell** (macOS, Linux, consoles) | [dotcleaner.sh]($DL/dotcleaner.sh) · [zip with the double-click launcher]($DL/dotcleaner-$VERSION.zip) |"
+            echo
+            echo "Shell one-line install: \`curl -fsSL $RAW/install.sh | sh\`"
+            echo
+            echo "> **First launch** — the app is not signed with a paid certificate, so the system asks once:"
+            echo "> - **macOS:** System Settings → Privacy & Security → **Open Anyway**"
+            echo "> - **Windows:** *Windows protected your PC* → **More info → Run anyway**"
+            echo
+            echo "## ✨ What's new"
+            echo
+            cat changes.md
+            echo
+            echo "## 🔒 Checksums"
+            echo
+            echo "SHA-256 of every file in \`SHA256SUMS.txt\` — check with \`shasum -a 256 -c SHA256SUMS.txt\` (macOS/Linux) or \`Get-FileHash\` (Windows)."
+          } > notes.md
           cat notes.md
 
       - name: Build the zip
@@ -61,6 +86,15 @@ jobs:
           merge-multiple: true
           path: apps
 
+      - name: Checksums
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          cp apps/Dotcleaner-macOS.dmg apps/Dotcleaner-Windows.exe .
+          sha256sum Dotcleaner-macOS.dmg Dotcleaner-Windows.exe "dotcleaner-$VERSION.zip" dotcleaner.sh > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          rm Dotcleaner-macOS.dmg Dotcleaner-Windows.exe
+
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -70,4 +104,5 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "dotcleaner $VERSION" \
             --notes-file notes.md \
-            "dotcleaner-$VERSION.zip" dotcleaner.sh apps/*.dmg apps/*.exe
+            apps/Dotcleaner-macOS.dmg apps/Dotcleaner-Windows.exe \
+            "dotcleaner-$VERSION.zip" dotcleaner.sh SHA256SUMS.txt

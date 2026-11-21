@@ -1,40 +1,57 @@
-name: Bug report
-description: Something went wrong while cleaning a card
+name: 🐞 Bug report
+description: Something went wrong while cleaning a drive
 labels: [bug]
 body:
   - type: markdown
     attributes:
-      value: Thanks for reporting! Please fill in as much as you can.
-  - type: input
-    id: device
+      value: |
+        Thanks for reporting! Please fill in as much as you can.
+        ⚠️ If a file was deleted that should not have been, please use **Security → Report a vulnerability** instead.
+  - type: dropdown
+    id: version_used
     attributes:
-      label: Console and firmware
-      placeholder: e.g. R36S + ArkOS, RG40XXV + Knulli
-    validations:
-      required: true
-  - type: input
-    id: system
-    attributes:
-      label: Where did you run dotcleaner?
-      placeholder: e.g. macOS 15.1, Ubuntu 24.04, on the console over SSH
+      label: Which Dotcleaner?
+      options:
+        - App on macOS (.dmg)
+        - App on Windows (.exe)
+        - Shell on macOS
+        - Shell on Linux
+        - Shell on the console (SSH)
     validations:
       required: true
   - type: input
     id: version
     attributes:
-      label: dotcleaner version
-      description: Output of `dotcleaner --version`
-      placeholder: dotcleaner 1.1.0
+      label: Version
+      description: Shown at the top of the app, or `dotcleaner --version`
+      placeholder: "2.0.1"
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: System
+      placeholder: e.g. macOS 15.1 (M2), Windows 11, Ubuntu 24.04
+  - type: input
+    id: device
+    attributes:
+      label: Console, firmware and drive
+      placeholder: e.g. R36S + ArkOS, 64 GB exFAT card
+  - type: dropdown
+    id: language
+    attributes:
+      label: App language
+      options: [English, Français, Español, 中文, हिन्दी, "Not relevant (shell)"]
   - type: textarea
     id: what
     attributes:
       label: What happened?
-      description: What you expected, and what happened instead.
+      description: What you did, what you expected, and what happened instead.
     validations:
       required: true
   - type: textarea
     id: output
     attributes:
-      label: Command and output
-      description: The command you ran and its full output.
+      label: Scan result, messages or screenshots
+      description: For the shell, the output of `dotcleaner -n -v YOUR_DRIVE` helps a lot.
       render: text

@@ -5,16 +5,27 @@
 **Remove the junk files macOS leaves on SD cards and USB drives — made for emulation handhelds.**<br>
 `._*` · `.DS_Store` · `.Spotlight-V100` · `.Trashes` · `.fseventsd` · `__MACOSX` …
 
+[![Download for macOS](https://img.shields.io/badge/Download-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg)
+[![Download for Windows](https://img.shields.io/badge/Download-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe)
+[![Shell version](https://img.shields.io/badge/Shell-macOS%20·%20Linux%20·%20consoles-4EAA25?style=for-the-badge&logo=gnubash&logoColor=white)](#%EF%B8%8F-the-shell-version-macos-linux-consoles)
+
+[![Release](https://img.shields.io/github/v/release/Shadowix84/Dotcleaner-Multi-Software?label=release)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Shadowix84/Dotcleaner-Multi-Software/total?label=downloads)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases)
 [![CI](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/ci.yml/badge.svg)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/ci.yml)
 [![Apps](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/apps.yml/badge.svg)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/apps.yml)
-[![Release](https://img.shields.io/github/v/release/Shadowix84/Dotcleaner-Multi-Software?label=release)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest)
+[![Languages](https://img.shields.io/badge/languages-EN%20·%20FR%20·%20ES%20·%20中文%20·%20हिन्दी-8A2BE2)](#️-the-app-macos--windows)
+[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/4FbhkuhRMm)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-🇫🇷 [Version française](README.fr.md)
+🌐 [Website](https://shadowix84.github.io/Dotcleaner-Multi-Software/) · 🇫🇷 [Version française](README.fr.md)
 
 <img src="docs/app-en.png" alt="Dotcleaner app" width="560">
 
 </div>
+
+**Contents:** [Why?](#why) · [Two versions](#two-versions-same-menu) · [The app](#️-the-app-macos--windows) ·
+[The shell](#️-the-shell-version-macos-linux-consoles) · [What it removes](#what-it-removes) ·
+[FAQ](#faq) · [Building and testing](#building-and-testing) · [Community](#community)
 
 ## Why?
 
@@ -38,9 +49,9 @@ Both use exactly the same cleaning rules, checked by the same audit.
 
 ## 🖥️ The app (macOS & Windows)
 
-1. Download from the [**latest release**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest):
-   - **macOS** (Apple Silicon): `dotcleaner-x.y.z-macos.dmg` → open it, drag **Dotcleaner** to **Applications**.
-   - **Windows**: `dotcleaner-x.y.z-windows.exe` → double-click it (nothing to install).
+1. Download the latest version:
+   - **macOS** (Apple Silicon): [**Dotcleaner-macOS.dmg**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg) → open it, drag **Dotcleaner** to **Applications**.
+   - **Windows** 10 / 11: [**Dotcleaner-Windows.exe**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe) → double-click it (nothing to install).
 2. Plug in your SD card or USB drive and open Dotcleaner.
 3. **1.** Choose the drive · **2.** tick the options · **3.** Scan to preview · **4.** Clean.
 
@@ -170,6 +181,17 @@ Everything is built and tested by GitHub Actions on every change:
   release with the `.dmg`, the `.exe`, the zip and the script.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) to run the tests yourself.
+
+Every release lists the SHA-256 of its files in `SHA256SUMS.txt` — see [SECURITY.md](SECURITY.md).
+
+## Community
+
+- 💬 Chat with other users on [Discord](https://discord.gg/4FbhkuhRMm)
+- 🐞 [Report a bug](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=bug_report.yml) ·
+  💡 [Suggest an idea](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=feature_request.yml) ·
+  🌍 [Improve a translation](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=translation.yml)
+- 🤝 [Contributing](CONTRIBUTING.md) · [Code of conduct](CODE_OF_CONDUCT.md) · [Support](SUPPORT.md) · [Security](SECURITY.md)
+- ⭐ If Dotcleaner saved your card, a star on GitHub helps other players find it!
 
 ## License
 
