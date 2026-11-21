@@ -68,6 +68,10 @@ def make_card(base):
 
 
 def main():
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")   # Windows console
+    except (AttributeError, ValueError):
+        pass
     print("dotcleaner app tests\n")
     app = QApplication.instance() or QApplication(sys.argv)
     tmp = tempfile.mkdtemp(prefix="dotcleaner-apptest.")
