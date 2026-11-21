@@ -42,18 +42,22 @@ jobs:
         run: python tests/test_app.py
 
   macos:
-    name: Build .dmg (macOS)
+    name: Build .dmg (macOS, Intel + Apple Silicon)
     needs: test
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: python -m pip install PySide6-Essentials pyinstaller
-      - name: Build Dotcleaner.app
+      - name: Universal Python (Intel + Apple Silicon) from python.org
         run: |
-          pyinstaller --noconfirm --windowed --name Dotcleaner \
+          curl -fsSLO https://www.python.org/ftp/python/3.12.10/python-3.12.10-macos11.pkg
+          sudo installer -pkg python-3.12.10-macos11.pkg -target /
+          PY=/Library/Frameworks/Python.framework/Versions/3.12/bin/python3.12
+          lipo -archs "$PY"
+          echo "PY=$PY" >> "$GITHUB_ENV"
+      - run: $PY -m pip install PySide6-Essentials pyinstaller
+      - name: Build Dotcleaner.app (universal2)
+        run: |
+          $PY -m PyInstaller --noconfirm --windowed --target-arch universal2 --name Dotcleaner \
             --icon assets/icon.icns \
             --osx-bundle-identifier io.github.shadowix84.dotcleaner \
             --add-data "assets/icon.png:assets" \
@@ -68,12 +72,23 @@ jobs:
           plutil -replace CFBundleDisplayName -string "Dotcleaner" "$PLIST"
           plutil -replace NSHumanReadableCopyright -string "© 2026 Shadowix84 · MIT License" "$PLIST"
           plutil -replace LSApplicationCategoryType -string "public.app-category.utilities" "$PLIST"
+          plutil -replace LSMinimumSystemVersion -string "13.0" "$PLIST"
           plutil -replace NSRemovableVolumesUsageDescription -string "Dotcleaner cleans the junk files on your SD cards and USB drives." "$PLIST"
           codesign --force --deep --sign - dist/Dotcleaner.app
           codesign --verify --deep --strict dist/Dotcleaner.app
           test "$(plutil -extract CFBundleShortVersionString raw "$PLIST")" = "$VERSION"
-      - name: Self-test of the app
+      - name: Both architectures inside (Intel x86_64 + Apple Silicon arm64)
+        run: |
+          for f in dist/Dotcleaner.app/Contents/MacOS/Dotcleaner $(find dist/Dotcleaner.app -name QtCore -type f | head -n 1); do
+            echo "$f: $(lipo -archs "$f")"
+            lipo -archs "$f" | grep -q x86_64 && lipo -archs "$f" | grep -q arm64
+          done
+      - name: Self-test of the app (Apple Silicon)
         run: dist/Dotcleaner.app/Contents/MacOS/Dotcleaner --selftest
+      - name: Self-test of the app (Intel, through Rosetta)
+        run: |
+          sudo softwareupdate --install-rosetta --agree-to-license >/dev/null 2>&1 || true
+          arch -x86_64 dist/Dotcleaner.app/Contents/MacOS/Dotcleaner --selftest
       - name: Build the .dmg
         run: |
           mkdir dmg
@@ -98,6 +113,40 @@ jobs:
         with:
           name: screenshots-macos
           path: screenshots-macos
+
+  linux:
+    name: Build Linux app (${{ matrix.arch }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04        # glibc 2.35: Steam Deck, Ubuntu 22.04+, Debian 12+, Fedora...
+            arch: x86_64
+          - os: ubuntu-24.04-arm    # glibc 2.39: Raspberry Pi OS 13+, Ubuntu 24.04+ on ARM
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Libraries for Qt
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libxkbcommon0 libfontconfig1 libdbus-1-3
+      - run: python -m pip install PySide6-Essentials pyinstaller
+      - name: Build the Linux app (one file)
+        run: pyinstaller --noconfirm --onefile --name dotcleaner --add-data "assets/icon.png:assets" app/dotcleaner_gui.py
+      - name: Self-test of the Linux app
+        run: |
+          QT_QPA_PLATFORM=offscreen dist/dotcleaner --selftest
+          cp dist/dotcleaner "Dotcleaner-Linux-${{ matrix.arch }}"
+          chmod 755 "Dotcleaner-Linux-${{ matrix.arch }}"
+          ls -lh "Dotcleaner-Linux-${{ matrix.arch }}"
+          ldd --version | head -n 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dotcleaner-linux-${{ matrix.arch }}
+          path: Dotcleaner-Linux-*
 
   windows:
     name: Build .exe (Windows)
@@ -139,7 +188,7 @@ jobs:
 
   screenshots:
     name: Update README screenshots
-    needs: [macos, windows]
+    needs: [macos, windows, linux]
     if: github.event_name == 'workflow_dispatch' && inputs.update_screenshots
     runs-on: ubuntu-latest
     permissions:

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# dotcleaner installer — installs the "dotcleaner" command.
+# dotcleaner installer - installs the "dotcleaner" command.
 #
 #   curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Multi-Software/main/install.sh | sh
 #

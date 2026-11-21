@@ -150,12 +150,19 @@
     </ul>
   </section>
 
-  <section id="platforms">
+  <section id="shell">
     <h2 data-t="pf_title"></h2>
-    <div class="grid g3">
-      <div class="card"><h3>🍎 macOS</h3><p data-t="pf_mac"></p></div>
-      <div class="card"><h3>🪟 Windows</h3><p data-t="pf_win"></p></div>
-      <div class="card" id="shell"><h3>⌨️ Shell</h3><p data-t="pf_shell"></p></div>
+    <div class="grid g4">
+      <div class="card"><h3>🍎 macOS</h3><p data-t="pf_mac"></p>
+        <p><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg">Dotcleaner-macOS.dmg</a></p></div>
+      <div class="card"><h3>🪟 Windows</h3><p data-t="pf_win"></p>
+        <p><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe">Dotcleaner-Windows.exe</a></p></div>
+      <div class="card"><h3>🐧 Linux</h3><p data-t="pf_linux"></p>
+        <p><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-x86_64">x86_64</a> ·
+           <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-arm64">ARM64</a></p></div>
+      <div class="card"><h3>🎮 Console</h3><p data-t="pf_console"></p>
+        <p><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip">Dotcleaner-console.zip</a> ·
+           <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software#-on-the-console-itself" data-t="guide"></a></p></div>
     </div>
     <p class="lead" style="margin-top:22px" data-t="shell_cmd"></p>
     <div class="code"><code id="cmd">curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Multi-Software/main/install.sh | sh</code>
@@ -196,12 +203,15 @@ const T = {
     safe3: "Safe mode on Mac-formatted drives: only junk files are removed, system folders are kept.",
     safe4: "Every change is checked by an audit of thousands of cards, file by file, on macOS, Windows and Linux.",
     pf_title: "For every setup",
-    pf_mac: "App for Apple Silicon Macs (.dmg). Drag it to Applications.",
-    pf_win: "App for Windows 10 and 11 (.exe). Nothing to install.",
+    pf_mac: "App for macOS 13+, Intel and Apple Silicon. Drag it to Applications.",
+    pf_win: "App for Windows 10 and 11. Nothing to install.",
     pf_shell: "Menu in the terminal for macOS, Linux and the console itself (ArkOS, Knulli, ROCKNIX…).",
     shell_cmd: "Install the shell version in one line, then type dotcleaner:",
     copy: "Copy", copied: "Copied!",
     lang_title: "The app speaks 5 languages", license: "MIT License", report: "Report a problem",
+    pf_linux: "App for Steam Deck, PC and Raspberry Pi, plus the shell version with its menu.",
+    pf_console: "Launcher for the Ports menu (ArkOS, Knulli, ROCKNIX…) and an Onion app: clean the card without a computer.",
+    guide: "Guide",
   },
   fr: {
     nav_how: "Fonctionnement", nav_safe: "Sécurité",
@@ -222,12 +232,15 @@ const T = {
     safe3: "Mode sûr sur les disques au format Mac : seuls les fichiers parasites sont supprimés, les dossiers système sont conservés.",
     safe4: "Chaque modification est vérifiée par un audit de milliers de cartes, fichier par fichier, sur macOS, Windows et Linux.",
     pf_title: "Pour chaque configuration",
-    pf_mac: "Application pour Mac Apple Silicon (.dmg). Glissez-la dans Applications.",
-    pf_win: "Application pour Windows 10 et 11 (.exe). Rien à installer.",
+    pf_mac: "Application pour macOS 13+, Intel et Apple Silicon. Glissez-la dans Applications.",
+    pf_win: "Application pour Windows 10 et 11. Rien à installer.",
     pf_shell: "Menu dans le terminal pour macOS, Linux et la console elle-même (ArkOS, Knulli, ROCKNIX…).",
     shell_cmd: "Installez la version shell en une ligne, puis tapez dotcleaner :",
     copy: "Copier", copied: "Copié !",
     lang_title: "L'application parle 5 langues", license: "Licence MIT", report: "Signaler un problème",
+    pf_linux: "Application pour Steam Deck, PC et Raspberry Pi, plus la version shell et son menu.",
+    pf_console: "Lanceur pour le menu Ports (ArkOS, Knulli, ROCKNIX…) et application Onion : nettoyez la carte sans ordinateur.",
+    guide: "Guide",
   },
   es: {
     nav_how: "Cómo funciona", nav_safe: "Seguridad",
@@ -248,12 +261,15 @@ const T = {
     safe3: "Modo seguro en unidades con formato Mac: solo se eliminan los archivos basura, las carpetas del sistema se conservan.",
     safe4: "Cada cambio se verifica con una auditoría de miles de tarjetas, archivo por archivo, en macOS, Windows y Linux.",
     pf_title: "Para cada equipo",
-    pf_mac: "App para Mac con Apple Silicon (.dmg). Arrástrala a Aplicaciones.",
-    pf_win: "App para Windows 10 y 11 (.exe). No hay que instalar nada.",
+    pf_mac: "App para macOS 13+, Intel y Apple Silicon. Arrástrala a Aplicaciones.",
+    pf_win: "App para Windows 10 y 11. No hay que instalar nada.",
     pf_shell: "Menú en el terminal para macOS, Linux y la propia consola (ArkOS, Knulli, ROCKNIX…).",
     shell_cmd: "Instala la versión shell en una línea y escribe dotcleaner:",
     copy: "Copiar", copied: "¡Copiado!",
     lang_title: "La app habla 5 idiomas", license: "Licencia MIT", report: "Informar de un problema",
+    pf_linux: "App para Steam Deck, PC y Raspberry Pi, además de la versión shell con su menú.",
+    pf_console: "Lanzador para el menú Ports (ArkOS, Knulli, ROCKNIX…) y app para Onion: limpia la tarjeta sin ordenador.",
+    guide: "Guía",
   },
   zh: {
     nav_how: "使用方法", nav_safe: "安全性",
@@ -274,12 +290,15 @@ const T = {
     safe3: "Mac 格式磁盘使用安全模式：只删除垃圾文件，保留系统文件夹。",
     safe4: "每次修改都会在 macOS、Windows 和 Linux 上对数千张卡逐个文件进行审核。",
     pf_title: "适用于各种环境",
-    pf_mac: "适用于 Apple 芯片 Mac 的应用（.dmg），拖到“应用程序”即可。",
-    pf_win: "适用于 Windows 10 和 11 的应用（.exe），无需安装。",
+    pf_mac: "适用于 macOS 13 及以上的应用，支持 Intel 和 Apple 芯片，拖到“应用程序”即可。",
+    pf_win: "适用于 Windows 10 和 11 的应用，无需安装。",
     pf_shell: "终端菜单，适用于 macOS、Linux 以及掌机本身（ArkOS、Knulli、ROCKNIX…）。",
     shell_cmd: "一行命令安装命令行版本，然后输入 dotcleaner：",
     copy: "复制", copied: "已复制！",
     lang_title: "应用支持 5 种语言", license: "MIT 许可证", report: "报告问题",
+    pf_linux: "适用于 Steam Deck、PC 和树莓派的应用，另有带菜单的命令行版本。",
+    pf_console: "适用于 Ports 菜单（ArkOS、Knulli、ROCKNIX…）的启动器和 Onion 应用：无需电脑即可清理存储卡。",
+    guide: "指南",
   },
   hi: {
     nav_how: "यह कैसे काम करता है", nav_safe: "सुरक्षा",
@@ -300,12 +319,15 @@ const T = {
     safe3: "Mac फ़ॉर्मेट वाली ड्राइव पर सुरक्षित मोड: केवल बेकार फ़ाइलें हटती हैं, सिस्टम फ़ोल्डर रखे जाते हैं।",
     safe4: "हर बदलाव की जाँच macOS, Windows और Linux पर हज़ारों कार्ड के फ़ाइल-दर-फ़ाइल ऑडिट से होती है।",
     pf_title: "हर सेटअप के लिए",
-    pf_mac: "Apple Silicon Mac के लिए ऐप (.dmg)। इसे Applications में खींचें।",
-    pf_win: "Windows 10 और 11 के लिए ऐप (.exe)। कुछ इंस्टॉल नहीं करना।",
+    pf_mac: "macOS 13+ के लिए ऐप, Intel और Apple Silicon दोनों। इसे Applications में खींचें।",
+    pf_win: "Windows 10 और 11 के लिए ऐप। कुछ इंस्टॉल नहीं करना।",
     pf_shell: "macOS, Linux और खुद कंसोल (ArkOS, Knulli, ROCKNIX…) के लिए टर्मिनल में मेन्यू।",
     shell_cmd: "शेल संस्करण एक लाइन में इंस्टॉल करें, फिर dotcleaner टाइप करें:",
     copy: "कॉपी करें", copied: "कॉपी हो गया!",
     lang_title: "ऐप 5 भाषाएँ बोलता है", license: "MIT लाइसेंस", report: "समस्या बताएँ",
+    pf_linux: "Steam Deck, PC और Raspberry Pi के लिए ऐप, साथ में मेन्यू वाला शेल संस्करण।",
+    pf_console: "Ports मेन्यू (ArkOS, Knulli, ROCKNIX…) के लिए लॉन्चर और Onion ऐप: कंप्यूटर के बिना कार्ड साफ़ करें।",
+    guide: "गाइड",
   },
 };
 

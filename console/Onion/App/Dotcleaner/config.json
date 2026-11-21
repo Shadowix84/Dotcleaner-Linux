@@ -1,0 +1,6 @@
+{
+  "label": "Dotcleaner",
+  "icon": "icon.png",
+  "launch": "launch.sh",
+  "description": "Remove macOS junk files (._*, .DS_Store...) from the SD card"
+}

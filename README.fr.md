@@ -24,7 +24,8 @@
 </div>
 
 **Sommaire :** [Pourquoi ?](#pourquoi-) · [Deux versions](#deux-versions-le-même-menu) · [L'application](#️-lapplication-macos-et-windows) ·
-[Le shell](#️-la-version-shell-macos-linux-consoles) · [Ce qui est supprimé](#ce-qui-est-supprimé) ·
+[Le shell](#️-la-version-shell-macos-linux-consoles) · [Sur la console](#-sur-la-console-elle-même) ·
+[Compatibilité](#compatibilité) · [Ce qui est supprimé](#ce-qui-est-supprimé) ·
 [FAQ](#faq) · [Fabrication et tests](#fabrication-et-tests) · [Communauté](#communauté)
 
 ## Pourquoi ?
@@ -40,7 +41,7 @@ le scraping et prendre de la place. **Dotcleaner** les supprime — et **uniquem
 
 | | 🖥️ **Application** — `.dmg` / `.exe` | ⌨️ **Shell** — `dotcleaner.sh` |
 | --- | --- | --- |
-| Fonctionne sur | macOS, Windows | macOS, Linux, la console elle-même (BusyBox) |
+| Fonctionne sur | macOS (Intel et Apple Silicon), Windows, Linux (x86_64 et ARM) | macOS, Linux, WSL, la console elle-même |
 | Lecteurs | toute carte SD ou clé USB | toute carte SD ou clé USB, ou un dossier |
 | Langues | English, Français, Español, 中文, हिन्दी | anglais |
 | Menu | **1.** Choisir un lecteur · **2.** Options · **3.** Analyser · **4.** Nettoyer · Aide · Quitter | identique (en anglais) |
@@ -50,8 +51,9 @@ Les deux appliquent exactement les mêmes règles de nettoyage, vérifiées par 
 ## 🖥️ L'application (macOS et Windows)
 
 1. Téléchargez la dernière version :
-   - **macOS** (Apple Silicon) : [**Dotcleaner-macOS.dmg**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg) → ouvrez-le, glissez **Dotcleaner** dans **Applications**.
+   - **macOS** 13+ (Intel et Apple Silicon) : [**Dotcleaner-macOS.dmg**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg) → ouvrez-le, glissez **Dotcleaner** dans **Applications**.
    - **Windows** 10 / 11 : [**Dotcleaner-Windows.exe**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe) → double-cliquez dessus (rien à installer).
+   - **Linux** : [x86_64](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-x86_64) (Steam Deck, PC) ou [ARM64](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-arm64) (Raspberry Pi) → `chmod +x` puis lancez-le.
 2. Branchez la carte SD ou la clé USB et ouvrez Dotcleaner.
 3. **1.** Choisissez le lecteur · **2.** cochez les options · **3.** Analysez pour voir · **4.** Nettoyez.
 
@@ -79,7 +81,7 @@ Puis lancez `dotcleaner` pour ouvrir le menu (en anglais) :
 <img src="docs/demo.svg" alt="Menu de dotcleaner dans le Terminal" width="640">
 
 Pas de Terminal ? Téléchargez le zip de la version et double-cliquez sur **`dotcleaner.command`** (macOS).
-Sur la console (SSH activé), copiez `dotcleaner.sh` et lancez `sh dotcleaner.sh`.
+Sur la console elle-même, voir [Sur la console elle-même](#-sur-la-console-elle-même) plus bas.
 
 ### Options en ligne de commande
 
@@ -103,6 +105,39 @@ dotcleaner -w "/Volumes/NO NAME"     # supprimer aussi les fichiers Windows
 | `-h`, `--help` / `-V`, `--version` | Aide / version |
 
 Codes de sortie : `0` OK · `1` erreur sur au moins un lecteur · `2` mauvaise utilisation · `130` interrompu.
+
+## 🎮 Sur la console elle-même
+
+Nettoyez la carte **sans ordinateur**, depuis le menu de la console : ni clavier ni terminal.
+Téléchargez [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip) et copiez le lanceur sur la carte :
+
+| Firmware (exemples de consoles) | Copier | Puis sur la console |
+| --- | --- | --- |
+| **ArkOS**, dArkOS (R36S, RG351, RG353…) | `Dotcleaner.sh` → `EASYROMS/ports/` | **Ports → Dotcleaner** — le résultat s'affiche à l'écran |
+| **Knulli**, Batocera (Anbernic RG40XX, RG35XX…) | `Dotcleaner.sh` → `SHARE/roms/ports/` | Mettez à jour les listes de jeux, puis **Ports → Dotcleaner** — une notification affiche le résultat |
+| **ROCKNIX**, AmberELEC, JELOS, EmuELEC | `Dotcleaner.sh` → `roms/ports/` | **Ports → Dotcleaner** |
+| **Onion** (Miyoo Mini) | dossier `Onion/App/Dotcleaner` → `App/` | **Apps → Dotcleaner** |
+| muOS, MinUI, autres | `dotcleaner.sh` n'importe où | en SSH : `sh dotcleaner.sh --console` |
+
+Créez le dossier `ports` s'il n'existe pas. Le lanceur trouve tout seul la carte de ROM, la nettoie
+sans rien demander et écrit **`dotcleaner.log`** à côté de lui — joignez ce fichier à tout signalement.
+Il supprime même le fantôme `._Dotcleaner.sh` que macOS crée en copiant le lanceur.
+
+## Compatibilité
+
+| Système | Application | Shell |
+| --- | --- | --- |
+| macOS 13 ou plus récent, Intel et Apple Silicon | ✅ `.dmg` | ✅ |
+| macOS 12 ou plus ancien | — | ✅ |
+| Windows 10 / 11 (x64, et ARM par émulation) | ✅ `.exe` | ✅ dans WSL |
+| Linux x86_64 avec glibc 2.35+ (Steam Deck, Ubuntu 22.04+, Debian 12+, Fedora…) | ✅ `Dotcleaner-Linux-x86_64` | ✅ |
+| Linux ARM64 avec glibc 2.39+ (Raspberry Pi OS 13+, Ubuntu 24.04+…) | ✅ `Dotcleaner-Linux-arm64` | ✅ |
+| ChromeOS (Linux), WSL | — | ✅ |
+| Consoles : ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC, Onion, muOS, MinUI, Allium, spruceOS, TrimUI, RetroPie | — | ✅ lanceur ou SSH |
+
+La version shell est en `sh` POSIX pur et en ASCII pur. Elle est testée à chaque modification avec
+**bash, dash, BusyBox ash (`find` récent et ancien), ksh, mksh, posh, yash et zsh**, sur Ubuntu et macOS.
+Sous Linux, l'application a besoin des bibliothèques de bureau habituelles ; si elle ne démarre pas, installez `libxcb-cursor0`.
 
 ## Ce qui est supprimé
 
@@ -166,10 +201,12 @@ corbeille du lecteur** (`-k`) pour les conserver.
 </details>
 
 <details>
-<summary><b>Existe-t-il une application pour Mac Intel ou Linux ?</b></summary>
+<summary><b>Rien ne se passe quand je le lance sur ma console.</b></summary>
 
-Le `.dmg` est fait pour les Mac Apple Silicon. Sur Mac Intel et sous Linux, utilisez la version shell —
-ou lancez l'application depuis les sources : `pip install PySide6-Essentials && python3 app/dotcleaner_gui.py`.
+Utilisez le **lanceur** (`Dotcleaner.sh` de `Dotcleaner-console.zip`), pas `dotcleaner.sh` : lancé depuis
+un menu de console, il n'y a pas de clavier, et le script simple en attend un. Vérifiez qu'il est dans le
+dossier `ports` (ou `App/` sur Onion), puis ouvrez **`dotcleaner.log`** à côté de lui : il indique ce qui a
+été trouvé et nettoyé. Si ça ne marche toujours pas, ouvrez un signalement avec ce fichier.
 </details>
 
 ## Fabrication et tests

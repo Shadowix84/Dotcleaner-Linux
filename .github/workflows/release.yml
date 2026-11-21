@@ -49,8 +49,11 @@ jobs:
             echo
             echo "| Platform | File |"
             echo "| --- | --- |"
-            echo "| 🍎 **macOS** (Apple Silicon) | [**Dotcleaner-macOS.dmg**]($DL/Dotcleaner-macOS.dmg) |"
-            echo "| 🪟 **Windows** 10 / 11 | [**Dotcleaner-Windows.exe**]($DL/Dotcleaner-Windows.exe) |"
+            echo "| 🍎 **macOS** 13+ (Intel and Apple Silicon) | [**Dotcleaner-macOS.dmg**]($DL/Dotcleaner-macOS.dmg) |"
+            echo "| 🪟 **Windows** 10 / 11 (x64, ARM) | [**Dotcleaner-Windows.exe**]($DL/Dotcleaner-Windows.exe) |"
+            echo "| 🐧 **Linux** x86_64 (Steam Deck, PC) | [Dotcleaner-Linux-x86_64]($DL/Dotcleaner-Linux-x86_64) |"
+            echo "| 🐧 **Linux** ARM64 (Raspberry Pi…) | [Dotcleaner-Linux-arm64]($DL/Dotcleaner-Linux-arm64) |"
+            echo "| 🎮 **On the console** (Ports / Onion app) | [Dotcleaner-console.zip]($DL/Dotcleaner-console.zip) |"
             echo "| ⌨️ **Shell** (macOS, Linux, consoles) | [dotcleaner.sh]($DL/dotcleaner.sh) · [zip with the double-click launcher]($DL/dotcleaner-$VERSION.zip) |"
             echo
             echo "Shell one-line install: \`curl -fsSL $RAW/install.sh | sh\`"
@@ -76,10 +79,11 @@ jobs:
           dir="dotcleaner-$VERSION"
           mkdir "$dir"
           cp dotcleaner.sh dotcleaner.command install.sh README.md README.fr.md LICENSE "$dir/"
+          cp -R console "$dir/console"
           chmod 755 "$dir/dotcleaner.sh" "$dir/dotcleaner.command" "$dir/install.sh"
           zip -r "$dir.zip" "$dir"
 
-      - name: Get the .dmg and .exe built by apps.yml
+      - name: Get the apps built by apps.yml (.dmg, .exe, Linux)
         uses: actions/download-artifact@v4
         with:
           pattern: dotcleaner-*
@@ -90,10 +94,12 @@ jobs:
         env:
           VERSION: ${{ steps.v.outputs.version }}
         run: |
-          cp apps/Dotcleaner-macOS.dmg apps/Dotcleaner-Windows.exe .
-          sha256sum Dotcleaner-macOS.dmg Dotcleaner-Windows.exe "dotcleaner-$VERSION.zip" dotcleaner.sh > SHA256SUMS.txt
+          (cd console && zip -r ../Dotcleaner-console.zip .)
+          cp apps/Dotcleaner-macOS.dmg apps/Dotcleaner-Windows.exe apps/Dotcleaner-Linux-* .
+          sha256sum Dotcleaner-macOS.dmg Dotcleaner-Windows.exe Dotcleaner-Linux-* Dotcleaner-console.zip \
+            "dotcleaner-$VERSION.zip" dotcleaner.sh > SHA256SUMS.txt
           cat SHA256SUMS.txt
-          rm Dotcleaner-macOS.dmg Dotcleaner-Windows.exe
+          rm Dotcleaner-macOS.dmg Dotcleaner-Windows.exe Dotcleaner-Linux-*
 
       - name: Create the release
         env:
@@ -104,5 +110,5 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "dotcleaner $VERSION" \
             --notes-file notes.md \
-            apps/Dotcleaner-macOS.dmg apps/Dotcleaner-Windows.exe \
+            apps/Dotcleaner-macOS.dmg apps/Dotcleaner-Windows.exe apps/Dotcleaner-Linux-* Dotcleaner-console.zip \
             "dotcleaner-$VERSION.zip" dotcleaner.sh SHA256SUMS.txt

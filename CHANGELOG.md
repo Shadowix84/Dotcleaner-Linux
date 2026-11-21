@@ -2,6 +2,23 @@
 
 All notable changes to dotcleaner.
 
+## [2.1.0] — 2026-11-21
+
+### On the console
+- **Console launcher** `Dotcleaner.sh` for the Ports menu (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX,
+  AmberELEC, JELOS, EmuELEC) and an **Onion app** (Miyoo Mini), in `Dotcleaner-console.zip`:
+  finds the ROM card by itself, cleans it without a keyboard, shows the result (text screen on ArkOS,
+  notification on Knulli/Batocera, message box on Onion) and writes `dotcleaner.log`.
+- `--console` option for the same from SSH or any script.
+- Fixed: started from a console menu, the plain script waited for a keyboard and did nothing.
+
+### Compatibility
+- Shell: pure ASCII (console text screens, strict shells), works with posh and yash (fixed empty
+  `"$@"` and multibyte errors), fallback for old BusyBox `find` without `-exec {} +`, finds drives on
+  Steam Deck, Raspberry Pi, ChromeOS and WSL. Tested with bash, dash, BusyBox, ksh, mksh, posh, yash, zsh.
+- App: the `.dmg` now runs on **Intel and Apple Silicon** Macs (macOS 13+), tested on both.
+- New **Linux app** for x86_64 (Steam Deck, PC) and ARM64 (Raspberry Pi); Linux drives found from the mount table.
+
 ## [2.0.1] — 2026-11-21
 
 ### Downloads

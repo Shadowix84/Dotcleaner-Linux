@@ -12,7 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: ShellCheck
-        run: shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh tests/macos_card.sh
+        run: shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh tests/macos_card.sh tools/make_console.sh console/Dotcleaner.sh
+      - name: Shell scripts are pure ASCII (console screens, strict shells)
+        run: "! grep -nP '[^\\x00-\\x7F]' dotcleaner.sh install.sh dotcleaner.command console/Dotcleaner.sh"
+      - name: Console launchers are up to date (tools/make_console.sh)
+        run: sh tools/make_console.sh && git diff --exit-code console/
       - name: Same VERSION in the script, the app and the CHANGELOG
         run: |
           script=$(sed -n 's/^VERSION="\(.*\)"$/\1/p' dotcleaner.sh)
@@ -66,3 +70,15 @@ jobs:
         run: |
           BB=$(command -v busybox)
           PATH="$RUNNER_TEMP/bb:$PATH" python3 tests/audit.py --shell "$BB sh" --cards 300 --seed 9${{ github.run_number }}
+
+  shells:
+    name: Tests (other shells)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shell: [mksh, posh, yash, ksh, "zsh --emulate sh"]
+    steps:
+      - uses: actions/checkout@v7
+      - run: sudo apt-get update && sudo apt-get install -y mksh posh yash ksh zsh
+      - run: sh tests/run_tests.sh "${{ matrix.shell }}"

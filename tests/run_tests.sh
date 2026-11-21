@@ -56,7 +56,7 @@ missing()  { ! exists "$1"; }
 all_exist() { for _f in "$@"; do exists "$_f" || return 1; done; }
 all_missing() { for _f in "$@"; do missing "$_f" || return 1; done; }
 
-# make_card [DIR] — a realistic SD card full of macOS junk
+# make_card [DIR] - a realistic SD card full of macOS junk
 make_card() {
   C=${1:-$CARD}
   rm -rf "$C"
@@ -105,7 +105,7 @@ junk_there() {
 windows_kept() { all_exist "$CARD/roms/psx/Thumbs.db" "$CARD/roms/psx/desktop.ini"; }
 windows_gone() { all_missing "$CARD/roms/psx/Thumbs.db" "$CARD/roms/psx/desktop.ini"; }
 
-printf 'dotcleaner tests — shell: %s\n\n' "$SHELL_CMD"
+printf 'dotcleaner tests - shell: %s\n\n' "$SHELL_CMD"
 
 # --- Basics -------------------------------------------------------------------
 run --version
@@ -247,6 +247,37 @@ LANG=fr_FR.UTF-8 LC_ALL=fr_FR.UTF-8 NO_COLOR=1 $SHELL_CMD "$SCRIPT" -n "$CARD" <
 check "English on a French system"          eval 'rc_is 0 && out_has "Preview only"'
 run --lang fr -n "$CARD"
 check "no --lang option any more -> exit 2" rc_is 2
+
+# --- Old BusyBox without "find -exec ... {} +" ---------------------------------------------
+make_card
+DOTCLEANER_NO_EXEC_PLUS=1 run -y "$CARD"
+check "fallback for old find: junk deleted"  eval 'rc_is 0 && junk_gone && keep_list'
+
+# --- Console mode: launcher started from the console menu (no keyboard, no terminal) ------
+LAUNCHER="$HERE/../console/Dotcleaner.sh"
+make_card
+# shellcheck disable=SC2086
+DOTCLEANER_CONSOLE_ROOT="$CARD" DOTCLEANER_NO_TTY=1 DOTCLEANER_LOG="$TMP/console.log" NO_COLOR=1 \
+  $SHELL_CMD "$LAUNCHER" </dev/null >"$OUT" 2>&1; RC=$?
+check "console launcher: cleans the card, no question" eval 'rc_is 0 && junk_gone && keep_list'
+check "console launcher: result on screen"   out_has "Done: 12 items deleted"
+check "console launcher: writes dotcleaner.log" grep -q "Done: 12 items deleted" "$TMP/console.log"
+check "console launcher: plain text log"     eval '! grep -q "$(printf "\033")" "$TMP/console.log"'
+# shellcheck disable=SC2086
+DOTCLEANER_CONSOLE_ROOT='' DOTCLEANER_NO_TTY=1 DOTCLEANER_LOG="$TMP/console.log" NO_COLOR=1 \
+  $SHELL_CMD "$LAUNCHER" </dev/null >"$OUT" 2>&1; RC=$?
+check "console launcher: no card -> clear message, exit 1" eval 'rc_is 1 && out_has "No ROM card found"'
+make_card
+run -n "$CARD"
+check "plain script without arguments is not in console mode" eval 'junk_there'
+# shellcheck disable=SC2086
+NO_COLOR=1 $SHELL_CMD "$LAUNCHER" -n "$CARD" </dev/null >"$OUT" 2>&1; RC=$?
+check "console launcher with a path: normal preview" eval 'rc_is 0 && out_has "Preview only" && junk_there'
+make_card
+# shellcheck disable=SC2086
+DOTCLEANER_CONSOLE_ROOT="$CARD" DOTCLEANER_NO_TTY=1 DOTCLEANER_LOG="$TMP/console.log" NO_COLOR=1 \
+  $SHELL_CMD "$SCRIPT" --console </dev/null >"$OUT" 2>&1; RC=$?
+check "--console option does the same"      eval 'rc_is 0 && junk_gone'
 
 # --- Installer -----------------------------------------------------------------------------
 INSTALLER="$HERE/../install.sh"

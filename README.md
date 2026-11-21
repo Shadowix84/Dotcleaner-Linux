@@ -24,7 +24,8 @@
 </div>
 
 **Contents:** [Why?](#why) · [Two versions](#two-versions-same-menu) · [The app](#️-the-app-macos--windows) ·
-[The shell](#️-the-shell-version-macos-linux-consoles) · [What it removes](#what-it-removes) ·
+[The shell](#️-the-shell-version-macos-linux-consoles) · [On the console](#-on-the-console-itself) ·
+[Compatibility](#compatibility) · [What it removes](#what-it-removes) ·
 [FAQ](#faq) · [Building and testing](#building-and-testing) · [Community](#community)
 
 ## Why?
@@ -40,7 +41,7 @@ waste space. **Dotcleaner** removes them — and **only them**.
 
 | | 🖥️ **App** — `.dmg` / `.exe` | ⌨️ **Shell** — `dotcleaner.sh` |
 | --- | --- | --- |
-| Runs on | macOS, Windows | macOS, Linux, the console itself (BusyBox) |
+| Runs on | macOS (Intel & Apple Silicon), Windows, Linux (x86_64 & ARM) | macOS, Linux, WSL, the console itself |
 | Drives | any SD card or USB drive | any SD card or USB drive, or a folder |
 | Languages | English, Français, Español, 中文, हिन्दी | English |
 | Menu | **1.** Choose a drive · **2.** Options · **3.** Scan · **4.** Clean · Help · Quit | same |
@@ -50,8 +51,9 @@ Both use exactly the same cleaning rules, checked by the same audit.
 ## 🖥️ The app (macOS & Windows)
 
 1. Download the latest version:
-   - **macOS** (Apple Silicon): [**Dotcleaner-macOS.dmg**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg) → open it, drag **Dotcleaner** to **Applications**.
+   - **macOS** 13+ (Intel & Apple Silicon): [**Dotcleaner-macOS.dmg**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg) → open it, drag **Dotcleaner** to **Applications**.
    - **Windows** 10 / 11: [**Dotcleaner-Windows.exe**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe) → double-click it (nothing to install).
+   - **Linux**: [x86_64](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-x86_64) (Steam Deck, PC) or [ARM64](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-arm64) (Raspberry Pi) → `chmod +x` it, then run it.
 2. Plug in your SD card or USB drive and open Dotcleaner.
 3. **1.** Choose the drive · **2.** tick the options · **3.** Scan to preview · **4.** Clean.
 
@@ -78,7 +80,7 @@ Then run `dotcleaner` to open the menu:
 <img src="docs/demo.svg" alt="dotcleaner menu in Terminal" width="640">
 
 No Terminal? Download the release zip and double-click **`dotcleaner.command`** (macOS).
-On the console itself (SSH enabled), copy `dotcleaner.sh` and run `sh dotcleaner.sh`.
+On the console itself, see [On the console itself](#-on-the-console-itself) below.
 
 ### Command-line options
 
@@ -102,6 +104,39 @@ dotcleaner -w "/Volumes/NO NAME"     # also remove Windows files
 | `-h`, `--help` / `-V`, `--version` | Help / version |
 
 Exit codes: `0` OK · `1` error on at least one drive · `2` wrong usage · `130` interrupted.
+
+## 🎮 On the console itself
+
+Clean the card **without a computer**, from the console's own menu: no keyboard, no terminal.
+Download [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip) and copy the launcher to the card:
+
+| Firmware (examples of consoles) | Copy | Then on the console |
+| --- | --- | --- |
+| **ArkOS**, dArkOS (R36S, RG351, RG353…) | `Dotcleaner.sh` → `EASYROMS/ports/` | **Ports → Dotcleaner** — the result shows on screen |
+| **Knulli**, Batocera (Anbernic RG40XX, RG35XX…) | `Dotcleaner.sh` → `SHARE/roms/ports/` | Update the game lists, then **Ports → Dotcleaner** — a notification shows the result |
+| **ROCKNIX**, AmberELEC, JELOS, EmuELEC | `Dotcleaner.sh` → `roms/ports/` | **Ports → Dotcleaner** |
+| **Onion** (Miyoo Mini) | folder `Onion/App/Dotcleaner` → `App/` | **Apps → Dotcleaner** |
+| muOS, MinUI, others | `dotcleaner.sh` anywhere | over SSH: `sh dotcleaner.sh --console` |
+
+Create the `ports` folder if it does not exist. The launcher finds the ROM card by itself, cleans it
+without asking, and writes **`dotcleaner.log`** next to itself — send this file with any bug report.
+It even removes the `._Dotcleaner.sh` ghost that macOS creates when you copy the launcher.
+
+## Compatibility
+
+| System | App | Shell |
+| --- | --- | --- |
+| macOS 13 or newer, Intel and Apple Silicon | ✅ `.dmg` | ✅ |
+| macOS 12 or older | — | ✅ |
+| Windows 10 / 11 (x64, and ARM through emulation) | ✅ `.exe` | ✅ in WSL |
+| Linux x86_64 with glibc 2.35+ (Steam Deck, Ubuntu 22.04+, Debian 12+, Fedora…) | ✅ `Dotcleaner-Linux-x86_64` | ✅ |
+| Linux ARM64 with glibc 2.39+ (Raspberry Pi OS 13+, Ubuntu 24.04+…) | ✅ `Dotcleaner-Linux-arm64` | ✅ |
+| ChromeOS (Linux), WSL | — | ✅ |
+| Consoles: ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC, Onion, muOS, MinUI, Allium, spruceOS, TrimUI, RetroPie | — | ✅ launcher or SSH |
+
+The shell version is pure POSIX `sh` and pure ASCII. It is tested at every change with **bash, dash,
+BusyBox ash (recent and old `find`), ksh, mksh, posh, yash and zsh**, on Ubuntu and macOS.
+On Linux, the Linux app needs the usual desktop libraries; if it does not start, install `libxcb-cursor0`.
 
 ## What it removes
 
@@ -163,10 +198,12 @@ Dotcleaner warns you and erases them for good. Tick **Keep the drive's Trash** (
 </details>
 
 <details>
-<summary><b>Is there an Intel Mac or Linux app?</b></summary>
+<summary><b>Nothing happens when I start it on my console.</b></summary>
 
-The `.dmg` is built for Apple Silicon Macs. On Intel Macs and on Linux, use the shell version —
-or run the app from source: `pip install PySide6-Essentials && python3 app/dotcleaner_gui.py`.
+Use the **launcher** (`Dotcleaner.sh` from `Dotcleaner-console.zip`), not `dotcleaner.sh`: launched from
+a console menu there is no keyboard, and the plain script waits for one. Check that it is in the `ports`
+folder (or `App/` on Onion), then open **`dotcleaner.log`** next to it: it says what was found and cleaned.
+If it still fails, open a bug report with this file.
 </details>
 
 ## Building and testing

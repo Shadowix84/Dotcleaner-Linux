@@ -27,7 +27,7 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 
-VERSION = "2.0.1"
+VERSION = "2.1.0"
 
 JUNK_FILES = (".DS_Store", ".apdisk")          # plus every name starting with "._"
 SYSTEM_DIRS = (".Spotlight-V100", ".Trashes", ".fseventsd", ".TemporaryItems",
@@ -35,6 +35,8 @@ SYSTEM_DIRS = (".Spotlight-V100", ".Trashes", ".fseventsd", ".TemporaryItems",
 ARCHIVE_DIRS = ("__MACOSX",)
 WINDOWS_FILES = ("Thumbs.db", "ehthumbs.db", "desktop.ini")
 MAC_FILESYSTEMS = {"apfs", "hfs", "hfsplus", "hfs+"}
+# ROM folders of console firmwares, when the app runs on the handheld itself
+CONSOLE_ROOTS = ("/userdata", "/roms", "/roms2", "/storage/roms", "/mnt/mmc", "/mnt/SDCARD", "/mnt/sdcard")
 
 SYSTEM = platform.system()          # "Darwin", "Windows", "Linux"
 
@@ -417,12 +419,29 @@ def list_drives():
             name = f"{label} ({letter}:)" if label else f"{letter}:"
             drives.append(Drive(root, name, fs.lower(), _size(root), fs.lower() in MAC_FILESYSTEMS))
     else:
-        import glob
-        cands = glob.glob("/media/*/*") + glob.glob("/run/media/*/*")
-        cands += ["/roms", "/roms2", "/userdata/roms", "/storage/roms",
-                  "/mnt/SDCARD", "/mnt/mmc", "/mnt/sdcard"]
-        for p in cands:
-            if os.path.isdir(p) and not os.path.islink(p):
+        # Every mounted drive under /media, /run/media, /mnt (Linux desktops, Raspberry Pi,
+        # Steam Deck, ChromeOS, WSL), then the ROM folder of the console itself
+        seen = set()
+        mounts = []
+        try:
+            with open("/proc/mounts", encoding="utf-8", errors="replace") as f:
+                for line in f:
+                    parts = line.split()
+                    if len(parts) >= 3:
+                        mounts.append((parts[1].replace("\\040", " "), parts[2].lower()))
+        except OSError:
+            pass
+        skip_fs = {"tmpfs", "proc", "sysfs", "devtmpfs", "overlay", "squashfs", "autofs", "cgroup2"}
+        for mnt, fs in mounts:
+            if not mnt.startswith(("/media/", "/run/media/", "/mnt/")) or fs in skip_fs:
+                continue
+            if mnt.startswith(("/mnt/wsl", "/mnt/wslg", "/mnt/c")) and mnt.count("/") <= 2:
+                continue                                  # WSL system mounts
+            if mnt not in seen and os.path.isdir(mnt):
+                seen.add(mnt)
+                drives.append(Drive(mnt, os.path.basename(mnt), fs, _size(mnt), fs in MAC_FILESYSTEMS))
+        for p in CONSOLE_ROOTS:
+            if os.path.isdir(p) and not os.path.islink(p) and p not in seen:
                 fs = fs_type(p)
                 drives.append(Drive(p, os.path.basename(p), fs, _size(p), fs in MAC_FILESYSTEMS))
     return drives

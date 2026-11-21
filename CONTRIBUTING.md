@@ -20,6 +20,9 @@ There are two engines with **exactly the same rules**:
 - `app/dotcleaner_core.py` — the engine of the desktop app (`app/dotcleaner_gui.py`, PySide6),
   packaged as a `.dmg` and an `.exe`.
 
+After any change to `dotcleaner.sh`, run `sh tools/make_console.sh` to rebuild the console launchers
+in `console/` (CI checks they are up to date). Keep the shell scripts **pure ASCII**.
+
 To add a file or folder to clean, change **both** engines (`JUNK_FILES` / `SYSTEM_DIRS` at the top of each),
 the referee at the top of `tests/audit.py`, the fake card in `tests/run_tests.sh`, and the tables in both READMEs.
 
@@ -34,7 +37,7 @@ To add a language, copy the `"en"` block, translate it and add it to `LANGUAGES`
 ```sh
 shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh tests/macos_card.sh
 sh tests/run_tests.sh                       # shell version (default sh)
-sh tests/run_tests.sh bash                  # another shell
+sh tests/run_tests.sh bash                  # another shell (also: mksh, posh, yash, ksh, "zsh --emulate sh")
 python3 tests/audit.py                      # deletion audit of the shell engine
 python3 tests/audit.py --engine python      # deletion audit of the app engine (also on Windows)
 pip install PySide6-Essentials && python3 tests/test_app.py   # app: translations + real clean

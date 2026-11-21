@@ -1,18 +1,20 @@
 #!/bin/sh
 #
-# dotcleaner — removes the junk files macOS leaves on SD cards and USB drives
+# dotcleaner - removes the junk files macOS leaves on SD cards and USB drives
 # (._* files, .DS_Store, .Spotlight-V100, .Trashes, .fseventsd, __MACOSX...).
 # Made for emulation handhelds (R36S, Anbernic, Miyoo, Retroid, TrimUI...).
 #
 # Run it without arguments for the interactive menu, or see --help.
-# Plain POSIX sh: runs on macOS, Linux and on the consoles themselves (BusyBox).
+# Plain POSIX sh, pure ASCII: runs on macOS, Linux, WSL, ChromeOS, Steam Deck
+# and on the consoles themselves (ArkOS, Knulli, Batocera, ROCKNIX, AmberELEC,
+# muOS, Onion, MinUI...), with bash, dash, BusyBox ash, ksh, mksh, zsh, posh, yash.
 #
 # https://github.com/Shadowix84/Dotcleaner-Multi-Software
-# MIT License — Copyright (c) 2026 Shadowix84
+# MIT License - Copyright (c) 2026 Shadowix84
 
 set -u
 
-VERSION="2.0.1"
+VERSION="2.1.0"
 PROG=${0##*/}
 
 # --- What gets removed (keep in sync with app/dotcleaner_core.py) ------------
@@ -35,6 +37,11 @@ QUIET=0
 KEEP_TRASH=0
 SHOW_HELP=0
 MENU=0
+CONSOLE=0
+# 1 in the console launcher (Dotcleaner.sh, made by tools/make_console.sh):
+# started from the console menu with no arguments -> console mode
+CONSOLE_LAUNCHER=0
+SCRIPT_DIR=$(cd "$(dirname "$0")" 2>/dev/null && pwd)
 
 # Set per drive by set_rules
 JUNK_DIRS=''
@@ -55,7 +62,7 @@ err()  { printf '%s\n' "${C_RED}Error: $*${C_OFF}" >&2; }
 
 usage() {
   cat <<EOF
-dotcleaner $VERSION — removes the junk files macOS leaves on SD cards and
+dotcleaner $VERSION - removes the junk files macOS leaves on SD cards and
 USB drives (made for emulation handhelds: R36S, Anbernic, Miyoo, Retroid...)
 
 Usage: $PROG                    interactive menu
@@ -69,6 +76,8 @@ Options:
   -e, --eject       eject the drive when done (macOS)
   -v, --verbose     list every deleted item
   -q, --quiet       only print errors
+      --console     console mode: find the ROM card of this console, clean it
+                    without questions, show the result and write dotcleaner.log
   -h, --help        show this help
   -V, --version     show the version
 
@@ -154,11 +163,32 @@ junk_find() {
 
 # _jf_run FIND-ARGS... -> runs find with the action of $_jf_mode
 _jf_run() {
-  case $_jf_mode in
-    print)  find "$@" -print ;;
-    delete) find "$@" -exec rm -rf {} + ;;
-    size)   find "$@" -exec du -sk {} + ;;
-  esac
+  if exec_plus; then
+    case $_jf_mode in
+      print)  find "$@" -print ;;
+      delete) find "$@" -exec rm -rf {} + ;;
+      size)   find "$@" -exec du -sk {} + ;;
+    esac
+  else
+    case $_jf_mode in                  # old BusyBox: one command per item
+      print)  find "$@" -print ;;
+      delete) find "$@" -exec rm -rf {} \; ;;
+      size)   find "$@" -exec du -sk {} \; ;;
+    esac
+  fi
+}
+
+# exec_plus -> true when find supports "-exec ... {} +" (some old BusyBox do not)
+EXEC_PLUS=''
+exec_plus() {
+  if [ -z "$EXEC_PLUS" ]; then
+    if [ -z "${DOTCLEANER_NO_EXEC_PLUS:-}" ] && find / -prune -exec true {} + >/dev/null 2>&1; then
+      EXEC_PLUS=1
+    else
+      EXEC_PLUS=0
+    fi
+  fi
+  [ "$EXEC_PLUS" -eq 1 ]
 }
 
 # trash_count ROOT -> number of user files waiting in the drive's Trash
@@ -253,6 +283,27 @@ drive_info() {
   printf '%s' "$_di"
 }
 
+# is_mountpoint DIR -> true when DIR is the top of a mounted drive
+is_mountpoint() {
+  _mp=$(df -P "$1" 2>/dev/null | awk 'NR == 2 { for (i = 6; i <= NF; i++) printf "%s%s", $i, (i < NF ? " " : "") }')
+  [ -n "$_mp" ] && [ "$_mp" = "$1" ]
+}
+
+# console_root -> the ROM card of the console we are running on, if any
+console_root() {
+  if [ -n "${DOTCLEANER_CONSOLE_ROOT+x}" ]; then        # tests
+    if [ -n "$DOTCLEANER_CONSOLE_ROOT" ]; then printf '%s\n' "$DOTCLEANER_CONSOLE_ROOT"; fi
+    return 0
+  fi
+  if [ -d /userdata/roms ]; then printf '%s\n' /userdata; return 0; fi        # Knulli, Batocera
+  for _cr in /roms /storage/roms /mnt/mmc /mnt/SDCARD /mnt/sdcard; do
+    # ArkOS, dArkOS | ROCKNIX, AmberELEC, JELOS, EmuELEC, Lakka | muOS |
+    # Onion, MinUI, Allium, spruceOS, TrimUI, Miyoo stock
+    if [ -d "$_cr" ] && [ ! -L "$_cr" ]; then printf '%s\n' "$_cr"; return 0; fi
+  done
+  if [ -n "${HOME:-}" ] && [ -d "$HOME/RetroPie/roms" ]; then printf '%s\n' "$HOME/RetroPie/roms"; fi
+}
+
 # SD cards and USB drives plugged in, one path per line
 candidate_dirs() {
   if [ -d /Volumes ]; then
@@ -261,13 +312,24 @@ candidate_dirs() {
       case ${_cd##*/} in com.apple.*|.*) continue ;; esac
       printf '%s\n' "$_cd"
     done
-  else
-    # Linux desktops, then the usual ROM folders of console firmwares
-    for _cd in /media/*/* /run/media/*/* /roms /roms2 /userdata/roms \
-               /storage/roms /mnt/SDCARD /mnt/mmc /mnt/sdcard; do
+    return 0
+  fi
+  {
+    # The console itself (when run on the handheld)
+    console_root
+    if [ -d /roms2 ]; then printf '%s\n' /roms2; fi            # ArkOS: second card
+    # Linux desktops, Raspberry Pi, Steam Deck (/run/media/deck/NAME or /run/media/mmcblk0p1)
+    for _cd in /media/*/* /run/media/*/*; do
       if [ -d "$_cd" ]; then printf '%s\n' "$_cd"; fi
     done
-  fi
+    for _cd in /media/* /run/media/*; do
+      if [ -d "$_cd" ] && is_mountpoint "$_cd"; then printf '%s\n' "$_cd"; fi
+    done
+    # ChromeOS Linux, Windows WSL (USB drives as /mnt/d, /mnt/e...)
+    for _cd in /mnt/chromeos/removable/* /mnt/[d-z]; do
+      if [ -d "$_cd" ] && is_mountpoint "$_cd"; then printf '%s\n' "$_cd"; fi
+    done
+  } | awk '!seen[$0]++'
 }
 
 eject_volume() {
@@ -406,6 +468,70 @@ clean_target() {
   return "$_rc"
 }
 
+# --- Console mode ----------------------------------------------------------------
+# Started from the console's own menu (Ports, Tools, Apps): no keyboard and often
+# no visible terminal. Finds the ROM card, cleans it without questions, shows the
+# result on screen when the firmware allows it, and writes dotcleaner.log.
+
+notify_frontend() {
+  # Batocera / Knulli (and EmulationStation forks with the same web API)
+  if command -v curl >/dev/null 2>&1; then
+    curl -s -m 2 -d "$1" http://127.0.0.1:1234/notify >/dev/null 2>&1
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q -T 2 -O /dev/null --post-data="$1" http://127.0.0.1:1234/notify >/dev/null 2>&1
+  fi
+  # Onion (Miyoo Mini): message box, closes by itself
+  if [ -x /mnt/SDCARD/.tmp_update/bin/infoPanel ]; then
+    /mnt/SDCARD/.tmp_update/bin/infoPanel --title "Dotcleaner" --message "$1" --auto >/dev/null 2>&1
+  fi
+  return 0
+}
+
+console_mode() {
+  ASSUME_YES=1 DRY_RUN=0 EJECT=0 MENU=0 QUIET=0
+  C_BOLD='' C_DIM='' C_RED='' C_GRN='' C_YEL='' C_CYN='' C_OFF=''
+  _log=${DOTCLEANER_LOG:-${SCRIPT_DIR:-.}/dotcleaner.log}
+  _rcf=$(mktemp 2>/dev/null || printf '/tmp/dotcleaner.%s' "$$")
+  printf '1' >"$_rcf"
+
+  # Text screen of ArkOS-like firmwares (not when run from a terminal or SSH)
+  _tty=''
+  if [ ! -t 1 ] && [ -z "${DOTCLEANER_NO_TTY:-}" ]; then
+    for _t in /dev/tty1 /dev/tty0; do
+      if [ -e "$_t" ] && [ ! -w "$_t" ] && command -v sudo >/dev/null 2>&1; then
+        sudo -n chmod 666 "$_t" 2>/dev/null
+      fi
+      if [ -w "$_t" ]; then _tty=$_t; break; fi
+    done
+  fi
+  if [ -n "$_tty" ]; then printf '\033c' >"$_tty" 2>/dev/null; fi
+
+  _root=$(console_root)
+  {
+    printf '%s\n' "Dotcleaner $VERSION - console mode"
+    if [ -z "$_root" ]; then
+      printf '%s\n' "No ROM card found on this console."
+      printf '%s\n' "Run it from a computer instead, or with the path: sh dotcleaner.sh /path/to/roms"
+    else
+      clean_target "$_root"
+      printf '%s' "$?" >"$_rcf"
+    fi
+  } 2>&1 | tee "$_log" 2>/dev/null | {
+    if [ -n "$_tty" ]; then cat >"$_tty"; else cat; fi
+  }
+
+  _rc=$(cat "$_rcf" 2>/dev/null)
+  rm -f "$_rcf"
+  _sum=$(grep -E 'Done:|Already clean|deleted\.|Could not|No ROM card|Error' "$_log" 2>/dev/null | tail -n 1 | sed 's/^ *//')
+  notify_frontend "Dotcleaner: ${_sum:-see dotcleaner.log}"
+  if [ -n "$_tty" ]; then
+    printf '\n%s\n' "Back to the menu in 6 seconds..." >"$_tty"
+    sleep 6
+    printf '\033c' >"$_tty" 2>/dev/null
+  fi
+  exit "${_rc:-1}"
+}
+
 # --- Interactive menu ----------------------------------------------------------
 
 DRIVE=''
@@ -419,7 +545,7 @@ check_box() { if [ "$1" -eq 1 ]; then printf '[x]'; else printf '[ ]'; fi; }
 
 header() {
   if [ -t 1 ]; then printf '\033[H\033[2J'; fi
-  printf '%s\n' "${C_BOLD}dotcleaner $VERSION${C_OFF} ${C_DIM}— clean macOS junk from SD cards & USB drives${C_OFF}"
+  printf '%s\n' "${C_BOLD}dotcleaner $VERSION${C_OFF} ${C_DIM}- clean macOS junk from SD cards & USB drives${C_OFF}"
   printf '%s\n\n' "${C_DIM}==========================================================${C_OFF}"
 }
 
@@ -560,26 +686,31 @@ main() {
       -v|--verbose)    VERBOSE=1 ;;
       -q|--quiet)      QUIET=1 ;;
       -k|--keep-trash) KEEP_TRASH=1 ;;
+      --console)       CONSOLE=1 ;;
       -h|--help)       SHOW_HELP=1 ;;
       -V|--version)    printf 'dotcleaner %s\n' "$VERSION"; exit 0 ;;
       --)
-        while [ "$_n" -gt 0 ]; do set -- "$@" "$1"; shift; _n=$((_n - 1)); done ;;
+        while [ "$_n" -gt 0 ]; do set -- ${1+"$@"} "$1"; shift; _n=$((_n - 1)); done ;;
       --*) die_usage "unknown option: $_arg" ;;
       -?*)
         if [ ${#_arg} -gt 2 ]; then
           # combined short options: -ny -> -n -y
           _rest=${_arg#-?}; _first=${_arg%"$_rest"}
-          set -- "$_first" "-$_rest" "$@"; _n=$((_n + 2))
+          set -- "$_first" "-$_rest" ${1+"$@"}; _n=$((_n + 2))
         else
           die_usage "unknown option: $_arg"
         fi ;;
-      *) set -- "$@" "$_arg" ;;
+      *) set -- ${1+"$@"} "$_arg" ;;
     esac
   done
 
   if [ "$SHOW_HELP" -eq 1 ]; then usage; exit 0; fi
 
   trap 'printf "\n%s\n" "Interrupted." >&2; exit 130' INT TERM
+
+  if [ "$CONSOLE" -eq 1 ] || { [ $# -eq 0 ] && [ "$CONSOLE_LAUNCHER" -eq 1 ]; }; then
+    console_mode
+  fi
 
   if [ $# -eq 0 ]; then
     if [ ! -t 0 ]; then die_usage "no path given."; fi
@@ -594,4 +725,4 @@ main() {
   exit "$_status"
 }
 
-main "$@"
+main ${1+"$@"}
