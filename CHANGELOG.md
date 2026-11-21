@@ -2,6 +2,25 @@
 
 All notable changes to dotcleaner.
 
+## [2.0.0] — 2026-11-21
+
+### New: desktop app for macOS (.dmg) and Windows (.exe)
+- Simple window with the same steps as the shell menu: 1. Choose a drive · 2. Options · 3. Scan · 4. Clean.
+- Works with **any SD card or USB drive** (removable and external drives are listed automatically).
+- 5 languages in the language menu: English, Français, Español, 中文（简体）, हिन्दी.
+- Built and tested automatically by GitHub Actions (`apps.yml`) and attached to each release.
+
+### Shell
+- **Interactive menu** when run without arguments: 1. Choose a drive · 2. Options · 3. Scan · 4. Clean · Help · Quit.
+- **English only**: `--lang` and the French messages are removed.
+- Mac-formatted drives (APFS, HFS+) are no longer refused: **safe mode** removes only the junk files
+  (`._*`, `.DS_Store`, `.apdisk`, `__MACOSX`) and leaves the macOS system folders untouched. `--force` is removed.
+- All plugged-in drives are listed (including Mac-formatted ones, marked "safe mode").
+
+### Tests
+- The deletion audit now checks both engines (shell and app) and safe mode, on macOS, Windows, Linux and BusyBox.
+- New app tests: every language complete, a real scan → confirm → clean driven through the window.
+
 ## [1.2.0] — 2026-11-21
 
 ### Safety

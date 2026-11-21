@@ -27,10 +27,9 @@ PASS=0
 FAIL=0
 RC=0
 
-# On macOS the temporary folders live on the Mac's own APFS disk, which
-# dotcleaner refuses by design: --force lets the tests run there.
-FORCE_ARG=''
-if [ "$(uname -s)" = Darwin ]; then FORCE_ARG=--force; fi
+# Tests behave as on an exFAT SD card on every system (on macOS the temp
+# folders live on the Mac's own APFS disk, which would trigger safe mode).
+DOTCLEANER_FS_TYPE=exfat; export DOTCLEANER_FS_TYPE
 
 ok() { PASS=$((PASS + 1)); printf '  ok    %s\n' "$1"; }
 ko() { FAIL=$((FAIL + 1)); printf '  FAIL  %s\n' "$1"; }
@@ -44,7 +43,7 @@ check() {
 # run dotcleaner with English messages and no colours; stdin is not a terminal
 run() {
   # shellcheck disable=SC2086  # SHELL_CMD may be "busybox sh"
-  DOTCLEANER_LANG=en NO_COLOR=1 $SHELL_CMD "$SCRIPT" $FORCE_ARG "$@" </dev/null >"$OUT" 2>&1
+  NO_COLOR=1 $SHELL_CMD "$SCRIPT" "$@" </dev/null >"$OUT" 2>&1
   RC=$?
 }
 
@@ -216,49 +215,38 @@ make_card; touch "$CARD/.Trashes/501/._old.gba" "$CARD/.Trashes/.DS_Store"; mkdi
 run -y -k "$CARD"
 check "-k: junk names inside the Trash kept" eval 'rc_is 0 && exists "$CARD/.Trashes/501/._old.gba" && exists "$CARD/.Trashes/.DS_Store" && exists "$CARD/.Trashes/501/__MACOSX"'
 
-# --- Mac disks are refused (simulated macOS tools) ----------------------------------------
+# --- Mac-formatted drives: safe mode ---------------------------------------------------
+make_card
+DOTCLEANER_FS_TYPE=apfs run -y "$CARD"
+check "Mac disk: safe mode announced"       eval 'rc_is 0 && out_has "safe mode"'
+check "Mac disk: junk files removed"        eval 'missing "$CARD/roms/gba/._Pokemon Emerald.gba" && missing "$CARD/roms/gba/.DS_Store" && missing "$CARD/.apdisk"'
+check "Mac disk: __MACOSX removed"          missing "$CARD/__MACOSX"
+check "Mac disk: system folders kept"       eval 'exists "$CARD/.Spotlight-V100/Store-V2/db" && exists "$CARD/.Trashes/501/old.gba" && exists "$CARD/.fseventsd/0001" && exists "$CARD/.TemporaryItems"'
+check "Mac disk: games kept"                keep_list
+
+# Real detection with simulated macOS tools (uname, stat, mount)
 FAKE="$TMP/fakebin"; mkdir -p "$FAKE"
 printf '#!/bin/sh\necho Darwin\n' >"$FAKE/uname"
 printf '#!/bin/sh\necho disk9s1\n' >"$FAKE/stat"
-printf '#!/bin/sh\necho "/dev/disk9s1 on /Volumes/Backup (apfs, local, journaled)"\n' >"$FAKE/mount"
+printf '#!/bin/sh\necho "/dev/disk9s1 on /Volumes/My (Backup) (apfs, local, journaled)"\n' >"$FAKE/mount"
 chmod +x "$FAKE/uname" "$FAKE/stat" "$FAKE/mount"
 make_card
 # shellcheck disable=SC2086
-PATH="$FAKE:$PATH" DOTCLEANER_LANG=en NO_COLOR=1 $SHELL_CMD "$SCRIPT" -y "$CARD" </dev/null >"$OUT" 2>&1; RC=$?
-check "refuses a Mac disk (APFS)"           eval 'rc_is 1 && out_has "Mac disk (apfs)" && junk_there'
-# shellcheck disable=SC2086
-PATH="$FAKE:$PATH" DOTCLEANER_LANG=en NO_COLOR=1 $SHELL_CMD "$SCRIPT" -y --force "$CARD" </dev/null >"$OUT" 2>&1; RC=$?
-check "--force accepts a Mac disk"          eval 'rc_is 0 && junk_gone'
+PATH="$FAKE:$PATH" DOTCLEANER_FS_TYPE='' NO_COLOR=1 $SHELL_CMD "$SCRIPT" -y "$CARD" </dev/null >"$OUT" 2>&1; RC=$?
+check "detects APFS from mount (safe mode)" eval 'rc_is 0 && out_has "safe mode" && exists "$CARD/.Spotlight-V100" && missing "$CARD/.DS_Store"'
 printf '#!/bin/sh\necho "/dev/disk9s1 on /Volumes/EASYROMS (exfat, local, nodev)"\n' >"$FAKE/mount"
 make_card
 # shellcheck disable=SC2086
-PATH="$FAKE:$PATH" DOTCLEANER_LANG=en NO_COLOR=1 $SHELL_CMD "$SCRIPT" -y "$CARD" </dev/null >"$OUT" 2>&1; RC=$?
-check "accepts an exFAT card"               eval 'rc_is 0 && junk_gone && keep_list'
+PATH="$FAKE:$PATH" DOTCLEANER_FS_TYPE='' NO_COLOR=1 $SHELL_CMD "$SCRIPT" -y "$CARD" </dev/null >"$OUT" 2>&1; RC=$?
+check "detects exFAT from mount (full clean)" eval 'rc_is 0 && ! out_has "safe mode" && junk_gone && keep_list'
 
-# --- Languages ---------------------------------------------------------------------------
+# --- English only --------------------------------------------------------------------------
 make_card
 # shellcheck disable=SC2086
-LANG=fr_FR.UTF-8 LC_ALL=fr_FR.UTF-8 NO_COLOR=1 $SHELL_CMD "$SCRIPT" -n "$CARD" $FORCE_ARG </dev/null >"$OUT" 2>&1; RC=$?
-check "English by default, even on a French system" eval 'rc_is 0 && out_has "Dry run"'
-
+LANG=fr_FR.UTF-8 LC_ALL=fr_FR.UTF-8 NO_COLOR=1 $SHELL_CMD "$SCRIPT" -n "$CARD" </dev/null >"$OUT" 2>&1; RC=$?
+check "English on a French system"          eval 'rc_is 0 && out_has "Preview only"'
 run --lang fr -n "$CARD"
-check "--lang fr gives French messages"     eval 'rc_is 0 && out_has "Simulation" && out_has "éléments"'
-
-run --lang=fr -n "$CARD"
-check "--lang=fr works too"                 eval 'rc_is 0 && out_has "Simulation"'
-
-# shellcheck disable=SC2086
-DOTCLEANER_LANG=fr NO_COLOR=1 $SHELL_CMD "$SCRIPT" -n "$CARD" $FORCE_ARG </dev/null >"$OUT" 2>&1; RC=$?
-check "DOTCLEANER_LANG=fr gives French"     eval 'rc_is 0 && out_has "Simulation"'
-
-run --help --lang fr
-check "--help follows --lang"               eval 'rc_is 0 && out_has "Utilisation"'
-
-run --lang de -n "$CARD"
-check "unknown language -> exit 2"          rc_is 2
-
-run -n "$CARD" --lang
-check "--lang without value -> exit 2"      rc_is 2
+check "no --lang option any more -> exit 2" rc_is 2
 
 # --- Installer -----------------------------------------------------------------------------
 INSTALLER="$HERE/../install.sh"

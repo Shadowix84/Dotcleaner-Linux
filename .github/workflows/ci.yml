@@ -13,12 +13,21 @@ jobs:
       - uses: actions/checkout@v4
       - name: ShellCheck
         run: shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh tests/macos_card.sh
-      - name: VERSION matches the latest CHANGELOG entry
+      - name: Same VERSION in the script, the app and the CHANGELOG
         run: |
           script=$(sed -n 's/^VERSION="\(.*\)"$/\1/p' dotcleaner.sh)
+          app=$(sed -n 's/^VERSION = "\(.*\)"$/\1/p' app/dotcleaner_core.py)
           changelog=$(sed -n 's/^## \[\([^]]*\)\].*/\1/p' CHANGELOG.md | head -n 1)
-          echo "dotcleaner.sh: $script / CHANGELOG.md: $changelog"
-          [ "$script" = "$changelog" ]
+          echo "dotcleaner.sh: $script / app: $app / CHANGELOG.md: $changelog"
+          [ "$script" = "$changelog" ] && [ "$app" = "$changelog" ]
+      - name: Same cleaning rules in the script and the app
+        run: |
+          for name in ._ .DS_Store .apdisk .Spotlight-V100 .Trashes .fseventsd .TemporaryItems \
+                      .DocumentRevisions-V100 .AppleDouble .AppleDB .AppleDesktop __MACOSX \
+                      Thumbs.db ehthumbs.db desktop.ini; do
+            grep -q -- "$name" dotcleaner.sh && grep -q -- "\"$name" app/dotcleaner_core.py \
+              || { echo "rule '$name' missing in one engine"; exit 1; }
+          done
 
   test:
     name: Tests (${{ matrix.os }})

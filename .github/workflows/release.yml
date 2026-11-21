@@ -1,7 +1,8 @@
 name: Release
 
 # One click: Actions -> Release -> Run workflow.
-# Uses VERSION from dotcleaner.sh and the matching section of CHANGELOG.md.
+# Uses VERSION from dotcleaner.sh and the matching section of CHANGELOG.md,
+# builds the .dmg and .exe (apps.yml) and attaches everything to the release.
 on:
   workflow_dispatch:
 
@@ -9,7 +10,11 @@ permissions:
   contents: write
 
 jobs:
+  apps:
+    uses: ./.github/workflows/apps.yml
+
   release:
+    needs: apps
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,6 +54,13 @@ jobs:
           chmod 755 "$dir/dotcleaner.sh" "$dir/dotcleaner.command" "$dir/install.sh"
           zip -r "$dir.zip" "$dir"
 
+      - name: Get the .dmg and .exe built by apps.yml
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dotcleaner-*
+          merge-multiple: true
+          path: apps
+
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -58,4 +70,4 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "dotcleaner $VERSION" \
             --notes-file notes.md \
-            "dotcleaner-$VERSION.zip" dotcleaner.sh
+            "dotcleaner-$VERSION.zip" dotcleaner.sh apps/*.dmg apps/*.exe

@@ -15,10 +15,15 @@ fails the audit.
      junk names used as files/folders/symlinks, dangling links, links
      pointing outside the card.
 
-Each card is checked with the default options, -w and -k.
-The dry-run list (-n) must also match exactly what is then deleted.
+Each card is checked with the default options, -w, -k, and in safe mode
+(the mode used on Mac-formatted drives). The dry-run list (-n) must also
+match exactly what is then deleted.
 
-Usage: python3 tests/audit.py [--shell "sh"] [--cards 200] [--seed 1]
+Both engines are audited against the same referee:
+  --engine sh      dotcleaner.sh (macOS, Linux, BusyBox)        [default]
+  --engine python  app/dotcleaner_core.py (the .dmg / .exe app; also on Windows)
+
+Usage: python3 tests/audit.py [--engine sh|python] [--shell "sh"] [--cards 200] [--seed 1]
 """
 import argparse
 import os
@@ -32,6 +37,8 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "..", "dotcleaner.sh")
+CORE = os.path.join(HERE, "..", "app", "dotcleaner_core.py")
+WINDOWS = os.name == "nt"
 
 # ---- Referee: the rules, re-implemented independently -----------------------
 JUNK_DIRS = {".Spotlight-V100", ".Trashes", ".fseventsd", ".TemporaryItems",
@@ -41,11 +48,19 @@ JUNK_FILES = {".DS_Store", ".apdisk"}
 WINDOWS_FILES = {"Thumbs.db", "ehthumbs.db", "desktop.ini"}
 
 
-def referee(root, windows=False, keep_trash=False):
+SYSTEM_DIRS = JUNK_DIRS - {"__MACOSX"}
+
+
+def referee(root, windows=False, keep_trash=False, safe_mode=False):
     """Return (deleted, listed): every path that must disappear, and the
     top-level items the dry run must list (junk folders, not their content)."""
     deleted, listed = set(), set()
-    junk_dirs = JUNK_DIRS - ({".Trashes"} if keep_trash else set())
+    if safe_mode:                                   # Mac-formatted drive
+        junk_dirs, untouched = {"__MACOSX"}, SYSTEM_DIRS
+    elif keep_trash:
+        junk_dirs, untouched = JUNK_DIRS - {".Trashes"}, {".Trashes"}
+    else:
+        junk_dirs, untouched = JUNK_DIRS, set()
     junk_files = JUNK_FILES | (WINDOWS_FILES if windows else set())
 
     def walk(path):
@@ -59,8 +74,8 @@ def referee(root, windows=False, keep_trash=False):
                 listed.add(p)
                 deleted.add(p)
                 deleted.update(all_paths(p))
-            elif is_dir and keep_trash and name == ".Trashes":
-                continue                      # -k: the Trash is left untouched
+            elif is_dir and name in untouched:
+                continue                      # -k / safe mode: left completely untouched
             elif is_dir:
                 walk(p)
             elif is_file and (name.startswith("._") or name in junk_files):
@@ -139,9 +154,9 @@ def realistic_card(root, outside):
     touch(os.path.join(outside, "._outside.gba"), 1)
     touch(os.path.join(outside, ".DS_Store"), 1)
     os.makedirs(os.path.join(outside, "__MACOSX"), exist_ok=True)
-    os.symlink(outside, os.path.join(root, "roms/link-to-outside"))
-    os.symlink(os.path.join(outside, "__MACOSX"), os.path.join(root, "__MACOSX-link"))
-    os.symlink(os.path.join(outside, "__MACOSX"), os.path.join(root, "roms/.Trashes"))
+    os.symlink(outside, os.path.join(root, "roms/link-to-outside"), target_is_directory=True)
+    os.symlink(os.path.join(outside, "__MACOSX"), os.path.join(root, "__MACOSX-link"), target_is_directory=True)
+    os.symlink(os.path.join(outside, "__MACOSX"), os.path.join(root, "roms/.Trashes"), target_is_directory=True)
     os.symlink(os.path.join(root, "roms/gba/gamelist.xml"), os.path.join(root, "roms/gba/._link"))
     os.symlink("/nonexistent/target", os.path.join(root, "roms/.DS_Store"))
 
@@ -162,7 +177,9 @@ def rand_name(rng):
     name = "".join(rng.choice(PIECES) for _ in range(rng.randint(1, 3)))
     if rng.random() < 0.3:
         name = "._" + name
-    if name in (".", "..") or "/" in name or len(name.encode()) > 200:
+    if WINDOWS:                         # characters Windows does not allow in names
+        name = "".join(c for c in name if c not in '<>:"/\\|?*' and ord(c) >= 32).rstrip(" .")
+    if name in ("", ".", "..") or "/" in name or len(name.encode()) > 200:
         name = "x" + name.replace("/", "")
     return name
 
@@ -182,10 +199,10 @@ def fuzz_card(root, outside, rng):
             elif kind < 0.85:
                 touch(p, rng.randint(0, 3))
             elif kind < 0.92:
-                os.symlink(outside, p)               # link to a folder outside the card
+                os.symlink(outside, p, target_is_directory=True)   # link to a folder outside
             elif kind < 0.96:
                 target = rng.choice(dirs)
-                os.symlink(target, p)                # link inside the card
+                os.symlink(target, p, target_is_directory=True)    # link inside the card
             else:
                 os.symlink("/does/not/exist", p)     # dangling link
         except OSError:
@@ -202,18 +219,21 @@ def make_outside(base):
 
 
 # ---- Running dotcleaner -------------------------------------------------------
-def run(shell, args):
-    env = dict(os.environ, DOTCLEANER_LANG="en", NO_COLOR="1")
-    cmd = shlex.split(shell) + [SCRIPT]
-    if platform.system() == "Darwin":
-        cmd.append("--force")   # temp folders are on the Mac's own APFS disk
-    cmd += args
+ENGINE = "sh"
+
+
+def run(shell, args, safe_mode=False):
+    env = dict(os.environ, NO_COLOR="1", DOTCLEANER_FS_TYPE="apfs" if safe_mode else "exfat")
+    if ENGINE == "python":
+        cmd = [sys.executable, CORE] + args
+    else:
+        cmd = shlex.split(shell) + [SCRIPT] + args
     return subprocess.run(cmd, env=env, stdin=subprocess.DEVNULL,
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
-def dry_run_list(shell, root, opts):
-    r = run(shell, ["-n"] + opts + [root])
+def dry_run_list(shell, root, opts, safe_mode):
+    r = run(shell, ["-n"] + opts + [root], safe_mode)
     lines = r.stdout.decode("utf-8", "surrogateescape").split("\n")
     out, on = set(), False
     for ln in lines:
@@ -221,20 +241,22 @@ def dry_run_list(shell, root, opts):
             on = True
             continue
         if on and ln.startswith("    "):
-            out.add(os.path.join(root, ln[4:]))
+            out.add(os.path.normpath(os.path.join(root, ln[4:])))
         elif on:
             on = False
     return r.returncode, out
 
 
 def check_card(shell, root, outside, opts, label, failures, stats):
+    safe = "safe" in opts
+    opts = [o for o in opts if o != "safe"]
     windows, keep = "-w" in opts, "-k" in opts
     before = all_paths(root)
     outside_before = all_paths(outside)
-    must_go, must_list = referee(root, windows, keep)
+    must_go, must_list = referee(root, windows, keep, safe)
 
     # 1) the dry run lists exactly the referee's items, and deletes nothing
-    rc, listed = dry_run_list(shell, root, opts)
+    rc, listed = dry_run_list(shell, root, opts, safe)
     has_newline = any("\n" in p for p in must_list)
     if rc != 0:
         failures.append(f"{label}: dry run exit code {rc}")
@@ -245,7 +267,7 @@ def check_card(shell, root, outside, opts, label, failures, stats):
         failures.append(f"{label}: the dry run changed the card!")
 
     # 2) the real run deletes exactly the referee's set
-    r = run(shell, ["-y"] + opts + [root])
+    r = run(shell, ["-y"] + opts + [root], safe)
     after = all_paths(root)
     gone = before - after
     if r.returncode != 0:
@@ -270,12 +292,15 @@ def main():
     ap.add_argument("--shell", default="sh")
     ap.add_argument("--cards", type=int, default=200)
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--engine", choices=["sh", "python"], default="sh")
     a = ap.parse_args()
+    global ENGINE
+    ENGINE = a.engine
 
     rng = random.Random(a.seed)
     failures = []
     stats = {"cards": 0, "paths": 0, "kept": 0, "deleted": 0}
-    variants = [[], ["-w"], ["-k"], ["-w", "-k"]]
+    variants = [[], ["-w"], ["-k"], ["-w", "-k"], ["safe"], ["safe", "-w"]]
 
     base = os.path.realpath(tempfile.mkdtemp(prefix="dotcleaner-audit."))
     try:
@@ -299,7 +324,7 @@ def main():
     finally:
         shutil.rmtree(base, ignore_errors=True)
 
-    print(f"shell: {a.shell} | cards: {stats['cards']} | paths checked: {stats['paths']} "
+    print(f"engine: {a.engine if a.engine == 'python' else 'sh (' + a.shell + ')'} | cards: {stats['cards']} | paths checked: {stats['paths']} "
           f"| must keep: {stats['kept']} | must delete: {stats['deleted']}")
     if failures:
         print(f"\n{len(failures)} FAILURE(S):")

@@ -1,8 +1,7 @@
 #!/bin/sh
 #
 # macOS launcher: double-click this file in Finder to clean an SD card.
-# It opens Terminal, lists the plugged-in cards, cleans the one you pick
-# (after confirmation) and ejects it.
+# It opens Terminal on the dotcleaner menu: choose the drive, scan, clean.
 #
 # Keep it in the same folder as dotcleaner.sh, or install the
 # "dotcleaner" command first (see README).
@@ -10,9 +9,9 @@
 cd "$(dirname "$0")" || exit 1
 
 if [ -f ./dotcleaner.sh ]; then
-  sh ./dotcleaner.sh --eject "$@"
+  sh ./dotcleaner.sh "$@"
 elif command -v dotcleaner >/dev/null 2>&1; then
-  dotcleaner --eject "$@"
+  dotcleaner "$@"
 else
   printf '%s\n' "dotcleaner.sh was not found next to this file."
 fi
