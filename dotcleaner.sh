@@ -11,7 +11,7 @@
 
 set -u
 
-VERSION="1.0.0"
+VERSION="1.1.0"
 PROG=${0##*/}
 
 # --- What gets removed (edit here to add more) -------------------------------
@@ -29,12 +29,20 @@ CLEAN_WINDOWS=0
 EJECT=0
 VERBOSE=0
 QUIET=0
+KEEP_TRASH=0
+SHOW_HELP=0
 
-# --- Language: French if the system locale is French ------------------------
-case "${DOTCLEANER_LANG:-${LC_ALL:-${LC_MESSAGES:-${LANG:-}}}}" in
-  fr*|FR*) FR=1 ;;
-  *) FR=0 ;;
-esac
+# --- Language: English by default, French with --lang fr ---------------------
+# (or DOTCLEANER_LANG=fr in the environment)
+set_lang() {
+  case $1 in
+    en|EN|en_*|en-*) FR=0 ;;
+    fr|FR|fr_*|fr-*) FR=1 ;;
+    *) return 1 ;;
+  esac
+}
+FR=0
+set_lang "${DOTCLEANER_LANG:-en}" || FR=0
 
 # t "English text" "Texte français" -> prints the text in the user's language
 t() {
@@ -76,14 +84,16 @@ Utilisation : $PROG [options] [CHEMIN...]
 Sans CHEMIN, la liste des cartes branchées s'affiche pour en choisir une.
 
 Options :
-  -n, --dry-run   simulation : affiche ce qui serait supprimé, ne supprime rien
-  -y, --yes       ne pas demander de confirmation
-  -w, --windows   supprimer aussi les fichiers Windows (Thumbs.db, desktop.ini)
-  -e, --eject     éjecter la carte à la fin (macOS)
-  -v, --verbose   afficher chaque élément supprimé
-  -q, --quiet     n'afficher que les erreurs
-  -h, --help      afficher cette aide
-  -V, --version   afficher la version
+  -n, --dry-run     simulation : affiche ce qui serait supprimé, ne supprime rien
+  -y, --yes         ne pas demander de confirmation
+  -w, --windows     supprimer aussi les fichiers Windows (Thumbs.db, desktop.ini)
+  -k, --keep-trash  garder la corbeille de la carte (.Trashes)
+  -e, --eject       éjecter la carte à la fin (macOS)
+  -v, --verbose     afficher chaque élément supprimé
+  -q, --quiet       n'afficher que les erreurs
+      --lang LANGUE langue des messages : en (défaut) ou fr
+  -h, --help        afficher cette aide
+  -V, --version     afficher la version
 
 Supprimé : fichiers ._*, .DS_Store, .apdisk et dossiers .Spotlight-V100,
 .Trashes, .fseventsd, .TemporaryItems, .DocumentRevisions-V100,
@@ -105,14 +115,16 @@ Usage: $PROG [options] [PATH...]
 Without PATH, the mounted cards are listed so you can pick one.
 
 Options:
-  -n, --dry-run   preview: show what would be deleted, delete nothing
-  -y, --yes       do not ask for confirmation
-  -w, --windows   also remove Windows files (Thumbs.db, desktop.ini)
-  -e, --eject     eject the card when done (macOS)
-  -v, --verbose   list every deleted item
-  -q, --quiet     only print errors
-  -h, --help      show this help
-  -V, --version   show the version
+  -n, --dry-run     preview: show what would be deleted, delete nothing
+  -y, --yes         do not ask for confirmation
+  -w, --windows     also remove Windows files (Thumbs.db, desktop.ini)
+  -k, --keep-trash  keep the card's Trash (.Trashes)
+  -e, --eject       eject the card when done (macOS)
+  -v, --verbose     list every deleted item
+  -q, --quiet       only print errors
+      --lang LANG   message language: en (default) or fr
+  -h, --help        show this help
+  -V, --version     show the version
 
 Removed: ._* files, .DS_Store, .apdisk and the folders .Spotlight-V100,
 .Trashes, .fseventsd, .TemporaryItems, .DocumentRevisions-V100,
@@ -174,6 +186,12 @@ _jf_run() {
     delete) find "$@" -exec rm -rf {} + ;;
     size)   find "$@" -exec du -sk {} + ;;
   esac
+}
+
+# trash_count ROOT -> number of user files waiting in the card's Trash
+trash_count() {
+  find "$1" -xdev -path '*/.Trashes/*' -type f ! -name '._*' ! -name .DS_Store 2>/dev/null |
+    awk 'END { print NR }'
 }
 
 # Reads paths on stdin, prints: appledouble ds_store system windows total
@@ -340,6 +358,13 @@ clean_target() {
     fi
   fi
 
+  if [ "$KEEP_TRASH" -eq 0 ]; then
+    _trash=$(trash_count "$_root")
+    if [ "$_trash" -gt 0 ] && [ "$QUIET" -eq 0 ]; then
+      warn "  $(t "Warning: the card's Trash holds $_trash file(s) deleted in Finder; they will be erased for good (use -k to keep them)." "Attention : la corbeille de la carte contient $_trash fichier(s) supprimé(s) dans le Finder ; ils seront effacés définitivement (-k pour les garder).")"
+    fi
+  fi
+
   if [ "$DRY_RUN" -eq 1 ]; then
     say "  ${C_YEL}$(t 'Dry run: nothing was deleted.' "Simulation : rien n'a été supprimé.")${C_OFF}"
     return 0
@@ -401,7 +426,14 @@ main() {
       -e|--eject)   EJECT=1 ;;
       -v|--verbose) VERBOSE=1 ;;
       -q|--quiet)   QUIET=1 ;;
-      -h|--help)    usage; exit 0 ;;
+      -k|--keep-trash) KEEP_TRASH=1 ;;
+      --lang=*)
+        set_lang "${_arg#--lang=}" || die_usage "$(t "unknown language: ${_arg#--lang=} (use en or fr)" "langue inconnue : ${_arg#--lang=} (en ou fr)")" ;;
+      --lang)
+        if [ "$_n" -eq 0 ]; then die_usage "$(t '--lang needs a value: en or fr' '--lang attend une valeur : en ou fr')"; fi
+        set_lang "$1" || die_usage "$(t "unknown language: $1 (use en or fr)" "langue inconnue : $1 (en ou fr)")"
+        shift; _n=$((_n - 1)) ;;
+      -h|--help)    SHOW_HELP=1 ;;
       -V|--version) printf 'dotcleaner %s\n' "$VERSION"; exit 0 ;;
       --)
         while [ "$_n" -gt 0 ]; do set -- "$@" "$1"; shift; _n=$((_n - 1)); done ;;
@@ -417,6 +449,14 @@ main() {
       *) set -- "$@" "$_arg" ;;
     esac
   done
+
+  if [ "$SHOW_HELP" -eq 1 ]; then usage; exit 0; fi   # after --lang was read
+
+  if [ "$KEEP_TRASH" -eq 1 ]; then
+    JUNK_DIRS=$(printf ' %s ' "$JUNK_DIRS" | sed 's/ \.Trashes / /; s/^ *//; s/ *$//')
+  fi
+
+  trap 'printf "\n%s\n" "$(t "Interrupted." "Interrompu.")" >&2; exit 130' INT TERM
 
   say "${C_BOLD}dotcleaner $VERSION${C_OFF}"
 

@@ -1,0 +1,40 @@
+name: Bug report
+description: Something went wrong while cleaning a card
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! Please fill in as much as you can.
+  - type: input
+    id: device
+    attributes:
+      label: Console and firmware
+      placeholder: e.g. R36S + ArkOS, RG40XXV + Knulli
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Where did you run dotcleaner?
+      placeholder: e.g. macOS 15.1, Ubuntu 24.04, on the console over SSH
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: dotcleaner version
+      description: Output of `dotcleaner --version`
+      placeholder: dotcleaner 1.1.0
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Command and output
+      description: The command you ran and its full output.
+      render: text

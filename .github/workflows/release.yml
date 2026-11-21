@@ -1,0 +1,61 @@
+name: Release
+
+# One click: Actions -> Release -> Run workflow.
+# Uses VERSION from dotcleaner.sh and the matching section of CHANGELOG.md.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the version
+        id: v
+        run: echo "version=$(sed -n 's/^VERSION="\(.*\)"$/\1/p' dotcleaner.sh)" >> "$GITHUB_OUTPUT"
+
+      - name: Stop if this version is already released
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "::error::v$VERSION already exists. Bump VERSION in dotcleaner.sh and CHANGELOG.md first."
+            exit 1
+          fi
+
+      - name: Run the tests
+        run: sh tests/run_tests.sh
+
+      - name: Release notes from CHANGELOG.md
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          awk -v v="[$VERSION]" '/^## \[/ { if (p) exit; if (index($0, v)) { p = 1; next } } p' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then echo "::error::No '## [$VERSION]' section in CHANGELOG.md"; exit 1; fi
+          cat notes.md
+
+      - name: Build the zip
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          dir="dotcleaner-$VERSION"
+          mkdir "$dir"
+          cp dotcleaner.sh dotcleaner.command install.sh README.md README.fr.md LICENSE "$dir/"
+          chmod 755 "$dir/dotcleaner.sh" "$dir/dotcleaner.command" "$dir/install.sh"
+          zip -r "$dir.zip" "$dir"
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          gh release create "v$VERSION" \
+            --target "$GITHUB_SHA" \
+            --title "dotcleaner $VERSION" \
+            --notes-file notes.md \
+            "dotcleaner-$VERSION.zip" dotcleaner.sh

@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest an idea, or a junk file that should be cleaned
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What should dotcleaner do, and why would it help?
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Console and firmware (if relevant)
+      placeholder: e.g. Miyoo Mini Plus + Onion

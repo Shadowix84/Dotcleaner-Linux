@@ -6,12 +6,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  shellcheck:
-    name: ShellCheck
+  lint:
+    name: ShellCheck & version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: shellcheck -s sh dotcleaner.sh tests/run_tests.sh
+      - name: ShellCheck
+        run: shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh
+      - name: VERSION matches the latest CHANGELOG entry
+        run: |
+          script=$(sed -n 's/^VERSION="\(.*\)"$/\1/p' dotcleaner.sh)
+          changelog=$(sed -n 's/^## \[\([^]]*\)\].*/\1/p' CHANGELOG.md | head -n 1)
+          echo "dotcleaner.sh: $script / CHANGELOG.md: $changelog"
+          [ "$script" = "$changelog" ]
 
   test:
     name: Tests (${{ matrix.os }})

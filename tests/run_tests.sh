@@ -199,11 +199,55 @@ make_card
 run -y "$CARD" "$TMP/does-not-exist"
 check "one bad path -> exit 1, good one cleaned" eval 'rc_is 1 && junk_gone'
 
-# --- French messages -------------------------------------------------------------------
+# --- Card's Trash ------------------------------------------------------------------------
+make_card
+run -n "$CARD"
+check "warns before erasing the card's Trash" out_has "Trash holds 1 file"
+
+run -y -k "$CARD"
+check "-k keeps the card's Trash"           eval 'rc_is 0 && exists "$CARD/.Trashes/501/old.gba" && missing "$CARD/.Spotlight-V100" && keep_list'
+check "-k: no Trash warning"                eval '! out_has "Trash holds"'
+
+# --- Languages ---------------------------------------------------------------------------
 make_card
 # shellcheck disable=SC2086
+LANG=fr_FR.UTF-8 LC_ALL=fr_FR.UTF-8 NO_COLOR=1 $SHELL_CMD "$SCRIPT" -n "$CARD" </dev/null >"$OUT" 2>&1; RC=$?
+check "English by default, even on a French system" eval 'rc_is 0 && out_has "Dry run"'
+
+run --lang fr -n "$CARD"
+check "--lang fr gives French messages"     eval 'rc_is 0 && out_has "Simulation" && out_has "éléments"'
+
+run --lang=fr -n "$CARD"
+check "--lang=fr works too"                 eval 'rc_is 0 && out_has "Simulation"'
+
+# shellcheck disable=SC2086
 DOTCLEANER_LANG=fr NO_COLOR=1 $SHELL_CMD "$SCRIPT" -n "$CARD" </dev/null >"$OUT" 2>&1; RC=$?
-check "French messages"                     eval 'rc_is 0 && out_has "Simulation" && out_has "éléments"'
+check "DOTCLEANER_LANG=fr gives French"     eval 'rc_is 0 && out_has "Simulation"'
+
+run --help --lang fr
+check "--help follows --lang"               eval 'rc_is 0 && out_has "Utilisation"'
+
+run --lang de -n "$CARD"
+check "unknown language -> exit 2"          rc_is 2
+
+run -n "$CARD" --lang
+check "--lang without value -> exit 2"      rc_is 2
+
+# --- Installer -----------------------------------------------------------------------------
+INSTALLER="$HERE/../install.sh"
+# shellcheck disable=SC2086
+PREFIX="$TMP/prefix" DOTCLEANER_SRC="$SCRIPT" $SHELL_CMD "$INSTALLER" >"$OUT" 2>&1; RC=$?
+check "installer: installs the command"     eval 'rc_is 0 && [ -x "$TMP/prefix/bin/dotcleaner" ] && out_has "Installed: dotcleaner"'
+check "installer: installed command runs"   eval '"$TMP/prefix/bin/dotcleaner" --version | grep -q "^dotcleaner "'
+
+# shellcheck disable=SC2086
+PREFIX="$TMP/prefix" $SHELL_CMD "$INSTALLER" --uninstall >"$OUT" 2>&1; RC=$?
+check "installer: --uninstall removes it"   eval 'rc_is 0 && missing "$TMP/prefix/bin/dotcleaner"'
+
+printf 'not a script\n' >"$TMP/bad.sh"
+# shellcheck disable=SC2086
+PREFIX="$TMP/prefix" DOTCLEANER_SRC="$TMP/bad.sh" $SHELL_CMD "$INSTALLER" >"$OUT" 2>&1; RC=$?
+check "installer: refuses a broken download" eval '[ "$RC" -ne 0 ] && missing "$TMP/prefix/bin/dotcleaner"'
 
 # --- Summary -----------------------------------------------------------------------
 printf '\n%d passed, %d failed\n' "$PASS" "$FAIL"
