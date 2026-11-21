@@ -5,8 +5,8 @@
 **Remove the junk files macOS leaves on your emulation handheld's SD card.**<br>
 `._*` · `.DS_Store` · `.Spotlight-V100` · `.Trashes` · `.fseventsd` · `__MACOSX` …
 
-[![CI](https://github.com/Shadowix84/Dotcleaner-Linux/actions/workflows/ci.yml/badge.svg)](https://github.com/Shadowix84/Dotcleaner-Linux/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/Shadowix84/Dotcleaner-Linux?label=release)](https://github.com/Shadowix84/Dotcleaner-Linux/releases/latest)
+[![CI](https://github.com/Shadowix84/Dotcleaner-Linux-Handheld/actions/workflows/ci.yml/badge.svg)](https://github.com/Shadowix84/Dotcleaner-Linux-Handheld/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Shadowix84/Dotcleaner-Linux-Handheld?label=release)](https://github.com/Shadowix84/Dotcleaner-Linux-Handheld/releases/latest)
 [![POSIX sh](https://img.shields.io/badge/shell-POSIX%20sh-89e051)](dotcleaner.sh)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -43,7 +43,7 @@ waste space. **dotcleaner** removes them in one command — and **only them**.
 Open **Terminal** (`Cmd + Space`, type "Terminal", Enter) and paste:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Linux/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Linux-Handheld/main/install.sh | sh
 ```
 
 Then plug in your SD card and run:
@@ -56,7 +56,7 @@ Pick the card from the list, check the summary, confirm with `y`. Done.
 
 ### Option 2 — double-click (no Terminal commands)
 
-1. Download the latest `dotcleaner-x.y.z.zip` from the [Releases page](https://github.com/Shadowix84/Dotcleaner-Linux/releases/latest) and unzip it.
+1. Download the latest `dotcleaner-x.y.z.zip` from the [Releases page](https://github.com/Shadowix84/Dotcleaner-Linux-Handheld/releases/latest) and unzip it.
 2. Plug in your SD card.
 3. Double-click **`dotcleaner.command`**: Terminal opens, you pick the card, confirm, and it is ejected at the end.
 
@@ -181,12 +181,12 @@ macOS has `dot_clean`, but it only deals with `._` files — not `.DS_Store`, Sp
 ## Uninstall
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Linux/main/install.sh | sh -s -- --uninstall
+curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Linux-Handheld/main/install.sh | sh -s -- --uninstall
 ```
 
 ## Contributing
 
-Bug reports and ideas are welcome in the [issues](https://github.com/Shadowix84/Dotcleaner-Linux/issues).
+Bug reports and ideas are welcome in the [issues](https://github.com/Shadowix84/Dotcleaner-Linux-Handheld/issues).
 See [CONTRIBUTING.md](CONTRIBUTING.md) to run the tests before sending a change.
 
 ## License

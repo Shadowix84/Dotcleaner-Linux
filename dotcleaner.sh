@@ -6,7 +6,7 @@
 #
 # Plain POSIX sh: runs on macOS, Linux and on the consoles themselves (BusyBox).
 #
-# https://github.com/Shadowix84/Dotcleaner-Linux
+# https://github.com/Shadowix84/Dotcleaner-Linux-Handheld
 # MIT License — Copyright (c) 2026 Shadowix84
 
 set -u
