@@ -2,117 +2,96 @@
 
 # 🧹 Dotcleaner
 
-**Supprime les fichiers parasites que macOS laisse sur la carte SD de votre console d'émulation.**<br>
+**Supprime les fichiers parasites que macOS laisse sur les cartes SD et clés USB — pensé pour les consoles d'émulation.**<br>
 `._*` · `.DS_Store` · `.Spotlight-V100` · `.Trashes` · `.fseventsd` · `__MACOSX` …
 
 [![CI](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/ci.yml/badge.svg)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/ci.yml)
+[![Apps](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/apps.yml/badge.svg)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/apps.yml)
 [![Release](https://img.shields.io/github/v/release/Shadowix84/Dotcleaner-Multi-Software?label=version)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest)
-[![POSIX sh](https://img.shields.io/badge/shell-POSIX%20sh-89e051)](dotcleaner.sh)
 [![Licence : MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 
 🇬🇧 [English version](README.md)
 
-<img src="docs/demo.svg" alt="dotcleaner nettoie une carte SD dans le Terminal" width="640">
+<img src="docs/app-fr.png" alt="Application Dotcleaner" width="560">
 
 </div>
 
 ## Pourquoi ?
 
-Quand on copie des ROM sur une carte SD depuis un Mac, macOS ajoute en douce des fichiers cachés :
+Quand on copie des ROM sur une carte SD ou une clé USB depuis un Mac, macOS ajoute en douce des fichiers cachés :
 un jumeau `._` pour chaque fichier (`._Pokemon Emeraude.gba`), un `.DS_Store` dans chaque dossier
 ouvert dans le Finder, et des dossiers `.Spotlight-V100`, `.Trashes` ou `.fseventsd` à la racine.
 
 Sur la console, ils peuvent apparaître comme des **jeux fantômes qui ne se lancent pas**, perturber
-le scraping et prendre de la place. **dotcleaner** les supprime en une commande — et **uniquement eux**.
+le scraping et prendre de la place. **Dotcleaner** les supprime — et **uniquement eux**.
 
-## Points forts
+## Deux versions, le même menu
 
-- 🎯 **Précis** — supprime une liste fixe de fichiers macOS, jamais vos ROM, sauvegardes ou BIOS
-- 👀 **Sûr** — affiche un résumé et demande confirmation ; `-n` montre tout sans rien toucher
-- 🗑️ **Attentif à la corbeille** — prévient avant d'effacer les fichiers restés dans la corbeille de la carte (`-k` pour les garder)
-- 💾 **Choix et éjection** — liste les cartes branchées, nettoie, puis éjecte (`-e`)
-- 🖱️ **Lanceur double-clic** pour macOS — aucune commande à taper
-- 🐧 **Partout** — macOS, Linux et sur la console elle-même (`sh` POSIX pur, compatible BusyBox)
-- 🛡️ **Refuse les disques Mac** — un disque de sauvegarde choisi par erreur n'est jamais touché (APFS/HFS+)
-- ✅ **Audité** — à chaque modification, des milliers de cartes sont vérifiées fichier par fichier sur macOS, Ubuntu et BusyBox, plus de vraies cartes exFAT/FAT32
+| | 🖥️ **Application** — `.dmg` / `.exe` | ⌨️ **Shell** — `dotcleaner.sh` |
+| --- | --- | --- |
+| Fonctionne sur | macOS, Windows | macOS, Linux, la console elle-même (BusyBox) |
+| Lecteurs | toute carte SD ou clé USB | toute carte SD ou clé USB, ou un dossier |
+| Langues | English, Français, Español, 中文, हिन्दी | anglais |
+| Menu | **1.** Choisir un lecteur · **2.** Options · **3.** Analyser · **4.** Nettoyer · Aide · Quitter | identique (en anglais) |
 
-Les messages sont en anglais ; ajoutez `--lang fr` pour les avoir en français.
+Les deux appliquent exactement les mêmes règles de nettoyage, vérifiées par le même audit.
 
-## Démarrage rapide
+## 🖥️ L'application (macOS et Windows)
 
-### Option 1 — installer la commande (recommandé)
+1. Téléchargez-la depuis la [**dernière version**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest) :
+   - **macOS** (Apple Silicon) : `dotcleaner-x.y.z-macos.dmg` → ouvrez-le, glissez **Dotcleaner** dans **Applications**.
+   - **Windows** : `dotcleaner-x.y.z-windows.exe` → double-cliquez dessus (rien à installer).
+2. Branchez la carte SD ou la clé USB et ouvrez Dotcleaner.
+3. **1.** Choisissez le lecteur · **2.** cochez les options · **3.** Analysez pour voir · **4.** Nettoyez.
 
-Ouvrez le **Terminal** (`Cmd + Espace`, tapez « Terminal », Entrée) et collez :
+Choisissez la langue dans le menu en haut à droite :
+
+<img src="docs/app-languages.png" alt="Dotcleaner en anglais, français, espagnol, chinois et hindi" width="900">
+
+> **Premier lancement.** L'application est gratuite et n'est pas signée avec un certificat payant
+> d'Apple ou de Microsoft : le système prévient donc une fois.
+> - **macOS :** ouvrez **Réglages Système → Confidentialité et sécurité**, descendez et cliquez sur
+>   **Ouvrir quand même**. Autorisez ensuite Dotcleaner à accéder aux *volumes amovibles*.
+> - **Windows :** sur l'écran bleu *Windows a protégé votre ordinateur*, cliquez sur
+>   **Informations complémentaires → Exécuter quand même**.
+
+## ⌨️ La version shell (macOS, Linux, consoles)
+
+Installez la commande `dotcleaner` — ouvrez le **Terminal** et collez :
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Multi-Software/main/install.sh | sh
 ```
 
-Branchez ensuite la carte SD et lancez :
+Puis lancez `dotcleaner` pour ouvrir le menu (en anglais) :
+
+<img src="docs/demo.svg" alt="Menu de dotcleaner dans le Terminal" width="640">
+
+Pas de Terminal ? Téléchargez le zip de la version et double-cliquez sur **`dotcleaner.command`** (macOS).
+Sur la console (SSH activé), copiez `dotcleaner.sh` et lancez `sh dotcleaner.sh`.
+
+### Options en ligne de commande
+
+Pour les scripts, indiquez un ou plusieurs chemins au lieu d'utiliser le menu :
 
 ```sh
-dotcleaner --lang fr
-```
-
-Choisissez la carte dans la liste, vérifiez le résumé, confirmez avec `o`. C'est fini.
-
-### Option 2 — double-clic (aucune commande)
-
-1. Téléchargez le dernier `dotcleaner-x.y.z.zip` sur la [page Releases](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest) et décompressez-le.
-2. Branchez la carte SD.
-3. Double-cliquez sur **`dotcleaner.command`** : le Terminal s'ouvre, vous choisissez la carte, confirmez, et elle est éjectée à la fin.
-
-> Si macOS indique qu'il ne peut pas vérifier le développeur : ouvrez **Réglages Système → Confidentialité et sécurité**,
-> descendez et cliquez sur **Ouvrir quand même** (sur un macOS plus ancien : clic droit sur le fichier → **Ouvrir**).
-> Gardez `dotcleaner.command` à côté de `dotcleaner.sh`.
-
-### Option 3 — sur la console
-
-Si le SSH est activé sur votre firmware, copiez `dotcleaner.sh` sur la console et lancez `sh dotcleaner.sh`.
-Sans chemin, il propose les dossiers de ROM habituels (voir le tableau plus bas).
-
-## Utilisation
-
-```text
-dotcleaner [options] [CHEMIN...]
-```
-
-```sh
-dotcleaner                          # choisir la carte dans une liste
-dotcleaner -n /Volumes/EASYROMS     # simulation : montre ce qui serait supprimé
-dotcleaner -y -e /Volumes/EASYROMS  # nettoyer puis éjecter, sans question
-dotcleaner -w "/Volumes/NO NAME"    # supprimer aussi les fichiers Windows
-dotcleaner /Volumes/BOOT /Volumes/EASYROMS   # plusieurs partitions d'un coup
+dotcleaner -n /Volumes/EASYROMS      # aperçu : montre ce qui serait supprimé
+dotcleaner -y -e /Volumes/EASYROMS   # nettoyer puis éjecter, sans question
+dotcleaner -w "/Volumes/NO NAME"     # supprimer aussi les fichiers Windows
 ```
 
 | Option | Effet |
 | --- | --- |
-| `-n`, `--dry-run` | Simulation : affiche ce qui serait supprimé, ne supprime rien |
+| `-n`, `--dry-run` | Aperçu : affiche ce qui serait supprimé, ne supprime rien |
 | `-y`, `--yes` | Ne pas demander de confirmation |
 | `-w`, `--windows` | Supprimer aussi `Thumbs.db`, `ehthumbs.db`, `desktop.ini` |
-| `-k`, `--keep-trash` | Ne pas toucher à la corbeille de la carte (`.Trashes`) |
-| `--force` | Accepter aussi un disque Mac (APFS/HFS+), refusé par défaut |
-| `-e`, `--eject` | Éjecter la carte à la fin (macOS) |
+| `-k`, `--keep-trash` | Ne pas toucher à la corbeille du lecteur (`.Trashes`) |
+| `-e`, `--eject` | Éjecter le lecteur à la fin (macOS) |
 | `-v`, `--verbose` | Afficher chaque élément supprimé |
 | `-q`, `--quiet` | N'afficher que les erreurs |
-| `--lang fr` | Messages en français (par défaut : anglais) — ou `DOTCLEANER_LANG=fr` |
 | `-h`, `--help` / `-V`, `--version` | Aide / version |
 
-Codes de sortie : `0` OK · `1` erreur sur au moins une carte · `2` mauvaise utilisation · `130` interrompu (Ctrl-C).
-
-### Où est ma carte ?
-
-Le nom est celui affiché dans la barre latérale du Finder. Noms habituels :
-
-| Firmware (exemples) | Nom sur le Mac | Chemin sur la console |
-| --- | --- | --- |
-| ArkOS (R36S, RG351…) | `EASYROMS` | `/roms` |
-| Knulli, Batocera (Anbernic RG40XX…) | `SHARE` | `/userdata/roms` |
-| ROCKNIX | dépend de la carte | `/storage/roms` |
-| Onion (Miyoo Mini) | dépend de la carte | `/mnt/SDCARD` |
-| muOS | dépend de la carte | `/mnt/mmc` |
-
-Mettez le chemin entre guillemets s'il contient des espaces : `"/Volumes/NO NAME"`.
+Codes de sortie : `0` OK · `1` erreur sur au moins un lecteur · `2` mauvaise utilisation · `130` interrompu.
 
 ## Ce qui est supprimé
 
@@ -120,18 +99,31 @@ Mettez le chemin entre guillemets s'il contient des espaces : `"/Volumes/NO NAME
 | --- | --- |
 | `._*` | Fichiers AppleDouble : les métadonnées macOS de chaque fichier copié |
 | `.DS_Store` | Réglages d'affichage des dossiers du Finder |
-| `.Spotlight-V100` | Index Spotlight de la carte |
-| `.Trashes` | Corbeille de la carte (fichiers supprimés dans le Finder sans vider la corbeille) |
+| `.Spotlight-V100` | Index Spotlight du lecteur |
+| `.Trashes` | Corbeille du lecteur (fichiers supprimés dans le Finder sans vider la corbeille) |
 | `.fseventsd` | Journal des modifications du système de fichiers |
 | `.TemporaryItems`, `.DocumentRevisions-V100` | Fichiers temporaires et versions de documents |
 | `.apdisk`, `.AppleDouble`, `.AppleDB`, `.AppleDesktop` | Métadonnées de disque et de partages réseau |
 | `__MACOSX` | Restes d'archives zip créées sur Mac |
-| `Thumbs.db`, `ehthumbs.db`, `desktop.ini` | Windows — **seulement avec `-w`** |
+| `Thumbs.db`, `ehthumbs.db`, `desktop.ini` | Windows — **seulement avec l'option Windows** |
 
-**Jamais touché :** vos ROM, sauvegardes, BIOS, et tout autre fichier, caché ou non (`.keep`, fichiers de config…).
-Les liens symboliques ne sont pas suivis et le script ne sort jamais de la carte. Il refuse de
-s'exécuter sur les dossiers système, sur votre dossier personnel et sur les disques Mac (APFS/HFS+),
-où ces dossiers contiennent de vraies données.
+**Jamais touché :** vos ROM, sauvegardes, BIOS, photos, documents et tout autre fichier, caché ou non.
+Les liens ne sont jamais suivis et les autres lecteurs jamais parcourus. Les dossiers système et personnels sont refusés.
+
+🛡️ **Mode sûr sur les disques au format Mac (APFS, HFS+).** Là, les dossiers système de macOS
+contiennent de vraies données (versions de documents, corbeille…) : seuls les fichiers parasites
+(`._*`, `.DS_Store`, `.apdisk`, `__MACOSX`) sont supprimés. Les consoles utilisent des cartes
+FAT32/exFAT, qui sont nettoyées entièrement.
+
+### Où est ma carte ?
+
+| Firmware (exemples) | Nom sur l'ordinateur | Chemin sur la console |
+| --- | --- | --- |
+| ArkOS (R36S, RG351…) | `EASYROMS` | `/roms` |
+| Knulli, Batocera (Anbernic RG40XX…) | `SHARE` | `/userdata/roms` |
+| ROCKNIX | dépend de la carte | `/storage/roms` |
+| Onion (Miyoo Mini) | dépend de la carte | `/mnt/SDCARD` |
+| muOS | dépend de la carte | `/mnt/mmc` |
 
 ## FAQ
 
@@ -139,58 +131,48 @@ où ces dossiers contiennent de vraies données.
 <summary><b>Peut-il supprimer mes jeux ou mes sauvegardes ?</b></summary>
 
 Non. Il ne supprime que les noms exacts listés ci-dessus. Un fichier comme `Jeu._beta.gba` ou une
-sauvegarde cachée comme `.jeu.srm` est conservé. Lancez d'abord avec `-n` pour voir la liste complète.
+sauvegarde cachée comme `.jeu.srm` est conservé. Analysez d'abord pour voir la liste complète.
 
 C'est vérifié à chaque modification par un audit ([`tests/audit.py`](tests/audit.py)) : des cartes
 réalistes (ArkOS, Knulli, PortMaster…) et des centaines de cartes aléatoires remplies de noms piégés
-sont scannées chemin par chemin avant et après nettoyage, puis comparées à un arbitre indépendant.
-Un seul fichier supprimé à tort, ou un seul parasite oublié, et l'audit échoue.
+sont scannées chemin par chemin avant et après nettoyage — avec l'application **et** le shell — puis
+comparées à un arbitre indépendant. Un seul fichier supprimé à tort, ou un seul parasite oublié, et l'audit échoue.
 </details>
 
 <details>
 <summary><b>Les fichiers <code>._</code> sont revenus. Pourquoi ?</b></summary>
 
-macOS les crée à chaque copie de fichiers du Mac vers la carte. Lancez dotcleaner après chaque
-séance de copie — avec `-e`, la carte est éjectée tout de suite, sans laisser à macOS le temps d'en rajouter.
+macOS les crée à chaque copie de fichiers du Mac vers le lecteur. Nettoyez après chaque séance de
+copie, avec **Éjecter à la fin** coché : le lecteur est éjecté tout de suite.
 </details>
 
 <details>
-<summary><b>Et la corbeille de la carte ?</b></summary>
+<summary><b>Et la corbeille du lecteur ?</b></summary>
 
-Les fichiers supprimés dans le Finder sur la carte vont dans son dossier caché `.Trashes` et prennent
-toujours de la place. dotcleaner vous prévient et les efface définitivement. `-k` pour les garder.
+Les fichiers supprimés dans le Finder sur le lecteur vont dans son dossier caché `.Trashes` et prennent
+toujours de la place. Dotcleaner vous prévient et les efface définitivement. Cochez **Garder la
+corbeille du lecteur** (`-k`) pour les conserver.
 </details>
 
 <details>
-<summary><b>J'utilise Windows ou Linux, pas un Mac.</b></summary>
+<summary><b>Existe-t-il une application pour Mac Intel ou Linux ?</b></summary>
 
-Sous Linux, tout fonctionne pareil (les cartes dans `/media/...` sont proposées automatiquement). Avec `-w`,
-il supprime aussi `Thumbs.db` et `desktop.ini` de Windows. Sous Windows, lancez-le sur la console en SSH ou dans WSL.
+Le `.dmg` est fait pour les Mac Apple Silicon. Sur Mac Intel et sous Linux, utilisez la version shell —
+ou lancez l'application depuis les sources : `pip install PySide6-Essentials && python3 app/dotcleaner_gui.py`.
 </details>
 
-<details>
-<summary><b>macOS n'a pas déjà un outil pour ça ?</b></summary>
+## Fabrication et tests
 
-macOS a `dot_clean`, mais il ne traite que les fichiers `._` — pas `.DS_Store`, ni Spotlight, ni la corbeille.
-</details>
+Tout est fabriqué et testé par GitHub Actions à chaque modification :
 
-## Astuces macOS
+- [`ci.yml`](.github/workflows/ci.yml) — ShellCheck, tests et audit du shell sur Ubuntu, macOS et
+  BusyBox, vraies cartes exFAT/FAT32 montées sur macOS.
+- [`apps.yml`](.github/workflows/apps.yml) — audit du moteur et tests de l'application sur macOS,
+  Windows et Linux, puis fabrication et lancement du `.dmg` et du `.exe`.
+- [`release.yml`](.github/workflows/release.yml) — **Actions → Release → Run workflow** publie la
+  version avec le `.dmg`, le `.exe`, le zip et le script.
 
-- **Première utilisation :** macOS demande si le Terminal peut accéder aux fichiers d'un volume amovible → cliquez sur *Autoriser*.
-- **Moins de `.DS_Store` sur les clés et cartes :**
-  `defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true`, puis fermez la session.
-  Ce réglage n'est pas documenté par Apple pour l'USB et son effet peut varier selon la version de macOS.
-
-## Désinstallation
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Multi-Software/main/install.sh | sh -s -- --uninstall
-```
-
-## Contribuer
-
-Signalements de bugs et idées sont les bienvenus dans les [issues](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues).
-Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour lancer les tests avant de proposer une modification.
+Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour lancer les tests vous-même.
 
 ## Licence
 

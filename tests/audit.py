@@ -223,7 +223,8 @@ ENGINE = "sh"
 
 
 def run(shell, args, safe_mode=False):
-    env = dict(os.environ, NO_COLOR="1", DOTCLEANER_FS_TYPE="apfs" if safe_mode else "exfat")
+    env = dict(os.environ, NO_COLOR="1", PYTHONIOENCODING="utf-8",
+               DOTCLEANER_FS_TYPE="apfs" if safe_mode else "exfat")
     if ENGINE == "python":
         cmd = [sys.executable, CORE] + args
     else:
@@ -234,7 +235,7 @@ def run(shell, args, safe_mode=False):
 
 def dry_run_list(shell, root, opts, safe_mode):
     r = run(shell, ["-n"] + opts + [root], safe_mode)
-    lines = r.stdout.decode("utf-8", "surrogateescape").split("\n")
+    lines = r.stdout.decode("utf-8", "surrogateescape").replace("\r\n", "\n").split("\n")
     out, on = set(), False
     for ln in lines:
         if ln.strip().startswith("Would be deleted:"):
@@ -288,6 +289,10 @@ def check_card(shell, root, outside, opts, label, failures, stats):
 
 
 def main():
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
+    except (AttributeError, ValueError):
+        pass
     ap = argparse.ArgumentParser()
     ap.add_argument("--shell", default="sh")
     ap.add_argument("--cards", type=int, default=200)

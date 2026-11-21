@@ -207,6 +207,14 @@ def _is_link(entry):
     return False
 
 
+def _device(entry):
+    """Device id of a directory entry. On Windows, DirEntry.stat() leaves st_dev at 0,
+    so a full os.stat() is needed there."""
+    if SYSTEM == "Windows":
+        return os.stat(entry.path, follow_symlinks=False).st_dev
+    return entry.stat(follow_symlinks=False).st_dev
+
+
 def _disk_size(st):
     blocks = getattr(st, "st_blocks", None)
     if blocks is not None:
@@ -295,7 +303,7 @@ def scan(root, windows=False, keep_trash=False, safe_mode=None, cancel=None, pro
                         if name == ".Trashes":
                             result.trash_files += _count_trash_files(e.path)
                         continue
-                    if e.stat(follow_symlinks=False).st_dev == root_dev:
+                    if _device(e) == root_dev:
                         stack.append(e.path)              # stay on the same drive
                 elif e.is_file(follow_symlinks=False):
                     if name.startswith("._") or name in junk_files:
@@ -464,6 +472,11 @@ def main(argv=None):
     ap.add_argument("-k", "--keep-trash", action="store_true")
     ap.add_argument("-V", "--version", action="version", version=f"dotcleaner {VERSION}")
     a = ap.parse_args(argv)
+    for stream in (sys.stdout, sys.stderr):              # file names in any language
+        try:
+            stream.reconfigure(encoding="utf-8", errors="surrogateescape")
+        except (AttributeError, ValueError):
+            pass
     try:
         root = check_target(a.path)
     except TargetError as e:

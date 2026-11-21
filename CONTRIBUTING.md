@@ -12,32 +12,43 @@ Open an [issue](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/n
 
 ## Changing the code
 
-dotcleaner is a single file, `dotcleaner.sh`, written in **plain POSIX `sh`** so it runs on
-macOS, Linux and BusyBox (the system of most console firmwares). Please keep it that way:
-no bash-only syntax (`[[ ]]`, arrays, `local`, `$'...'`), no GNU-only options.
+There are two engines with **exactly the same rules**:
 
-To add a file or folder to clean, edit `JUNK_FILES` or `JUNK_DIRS` at the top of the script,
-then add it to the fake card in `tests/run_tests.sh` and to the table in both READMEs.
+- `dotcleaner.sh` — the shell version, written in **plain POSIX `sh`** so it runs on macOS, Linux and
+  BusyBox (most console firmwares). No bash-only syntax (`[[ ]]`, arrays, `local`, `$'...'`), no
+  GNU-only options. Its interface is in English only.
+- `app/dotcleaner_core.py` — the engine of the desktop app (`app/dotcleaner_gui.py`, PySide6),
+  packaged as a `.dmg` and an `.exe`.
 
-Messages are written with `t "English" "Français"` so both languages stay in sync.
+To add a file or folder to clean, change **both** engines (`JUNK_FILES` / `SYSTEM_DIRS` at the top of each),
+the referee at the top of `tests/audit.py`, the fake card in `tests/run_tests.sh`, and the tables in both READMEs.
+
+### Translations (app only)
+
+All app texts are in `app/i18n.py`: English, French, Spanish, Chinese (Mandarin, simplified) and Hindi.
+Every language must have every key with the same `{placeholders}` — `tests/test_app.py` checks it.
+To add a language, copy the `"en"` block, translate it and add it to `LANGUAGES`.
 
 ## Running the checks
 
 ```sh
 shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh tests/macos_card.sh
-sh tests/run_tests.sh            # default sh
-sh tests/run_tests.sh bash       # another shell
-python3 tests/audit.py           # deletion audit: nothing wrongly deleted, nothing left behind
-sh tests/macos_card.sh           # macOS only: real exFAT/FAT32 cards, eject, APFS refusal
+sh tests/run_tests.sh                       # shell version (default sh)
+sh tests/run_tests.sh bash                  # another shell
+python3 tests/audit.py                      # deletion audit of the shell engine
+python3 tests/audit.py --engine python      # deletion audit of the app engine (also on Windows)
+pip install PySide6-Essentials && python3 tests/test_app.py   # app: translations + real clean
+sh tests/macos_card.sh                      # macOS only: real exFAT/FAT32 cards, eject, safe mode
 ```
 
-If you change what gets deleted, update the referee at the top of `tests/audit.py` too.
+Run the app from source: `python3 app/dotcleaner_gui.py`.
 
-GitHub Actions runs the same checks on Ubuntu, macOS and BusyBox for every push and pull request.
+GitHub Actions runs all of this on Ubuntu, macOS, Windows and BusyBox for every push, and builds the
+`.dmg` and `.exe` (`apps.yml`): download them from the run's **Artifacts** to try a change.
 
 ## Releasing (maintainer)
 
-1. Bump `VERSION` in `dotcleaner.sh` and add a `## [x.y.z]` section at the top of `CHANGELOG.md`.
+1. Bump `VERSION` in `dotcleaner.sh` **and** `app/dotcleaner_core.py`, and add a `## [x.y.z]` section at the top of `CHANGELOG.md`.
 2. Push to `main` and wait for CI to be green.
 3. **Actions → Release → Run workflow.** It runs the tests, creates the `vx.y.z` tag and the
-   GitHub release with the zip, using the CHANGELOG section as release notes.
+   GitHub release with the `.dmg`, the `.exe`, the zip and the script, using the CHANGELOG section as release notes.
