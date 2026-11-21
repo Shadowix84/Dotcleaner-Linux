@@ -263,8 +263,9 @@ make_card
 DOTCLEANER_CONSOLE_ROOT="$CARD" DOTCLEANER_NO_TTY=1 DOTCLEANER_LOG="$TMP/console.log" NO_COLOR=1 \
   $SHELL_CMD "$LAUNCHER" </dev/null >"$OUT" 2>&1; RC=$?
 check "console launcher: cleans the card, no question" eval 'rc_is 0 && junk_gone && keep_list'
-check "console launcher: result on screen"   out_has "Done: 12 items deleted"
-check "console launcher: writes dotcleaner.log" grep -q "Done: 12 items deleted" "$TMP/console.log"
+check "console launcher: result on screen"   eval 'out_has "12 items deleted" && out_has "Done!"'
+check "console launcher: writes dotcleaner.log" grep -q "12 items deleted" "$TMP/console.log"
+check "console launcher: lines fit 40 columns" eval '[ "$(grep -v "^      /" "$TMP/console.log" | awk "length > 40" | wc -l)" -eq 0 ]' 
 check "console launcher: plain text log"     eval '! grep -q "$(printf "\033")" "$TMP/console.log"'
 # shellcheck disable=SC2086
 DOTCLEANER_CONSOLE_ROOT='' DOTCLEANER_NO_TTY=1 DOTCLEANER_LOG="$TMP/console.log" NO_COLOR=1 \

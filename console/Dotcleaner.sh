@@ -14,7 +14,7 @@
 
 set -u
 
-VERSION="2.2.1"
+VERSION="2.3.0"
 PROG=${0##*/}
 
 # --- What gets removed (keep in sync with app/dotcleaner_core.py) ------------
@@ -498,73 +498,33 @@ notify_frontend() {
   return 0
 }
 
-# Screen of the console mode: drawn on the terminal (SSH) or on the text screen
-# of ArkOS-like firmwares (/dev/tty1). 52 columns, ASCII only, so it fits any font.
-UI_OUT=''
-S1='wait' S2='wait' S3='wait' S4='wait'
-U_CARD='' U_SCAN='' U_CLEAN='' U_BAR='' U_FINAL='' U_FOOT=''
-U_N1=0 U_N2=0 U_N3=0
+# Console screen: plain text, one line after the other, 40 columns at most,
+# ASCII only, no colours and no cursor moves. The same lines go to the screen
+# and to dotcleaner.log, so it works everywhere: the text screen of ArkOS-like
+# firmwares, Knulli, Batocera, ROCKNIX, muOS, Onion, SSH, a serial console.
+SCREEN=''
+LIVE=0
 
-ui_mark() {
-  case $1 in
-    ok)   printf '%s' "${U_G}[OK]${U_O}" ;;
-    run)  printf '%s' "${U_Y}[..]${U_O}" ;;
-    fail) printf '%s' "${U_R}[!!]${U_O}" ;;
-    skip) printf '%s' "${U_D}[--]${U_O}" ;;
-    *)    printf '%s' "${U_D}[  ]${U_O}" ;;
-  esac
-}
-
-# ui_bar DONE TOTAL -> [##########----------]  50%  10/20
-ui_bar() {
-  awk -v d="$1" -v t="$2" 'BEGIN {
-    w = 26; p = (t > 0) ? int(d * 100 / t) : 100; f = int(p * w / 100)
-    s = "["; for (i = 0; i < w; i++) s = s ((i < f) ? "#" : "-"); s = s "]"
-    printf "%s %3d%%  %d/%d", s, p, d, t
-  }'
-}
-
-# ui_center TEXT -> TEXT centered in 50 columns
-ui_center() {
-  awk -v t="$1" 'BEGIN { w = 50; l = int((w - length(t)) / 2); printf "%*s%s%*s", l, "", t, w - l - length(t), "" }'
-}
-
-ui_draw() {
-  if [ -z "$UI_OUT" ]; then return 0; fi
-  {
-    printf '\033[H'
-    printf '%s\033[K\n' "${U_C}+--------------------------------------------------+${U_O}"
-    printf '%s\033[K\n' "${U_C}|${U_O}${U_B}$(ui_center "DOTCLEANER $VERSION")${U_O}${U_C}|${U_O}"
-    printf '%s\033[K\n' "${U_C}|${U_O}$(ui_center "macOS junk cleaner for your SD card")${U_C}|${U_O}"
-    printf '%s\033[K\n' "${U_C}+--------------------------------------------------+${U_O}"
-    printf '\033[K\n'
-    printf '  %s 1. Find the ROM card\033[K\n' "$(ui_mark "$S1")"
-    printf '       %s\033[K\n' "${U_D}$U_CARD${U_O}"
-    printf '  %s 2. Scan\033[K\n' "$(ui_mark "$S2")"
-    printf '       %s\033[K\n' "${U_D}$U_SCAN${U_O}"
-    printf '  %s 3. Clean\033[K\n' "$(ui_mark "$S3")"
-    printf '       %s\033[K\n' "$U_BAR"
-    printf '       %s\033[K\n' "${U_D}$U_CLEAN${U_O}"
-    printf '  %s 4. Done\033[K\n' "$(ui_mark "$S4")"
-    printf '       %s\033[K\n' "${U_B}$U_FINAL${U_O}"
-    printf '\033[K\n'
-    if [ "$U_N1$U_N2$U_N3" != 000 ]; then
-      printf '     %6d  ._* files (AppleDouble)\033[K\n' "$U_N1"
-      printf '     %6d  .DS_Store\033[K\n' "$U_N2"
-      printf '     %6d  macOS system items\033[K\n' "$U_N3"
-    else
-      printf '\033[K\n\033[K\n\033[K\n'
-    fi
-    printf '\033[K\n'
-    printf '  %s\033[K\n' "${U_D}$U_FOOT${U_O}"
-    printf '\033[J'
-  } >"$UI_OUT" 2>/dev/null
-}
-
-# clog TEXT -> the log file, and the output when there is no screen to draw on
-clog() {
+# cout TEXT -> the screen (or the output) and the log
+cout() {
   printf '%s\n' "$*" >>"$_log" 2>/dev/null
-  if [ -z "$UI_OUT" ]; then printf '%s\n' "$*"; fi
+  if [ -n "$SCREEN" ]; then printf '%s\n' "$*" >"$SCREEN" 2>/dev/null; else printf '%s\n' "$*"; fi
+}
+
+# clive TEXT -> rewrite the current line (progress), only on a live screen
+clive() {
+  if [ "$LIVE" -eq 1 ]; then
+    if [ -n "$SCREEN" ]; then printf '\r%s' "$*" >"$SCREEN" 2>/dev/null; else printf '\r%s' "$*"; fi
+  fi
+}
+
+# cbar DONE TOTAL -> [####################] 100%
+cbar() {
+  awk -v d="$1" -v t="$2" 'BEGIN {
+    p = (t > 0) ? int(d * 100 / t) : 100; f = int(p / 5); s = "["
+    for (i = 0; i < 20; i++) s = s ((i < f) ? "#" : "-")
+    printf "%s] %3d%%", s, p
+  }'
 }
 
 console_mode() {
@@ -573,126 +533,120 @@ console_mode() {
   _log=${DOTCLEANER_LOG:-${SCRIPT_DIR:-.}/dotcleaner.log}
   : >"$_log" 2>/dev/null
 
-  # Where to draw the screen: the terminal (SSH), else the text screen of
-  # ArkOS-like firmwares; else nothing (Knulli, Batocera, Onion: notifications)
+  # Screen: the terminal (SSH), else the text screen of the console if any
   if [ -t 1 ]; then
-    UI_OUT=/dev/stdout
+    LIVE=1
   elif [ -z "${DOTCLEANER_NO_TTY:-}" ]; then
     for _t in /dev/tty1 /dev/tty0; do
       if [ -e "$_t" ] && [ ! -w "$_t" ] && command -v sudo >/dev/null 2>&1; then
         sudo -n chmod 666 "$_t" 2>/dev/null
       fi
-      if [ -w "$_t" ]; then UI_OUT=$_t; break; fi
+      if [ -w "$_t" ]; then SCREEN=$_t LIVE=1; break; fi
     done
-    if [ -n "$UI_OUT" ] && command -v setfont >/dev/null 2>&1 && [ -f /usr/share/consolefonts/Lat7-Terminus16.psf.gz ]; then
+  fi
+  if [ -n "$SCREEN" ]; then
+    printf '\033c' >"$SCREEN" 2>/dev/null                      # clear the text screen
+    if command -v setfont >/dev/null 2>&1 && [ -f /usr/share/consolefonts/Lat7-Terminus16.psf.gz ]; then
       setfont /usr/share/consolefonts/Lat7-Terminus16.psf.gz 2>/dev/null ||
         sudo -n setfont /usr/share/consolefonts/Lat7-Terminus16.psf.gz 2>/dev/null
     fi
   fi
-  if [ -n "$UI_OUT" ] && [ -z "${NO_COLOR:-}" ]; then
-    U_B=$(printf '\033[1m'); U_D=$(printf '\033[2m'); U_G=$(printf '\033[1;32m')
-    U_Y=$(printf '\033[1;33m'); U_R=$(printf '\033[1;31m'); U_C=$(printf '\033[36m'); U_O=$(printf '\033[0m')
-  else
-    U_B='' U_D='' U_G='' U_Y='' U_R='' U_C='' U_O=''
-  fi
-  if [ -n "$UI_OUT" ]; then printf '\033[?25l\033[H\033[2J' >"$UI_OUT" 2>/dev/null; fi
-  trap 'if [ -n "$UI_OUT" ]; then printf "\033[?25h" >"$UI_OUT" 2>/dev/null; fi; exit 130' INT TERM
 
-  clog "Dotcleaner $VERSION - console mode"
+  cout "=================================="
+  cout " DOTCLEANER $VERSION"
+  cout " macOS junk cleaner"
+  cout "=================================="
+  cout ""
   _rc=1
 
   # 1. Find the ROM card
-  S1=run; U_CARD='looking for the ROM card...'; ui_draw
+  cout "[1/4] ROM card"
   _found=$(console_root)
   if [ -z "$_found" ]; then
-    S1=fail U_CARD='No ROM card found on this console.'
-    U_FINAL='Run it from a computer, or: sh dotcleaner.sh PATH'
-    clog "No ROM card found on this console."
-    clog "Run it from a computer instead, or with the path: sh dotcleaner.sh /path/to/roms"
+    cout "      No ROM card found."
+    cout "      Run it from a computer, or:"
+    cout "      sh dotcleaner.sh /path/to/roms"
     notify_frontend "Dotcleaner: no ROM card found"
   elif ! _why=$(resolve_target "$_found" 2>&1); then
-    S1=fail U_CARD="$_found: cannot be cleaned" U_FINAL='See dotcleaner.log'
-    clog "$_why"
-    notify_frontend "Dotcleaner: $_why"
+    cout "      $_found cannot be cleaned."
+    printf '%s\n' "$_why" >>"$_log" 2>/dev/null
+    notify_frontend "Dotcleaner: $_found cannot be cleaned"
   else
     resolve_target "$_found"
     _info=$(drive_info "$_root")
-    S1=ok U_CARD="$_root${_info:+  ($_info)}"
-    clog "Card: $U_CARD"
-    if [ "$_files_only" -eq 1 ]; then clog "Mac-formatted drive: safe mode, only junk files are removed."; fi
+    cout "      $_root${_info:+ ($_info)}"
+    if [ "$_files_only" -eq 1 ]; then cout "      Mac disk: safe mode"; fi
 
     # 2. Scan
-    S2=run U_SCAN='looking for macOS junk... (big cards: up to a minute)'; ui_draw
+    cout "[2/4] Scan"
+    clive "      please wait..."
     notify_frontend "Dotcleaner: scanning $_root..."
     # shellcheck disable=SC2046
     set -- $(junk_find "$_root" print 2>/dev/null | classify)
-    U_N1=$1 U_N2=$2 U_N3=$(($3 + $4)) _total=$5
+    _total=$5
     _kb=$(junk_find "$_root" size 2>/dev/null | awk '{ s += $1 } END { print s + 0 }')
     _size=$(human_size "$_kb")
-    S2=ok U_SCAN="$(n_items "$_total") of junk found, $_size"
-    clog "Scan: $U_SCAN ($1 ._* files, $2 .DS_Store, $U_N3 system items)"
+    clive "                    "; clive ""
+    cout "      $(n_items "$_total") of junk, $_size"
+    if [ "$_total" -gt 0 ]; then cout "      ($1 ._*, $2 .DS_Store, $(($3 + $4)) other)"; fi
 
+    # 3. Clean
+    cout "[3/4] Clean"
     if [ "$_total" -eq 0 ]; then
-      S3=skip U_CLEAN='nothing to delete'
-      S4=ok U_FINAL='Already clean, nothing to delete.'
-      clog "Already clean, nothing to delete."
+      cout "      nothing to delete"
+      cout "[4/4] Done!"
+      cout "      Already clean."
       notify_frontend "Dotcleaner: already clean, nothing to delete"
       _rc=0
     else
-      # 3. Clean, with a progress bar
-      S3=run U_BAR=$(ui_bar 0 "$_total") U_CLEAN='deleting...'; ui_draw
       notify_frontend "Dotcleaner: cleaning $(n_items "$_total")..."
+      clive "      $(cbar 0 "$_total")"
       junk_find "$_root" progress 2>/dev/null | {
         _d=0 _last=-1
         while IFS= read -r _x; do
           case $_x in ''|*[!0-9]*) continue ;; esac
           _d=$((_d + _x))
           _p=$((_d * 100 / _total))
-          if [ "$_p" -ne "$_last" ]; then
-            _last=$_p
-            U_BAR=$(ui_bar "$_d" "$_total"); ui_draw
-          fi
+          if [ "$_p" -ne "$_last" ]; then _last=$_p; clive "      $(cbar "$_d" "$_total")"; fi
         done
       }
       # shellcheck disable=SC2046
       set -- $(junk_find "$_root" print 2>/dev/null | classify)
       _left=$5
       _done=$((_total - _left))
-      U_BAR=$(ui_bar "$_done" "$_total")
-      if [ "$_left" -eq 0 ]; then
-        S3=ok U_CLEAN="$(n_items "$_done") deleted"
-        S4=ok U_FINAL="Done: $_size freed. Games and saves untouched."
-        clog "Done: $(n_items "$_total") deleted ($_size freed)."
-        notify_frontend "Dotcleaner: done, $(n_items "$_total") deleted ($_size freed)"
-        _rc=0
-      elif [ "$1" -eq 0 ] && [ "$2" -eq 0 ] && [ "$4" -eq 0 ]; then
-        S3=ok U_CLEAN="$(n_items "$_done") deleted"
-        S4=ok U_FINAL="Done. $_left system folder(s) are in use (harmless)."
-        clog "$(n_items "$_done") deleted. $_left system folder(s) in use or recreated: harmless."
-        notify_frontend "Dotcleaner: done, $(n_items "$_done") deleted"
+      if [ "$LIVE" -eq 1 ]; then                    # finish the progress line
+        clive "      $(cbar "$_done" "$_total")"
+        if [ -n "$SCREEN" ]; then printf '\n' >"$SCREEN" 2>/dev/null; else printf '\n'; fi
+        printf '%s\n' "      $(cbar "$_done" "$_total")" >>"$_log" 2>/dev/null
+      else
+        cout "      $(cbar "$_done" "$_total")"
+      fi
+      cout "      $(n_items "$_done") deleted"
+      if [ "$_left" -eq 0 ] || { [ "$1" -eq 0 ] && [ "$2" -eq 0 ] && [ "$4" -eq 0 ]; }; then
+        cout "[4/4] Done!"
+        cout "      $_size freed"
+        if [ "$_left" -gt 0 ]; then cout "      ($_left system folder(s) in use)"; fi
+        cout "      Games and saves untouched."
+        notify_frontend "Dotcleaner: done, $(n_items "$_done") deleted ($_size freed)"
         _rc=0
       else
-        S3=fail U_CLEAN="$(n_items "$_done") deleted, $_left could not be"
-        S4=fail U_FINAL='Some items could not be deleted: see the log.'
-        clog "Could not delete $(n_items "$_left"):"
+        cout "[4/4] Not finished"
+        cout "      $_left item(s) could not be deleted"
+        cout "      (read-only card?) See the log."
         list_items "$_root" >>"$_log" 2>/dev/null
         notify_frontend "Dotcleaner: $_left item(s) could not be deleted, see dotcleaner.log"
       fi
     fi
   fi
 
-  if [ -n "$UI_OUT" ]; then
-    if [ "$UI_OUT" = /dev/stdout ]; then
-      U_FOOT="Log: $_log"; ui_draw
-    else
-      _s=8
-      while [ "$_s" -gt 0 ]; do
-        U_FOOT="Log: dotcleaner.log  -  back to the menu in $_s s"; ui_draw
-        sleep 1; _s=$((_s - 1))
-      done
-      printf '\033[H\033[2J' >"$UI_OUT" 2>/dev/null
-    fi
-    printf '\033[?25h' >"$UI_OUT" 2>/dev/null
+  cout ""
+  cout "Log: dotcleaner.log"
+  if [ -n "$SCREEN" ]; then
+    _s=6
+    while [ "$_s" -gt 0 ]; do
+      clive "Back to the menu in $_s s "; sleep 1; _s=$((_s - 1))
+    done
+    printf '\033c' >"$SCREEN" 2>/dev/null
   fi
   exit "$_rc"
 }

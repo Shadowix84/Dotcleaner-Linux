@@ -122,8 +122,9 @@ Téléchargez [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotclea
 Créez le dossier `ports` s'il n'existe pas. Le lanceur trouve tout seul la carte de ROM, la nettoie
 sans rien demander et écrit **`dotcleaner.log`** à côté de lui — joignez ce fichier à tout signalement.
 
-**Ce qui s'affiche.** Sur les firmwares de type ArkOS (et en SSH), un écran suit chaque étape — carte
-trouvée, analyse, nettoyage avec barre de progression, résultat — puis revient au menu après 8 secondes.
+**Ce qui s'affiche.** Un écran texte très simple (ASCII pur, 40 colonnes, sans couleurs) pour s'afficher
+pareil sur tous les firmwares et toutes les tailles d'écran : `[1/4] ROM card`, `[2/4] Scan`,
+`[3/4] Clean` avec une barre de progression, `[4/4] Done!` — puis retour au menu après 6 secondes.
 Sur Knulli / Batocera, une notification apparaît à chaque étape ; sur Onion, une fenêtre de message.
 
 <p align="center">

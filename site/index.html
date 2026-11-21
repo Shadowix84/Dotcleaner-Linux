@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dotcleaner — clean macOS junk from SD cards & USB drives</title>
-<meta name="description" content="Dotcleaner removes the ._ files, .DS_Store and other hidden files macOS adds to SD cards and USB drives — the ghost games on your emulation handheld. Free app for macOS and Windows, shell version for Linux and consoles.">
+<meta name="description" content="Dotcleaner removes the ._ files, .DS_Store and other hidden files macOS adds to SD cards and USB drives — the ghost games on your emulation handheld. Free app for macOS, Windows and Linux, plus a launcher for ArkOS, Knulli, ROCKNIX, Onion and more.">
+<meta name="theme-color" content="#2f6fde">
 <meta property="og:title" content="Dotcleaner">
 <meta property="og:description" content="Clean macOS junk from SD cards & USB drives — no more ghost games on your emulation handheld.">
 <meta property="og:image" content="https://shadowix84.github.io/Dotcleaner-Multi-Software/social-preview.png">
@@ -13,114 +14,250 @@
 <link rel="icon" href="icon-256.png">
 <style>
   :root {
-    --bg: #f6f8fc; --card: #ffffff; --text: #14213d; --muted: #5b6b86; --line: #e3e8f2;
-    --accent: #2f6fde; --accent-2: #1d4fb8; --gold: #ffc928; --code: #0d1117; --ok: #1e8e3e;
-    --radius: 16px;
+    --bg: #f5f7fc; --bg2: #ffffff; --card: #ffffff; --text: #14213d; --muted: #5b6b86; --line: #e2e8f2;
+    --accent: #2f6fde; --accent-2: #1d4fb8; --soft: #eaf1ff; --ok: #1b7f3a; --bad: #c0392b;
+    --screen: #0f1626; --screen-text: #d7e2f5; --radius: 16px;
+    --shadow: 0 24px 60px rgba(15, 35, 90, .18);
     font-family: system-ui, -apple-system, "Segoe UI", Inter, Roboto, "Noto Sans", "Noto Sans Devanagari",
                  "Nirmala UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #0b1220; --card: #121b2e; --text: #e8eefc; --muted: #9aa8c4; --line: #22304a; }
+    :root { --bg: #0b1220; --bg2: #0f1829; --card: #131d31; --text: #e8eefc; --muted: #9aa8c4; --line: #23314c;
+            --soft: #1a2846; --ok: #5bd27a; --bad: #ff8a80; --shadow: 0 24px 60px rgba(0, 0, 0, .45); }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.55; }
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+  body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.55; -webkit-font-smoothing: antialiased; }
   a { color: var(--accent); }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 22px; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
-  header.top { display: flex; align-items: center; gap: 12px; padding: 16px 0; }
-  header.top img { width: 36px; height: 36px; }
-  header.top b { font-size: 1.15rem; }
+  /* header */
+  header.top { position: sticky; top: 0; z-index: 10; backdrop-filter: saturate(1.6) blur(14px);
+               -webkit-backdrop-filter: saturate(1.6) blur(14px);
+               background: color-mix(in srgb, var(--bg) 78%, transparent); border-bottom: 1px solid var(--line); }
+  header.top .wrap { display: flex; align-items: center; gap: 14px; height: 62px; }
+  header.top .brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-weight: 750; font-size: 1.1rem; }
+  header.top .brand img { width: 32px; height: 32px; }
+  header.top nav { display: flex; gap: 4px; margin-left: 18px; }
+  header.top nav a { color: var(--muted); text-decoration: none; font-size: .94rem; padding: 6px 10px; border-radius: 8px; }
+  header.top nav a:hover { color: var(--text); background: var(--soft); }
   header.top .spacer { flex: 1; }
-  header.top a.nav { color: var(--muted); text-decoration: none; font-size: .95rem; margin-right: 8px; }
-  header.top a.nav:hover { color: var(--text); }
-  select { font: inherit; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line);
+  .gh { display: inline-flex; align-items: center; gap: 7px; color: var(--text); text-decoration: none; font-size: .92rem;
+        border: 1px solid var(--line); border-radius: 10px; padding: 6px 11px; background: var(--card); }
+  .gh svg { width: 17px; height: 17px; fill: currentColor; }
+  select { font: inherit; font-size: .92rem; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line);
            background: var(--card); color: var(--text); }
 
-  .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; padding: 36px 0 56px; }
-  .hero h1 { font-size: clamp(2rem, 4.4vw, 3.2rem); line-height: 1.12; margin: 0 0 18px; letter-spacing: -.02em; }
+  /* hero */
+  .hero-bg { background: radial-gradient(900px 420px at 85% 10%, rgba(63, 134, 245, .18), transparent 70%),
+                         radial-gradient(700px 380px at 0% 90%, rgba(255, 201, 40, .10), transparent 70%); }
+  .hero { display: grid; grid-template-columns: 1.02fr 1fr; gap: 48px; align-items: center; padding: 56px 0 64px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; font-size: .86rem; color: var(--accent);
+          background: var(--soft); border-radius: 999px; padding: 5px 13px; margin-bottom: 18px; font-weight: 600; }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+  .hero h1 { font-size: clamp(2.1rem, 4.6vw, 3.4rem); line-height: 1.08; margin: 0 0 18px; letter-spacing: -.025em; }
   .hero h1 span { background: linear-gradient(90deg, var(--accent), #6aa5ff); -webkit-background-clip: text;
                   background-clip: text; color: transparent; }
-  .hero p.sub { font-size: 1.15rem; color: var(--muted); margin: 0 0 26px; }
+  .hero p.sub { font-size: 1.14rem; color: var(--muted); margin: 0 0 28px; max-width: 34em; }
   .btns { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
   .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 12px;
          font-weight: 650; text-decoration: none; font-size: 1.02rem; border: 1px solid var(--line);
          background: var(--card); color: var(--text); transition: transform .12s, box-shadow .12s; }
-  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(30, 70, 160, .15); }
-  .btn.primary { background: linear-gradient(180deg, var(--accent), var(--accent-2)); color: #fff; border: 0; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(30, 70, 160, .18); }
+  .btn.primary { background: linear-gradient(180deg, #3f80ee, var(--accent-2)); color: #fff; border: 0;
+                 box-shadow: 0 8px 22px rgba(47, 111, 222, .35); }
   .btn svg { width: 20px; height: 20px; fill: currentColor; }
-  .small { font-size: .9rem; color: var(--muted); margin-top: 14px; }
-  .shot { width: 100%; border-radius: 14px; box-shadow: 0 24px 60px rgba(15, 35, 90, .25); border: 1px solid var(--line); }
+  .btn small { display: block; font-weight: 500; font-size: .78rem; opacity: .8; }
+  .trust { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 22px; color: var(--muted); font-size: .92rem; padding: 0; list-style: none; }
+  .trust li::before { content: "✓ "; color: var(--ok); font-weight: 800; }
+  .visual { position: relative; }
+  .visual .shot { width: 100%; border-radius: 16px; box-shadow: var(--shadow); border: 1px solid var(--line); display: block; }
+  .visual .console { position: absolute; width: 46%; left: -9%; bottom: -26px; border-radius: 12px;
+                     box-shadow: var(--shadow); border: 1px solid #1d2a44; }
 
-  section { padding: 48px 0; border-top: 1px solid var(--line); }
-  section h2 { font-size: 1.7rem; margin: 0 0 8px; letter-spacing: -.01em; }
-  section p.lead { color: var(--muted); margin: 0 0 26px; max-width: 760px; }
+  /* sections */
+  section { padding: 72px 0; }
+  section.alt { background: var(--bg2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .kicker { text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; font-weight: 700; color: var(--accent); margin: 0 0 8px; }
+  section h2 { font-size: clamp(1.6rem, 3vw, 2.1rem); margin: 0 0 10px; letter-spacing: -.015em; line-height: 1.2; }
+  section p.lead { color: var(--muted); margin: 0 0 32px; max-width: 760px; font-size: 1.05rem; }
   .grid { display: grid; gap: 16px; }
   .g4 { grid-template-columns: repeat(4, 1fr); }
   .g3 { grid-template-columns: repeat(3, 1fr); }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
-  .card .num { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
-               background: var(--accent); color: #fff; font-weight: 700; margin-bottom: 12px; }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
   .card h3 { margin: 0 0 6px; font-size: 1.08rem; }
   .card p { margin: 0; color: var(--muted); font-size: .96rem; }
+  .num { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+         background: var(--accent); color: #fff; font-weight: 700; margin-bottom: 14px; }
+  .ico { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 1.35rem;
+         background: var(--soft); margin-bottom: 14px; }
+
+  /* before / after */
+  .ba { display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: center; }
+  .screen { background: var(--screen); color: var(--screen-text); border-radius: 18px; padding: 18px 18px 20px;
+            border: 6px solid #263248; box-shadow: var(--shadow); font-size: .95rem; }
+  .screen .bar { display: flex; justify-content: space-between; font-size: .78rem; letter-spacing: .06em;
+                 text-transform: uppercase; color: #8ea2c4; margin-bottom: 10px; }
+  .screen ul { list-style: none; margin: 0; padding: 0; }
+  .screen li { padding: 7px 10px; border-radius: 8px; display: flex; justify-content: space-between; gap: 10px; }
+  .screen li.sel { background: rgba(90, 146, 245, .22); }
+  .screen li.ghost { color: #7b879c; text-decoration: line-through; text-decoration-color: rgba(255, 120, 110, .6); }
+  .screen li .tag { font-size: .74rem; text-decoration: none; color: #ff8f86; white-space: nowrap; align-self: center; }
+  .arrow { font-size: 2rem; color: var(--accent); text-align: center; }
+  .arrow small { display: block; font-size: .8rem; font-weight: 700; }
+
+  /* consoles */
+  .fw { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 30px; }
+  .fw span { padding: 7px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); font-weight: 600; font-size: .92rem; }
+  .fw span.main { background: var(--soft); border-color: transparent; color: var(--accent); }
+  .steps { list-style: none; counter-reset: s; padding: 0; margin: 0 0 22px; display: grid; gap: 14px; }
+  .steps li { counter-increment: s; display: flex; gap: 14px; align-items: flex-start; }
+  .steps li::before { content: counter(s); flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid;
+                      place-items: center; background: var(--accent); color: #fff; font-weight: 700; }
+  .steps li span { padding-top: 3px; }
+  .consoles-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 40px; align-items: center; }
+  .consoles-grid img { width: 100%; border-radius: 12px; box-shadow: var(--shadow); display: block; }
+  .consoles-grid .pair { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
   .chip { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92rem;
           padding: 6px 12px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); }
-  ul.ticks { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
-  ul.ticks li { padding-left: 30px; position: relative; }
-  ul.ticks li::before { content: "✓"; position: absolute; left: 0; top: 0; color: var(--ok); font-weight: 800; }
-  .code { display: flex; align-items: center; gap: 10px; background: var(--code); color: #e6edf3;
-          border-radius: 12px; padding: 14px 16px; font-family: ui-monospace, Menlo, Consolas, monospace;
-          font-size: .92rem; overflow-x: auto; }
-  .code code { flex: 1; white-space: nowrap; }
-  .code button { font: inherit; font-family: system-ui, sans-serif; font-size: .85rem; border: 0; border-radius: 8px;
-                 padding: 6px 12px; background: #2b3a55; color: #fff; cursor: pointer; }
+  .chip.win { border-style: dashed; }
+  .small { font-size: .9rem; color: var(--muted); }
+
+  /* downloads */
+  .dl .card { display: flex; flex-direction: column; gap: 10px; }
+  .dl .card .os { font-size: 1.6rem; }
+  .dl .card .links { margin-top: auto; display: flex; flex-wrap: wrap; gap: 8px; }
+  .dl .card .links a { text-decoration: none; font-weight: 600; font-size: .9rem; padding: 7px 12px; border-radius: 9px;
+                       background: var(--soft); }
+  .dl .card.here { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(47, 111, 222, .15); }
+  .code { display: flex; align-items: center; gap: 10px; background: #0d1117; color: #e6edf3; margin-top: 18px;
+          border-radius: 12px; padding: 14px 16px; font-size: .92rem; overflow-x: auto; }
+  .code code { flex: 1; white-space: nowrap; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .code button { font: inherit; font-size: .85rem; border: 0; border-radius: 8px; padding: 7px 13px;
+                 background: #2b3a55; color: #fff; cursor: pointer; }
+  .code button:hover { background: #3a4c6e; }
+
+  /* faq */
+  .faq { display: grid; gap: 10px; max-width: 820px; }
+  .faq details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 0 18px; }
+  .faq summary { cursor: pointer; padding: 16px 0; font-weight: 650; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; color: var(--accent); font-size: 1.3rem; line-height: 1; }
+  .faq details[open] summary::after { content: "–"; }
+  .faq details p { margin: 0 0 16px; color: var(--muted); }
+
   .langs { display: flex; flex-wrap: wrap; gap: 10px; }
-  .langs span { padding: 8px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); font-weight: 600; }
-  footer { padding: 34px 0 50px; border-top: 1px solid var(--line); color: var(--muted); font-size: .92rem;
-           display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; }
+  .langs button { font: inherit; padding: 9px 16px; border-radius: 10px; background: var(--card); color: var(--text);
+                  border: 1px solid var(--line); font-weight: 600; cursor: pointer; }
+  .langs button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  footer { padding: 34px 0 50px; border-top: 1px solid var(--line); color: var(--muted); font-size: .92rem; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; }
   footer a { color: var(--muted); }
-  @media (max-width: 860px) {
-    .hero { grid-template-columns: 1fr; padding-top: 16px; }
+
+  @media (max-width: 900px) {
+    .hero, .consoles-grid { grid-template-columns: 1fr; }
+    .hero { padding-top: 28px; gap: 56px; }
+    .visual .console { left: auto; right: -4px; width: 44%; }
     .g4, .g3 { grid-template-columns: 1fr 1fr; }
-    header.top a.nav { display: none; }
+    header.top nav { display: none; }
+    .ba { grid-template-columns: 1fr; }
+    .arrow span { display: inline-block; transform: rotate(90deg); }
   }
-  @media (max-width: 520px) { .g4, .g3 { grid-template-columns: 1fr; } }
+  @media (max-width: 540px) {
+    .g4, .g3, .g2, .consoles-grid .pair { grid-template-columns: 1fr; }
+    .gh span { display: none; }
+    section { padding: 54px 0; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <img src="icon-256.png" alt="">
-    <b>Dotcleaner</b>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="icon-256.png" alt="">Dotcleaner</a>
+    <nav>
+      <a href="#how" data-t="nav_how"></a>
+      <a href="#consoles" data-t="nav_consoles"></a>
+      <a href="#safe" data-t="nav_safe"></a>
+      <a href="#faq" data-t="nav_faq"></a>
+    </nav>
     <span class="spacer"></span>
-    <a class="nav" href="#how" data-t="nav_how"></a>
-    <a class="nav" href="#safe" data-t="nav_safe"></a>
-    <a class="nav" href="https://github.com/Shadowix84/Dotcleaner-Multi-Software">GitHub</a>
+    <a class="gh" href="https://github.com/Shadowix84/Dotcleaner-Multi-Software">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      <span>GitHub</span></a>
     <select id="lang" aria-label="Language">
       <option value="en">English</option><option value="fr">Français</option><option value="es">Español</option>
       <option value="zh">中文（简体）</option><option value="hi">हिन्दी</option>
     </select>
-  </header>
+  </div>
+</header>
 
-  <div class="hero">
+<div class="hero-bg">
+  <div class="wrap hero">
     <div>
+      <div class="pill"><span class="dot"></span><span id="ver">v2.3.0</span> · <span data-t="pill"></span></div>
       <h1 data-t="hero_title" data-html></h1>
       <p class="sub" data-t="hero_sub"></p>
       <div class="btns" id="btns">
         <a class="btn primary" id="btn-mac" href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg">
           <svg viewBox="0 0 24 24"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4.1zM13.9 4.9c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.1.1 2.3-.6 3-1.5z"/></svg>
-          <span data-t="btn_mac"></span></a>
+          <span><span data-t="btn_mac"></span><small>.dmg · macOS 13+</small></span></a>
         <a class="btn" id="btn-win" href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe">
           <svg viewBox="0 0 24 24"><path d="M3 5.5 10.4 4.5v7.1H3zM11.3 4.4 21 3v8.6h-9.7zM3 12.5h7.4v7.1L3 18.6zM11.3 12.5H21V21l-9.7-1.4z"/></svg>
-          <span data-t="btn_win"></span></a>
+          <span><span data-t="btn_win"></span><small>.exe · Windows 10 / 11</small></span></a>
+        <a class="btn" id="btn-linux" hidden href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-x86_64">
+          <span style="font-size:1.2rem">🐧</span>
+          <span><span data-t="btn_linux"></span><small>x86_64</small></span></a>
       </div>
-      <p class="small"><span data-t="free"></span> · <a href="#shell" data-t="other"></a> ·
-        <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest" data-t="all_versions"></a></p>
+      <ul class="trust">
+        <li data-t="trust1"></li><li data-t="trust2"></li><li><a href="#download" data-t="trust3"></a></li>
+      </ul>
     </div>
-    <div><img class="shot" id="shot" src="app-en.png" alt="Dotcleaner"></div>
+    <div class="visual">
+      <img class="shot" id="shot" src="app-en.png" alt="Dotcleaner app">
+      <img class="console" src="console-done.svg" alt="Dotcleaner on a console">
+    </div>
   </div>
+</div>
 
-  <section id="how">
+<section class="alt" id="problem">
+  <div class="wrap">
+    <p class="kicker" data-t="prob_kicker"></p>
+    <h2 data-t="prob_title"></h2>
+    <p class="lead" data-t="prob_lead"></p>
+    <div class="ba">
+      <div class="screen">
+        <div class="bar"><span>Game Boy Advance</span><span data-t="before"></span></div>
+        <ul>
+          <li class="ghost"><span class="mono">._Golden Sun.gba</span><span class="tag" data-t="ghost"></span></li>
+          <li class="ghost"><span class="mono">._Metroid Fusion.gba</span><span class="tag" data-t="ghost"></span></li>
+          <li class="ghost"><span class="mono">._Pokemon Emerald.gba</span><span class="tag" data-t="ghost"></span></li>
+          <li class="sel"><span>Golden Sun.gba</span></li>
+          <li><span>Metroid Fusion.gba</span></li>
+          <li><span>Pokemon Emerald.gba</span></li>
+        </ul>
+      </div>
+      <div class="arrow"><span>→</span><small>Dotcleaner</small></div>
+      <div class="screen">
+        <div class="bar"><span>Game Boy Advance</span><span data-t="after"></span></div>
+        <ul>
+          <li class="sel"><span>Golden Sun.gba</span></li>
+          <li><span>Metroid Fusion.gba</span></li>
+          <li><span>Pokemon Emerald.gba</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="kicker" data-t="nav_how"></p>
     <h2 data-t="how_title"></h2>
     <p class="lead" data-t="how_lead"></p>
     <div class="grid g4">
@@ -129,219 +266,351 @@
       <div class="card"><div class="num">3</div><h3 data-t="s3"></h3><p data-t="s3d"></p></div>
       <div class="card"><div class="num">4</div><h3 data-t="s4"></h3><p data-t="s4d"></p></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section id="removes">
+<section class="alt" id="consoles">
+  <div class="wrap">
+    <p class="kicker" data-t="nav_consoles"></p>
+    <h2 data-t="con_title"></h2>
+    <p class="lead" data-t="con_lead"></p>
+    <div class="fw">
+      <span class="main">ArkOS</span><span class="main">dArkOS</span><span class="main">Knulli</span><span class="main">Batocera</span>
+      <span class="main">ROCKNIX</span><span class="main">AmberELEC</span><span class="main">JELOS</span><span class="main">EmuELEC</span>
+      <span class="main">Onion</span><span>muOS</span><span>MinUI</span><span>spruceOS</span><span>Allium</span><span>RetroPie</span>
+    </div>
+    <div class="consoles-grid">
+      <div>
+        <ol class="steps">
+          <li><span data-t="con_s1" data-html></span></li>
+          <li><span data-t="con_s2" data-html></span></li>
+          <li><span data-t="con_s3"></span></li>
+        </ol>
+        <div class="btns">
+          <a class="btn primary" href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip">
+            <span style="font-size:1.2rem">🎮</span><span><span data-t="con_dl"></span><small>Dotcleaner-console.zip</small></span></a>
+          <a class="btn" href="https://github.com/Shadowix84/Dotcleaner-Multi-Software#-on-the-console-itself" data-t="guide"></a>
+        </div>
+        <p class="small" data-t="con_note" style="margin-top:16px"></p>
+      </div>
+      <div class="pair">
+        <img src="console-cleaning.svg" alt="Console screen while cleaning">
+        <img src="console-done.svg" alt="Console screen when done">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="removes">
+  <div class="wrap">
+    <p class="kicker" data-t="rm_kicker"></p>
     <h2 data-t="rm_title"></h2>
     <p class="lead" data-t="rm_lead"></p>
     <div class="chips">
       <span class="chip">._*</span><span class="chip">.DS_Store</span><span class="chip">.Spotlight-V100</span>
       <span class="chip">.Trashes</span><span class="chip">.fseventsd</span><span class="chip">.TemporaryItems</span>
-      <span class="chip">.DocumentRevisions-V100</span><span class="chip">.apdisk</span><span class="chip">__MACOSX</span>
-      <span class="chip">Thumbs.db *</span><span class="chip">desktop.ini *</span>
+      <span class="chip">.DocumentRevisions-V100</span><span class="chip">.AppleDouble</span><span class="chip">.AppleDB</span>
+      <span class="chip">.AppleDesktop</span><span class="chip">.apdisk</span><span class="chip">__MACOSX</span>
+      <span class="chip win">Thumbs.db *</span><span class="chip win">ehthumbs.db *</span><span class="chip win">desktop.ini *</span>
     </div>
     <p class="small" data-t="rm_win"></p>
-  </section>
+  </div>
+</section>
 
-  <section id="safe">
+<section class="alt" id="safe">
+  <div class="wrap">
+    <p class="kicker" data-t="nav_safe"></p>
     <h2 data-t="safe_title"></h2>
-    <ul class="ticks">
-      <li data-t="safe1"></li><li data-t="safe2"></li><li data-t="safe3"></li><li data-t="safe4"></li>
-    </ul>
-  </section>
-
-  <section id="shell">
-    <h2 data-t="pf_title"></h2>
+    <p class="lead" data-t="safe_lead"></p>
     <div class="grid g4">
-      <div class="card"><h3>🍎 macOS</h3><p data-t="pf_mac"></p>
-        <p><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg">Dotcleaner-macOS.dmg</a></p></div>
-      <div class="card"><h3>🪟 Windows</h3><p data-t="pf_win"></p>
-        <p><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe">Dotcleaner-Windows.exe</a></p></div>
-      <div class="card"><h3>🐧 Linux</h3><p data-t="pf_linux"></p>
-        <p><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-x86_64">x86_64</a> ·
-           <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-arm64">ARM64</a></p></div>
-      <div class="card"><h3>🎮 Console</h3><p data-t="pf_console"></p>
-        <p><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip">Dotcleaner-console.zip</a> ·
-           <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software#-on-the-console-itself" data-t="guide"></a></p></div>
+      <div class="card"><div class="ico">🛡️</div><h3 data-t="safe1t"></h3><p data-t="safe1"></p></div>
+      <div class="card"><div class="ico">🔗</div><h3 data-t="safe2t"></h3><p data-t="safe2"></p></div>
+      <div class="card"><div class="ico">🍎</div><h3 data-t="safe3t"></h3><p data-t="safe3"></p></div>
+      <div class="card"><div class="ico">🔬</div><h3 data-t="safe4t"></h3><p data-t="safe4"></p></div>
     </div>
-    <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:22px">
-      <img class="shot" src="console-cleaning.svg" alt="Console screen while cleaning" loading="lazy">
-      <img class="shot" src="console-done.svg" alt="Console screen when done" loading="lazy">
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <p class="kicker" data-t="dl_kicker"></p>
+    <h2 data-t="pf_title"></h2>
+    <p class="lead" data-t="pf_lead"></p>
+    <div class="grid g4 dl">
+      <div class="card" id="card-mac"><div class="os">🍎</div><h3>macOS</h3><p data-t="pf_mac"></p>
+        <div class="links"><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg">.dmg</a></div></div>
+      <div class="card" id="card-win"><div class="os">🪟</div><h3>Windows</h3><p data-t="pf_win"></p>
+        <div class="links"><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe">.exe</a></div></div>
+      <div class="card" id="card-linux"><div class="os">🐧</div><h3>Linux</h3><p data-t="pf_linux"></p>
+        <div class="links"><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-x86_64">x86_64</a>
+          <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-arm64">ARM64</a></div></div>
+      <div class="card"><div class="os">🎮</div><h3 data-t="pf_console_t"></h3><p data-t="pf_console"></p>
+        <div class="links"><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip">.zip</a>
+          <a href="#consoles" data-t="guide"></a></div></div>
     </div>
-    <p class="small" data-t="console_screen"></p>
-    <p class="lead" style="margin-top:22px" data-t="shell_cmd"></p>
+    <p class="lead" style="margin:32px 0 0" data-t="shell_cmd"></p>
     <div class="code"><code id="cmd">curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Multi-Software/main/install.sh | sh</code>
       <button id="copy" data-t="copy"></button></div>
-  </section>
+    <p class="small" style="margin-top:14px"><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest" data-t="all_versions"></a></p>
+  </div>
+</section>
 
-  <section>
+<section class="alt" id="faq">
+  <div class="wrap">
+    <p class="kicker">FAQ</p>
+    <h2 data-t="faq_title"></h2>
+    <div class="faq" style="margin-top:24px">
+      <details><summary data-t="q1"></summary><p data-t="a1"></p></details>
+      <details><summary data-t="q2"></summary><p data-t="a2" data-html></p></details>
+      <details><summary data-t="q3"></summary><p data-t="a3"></p></details>
+      <details><summary data-t="q4"></summary><p data-t="a4" data-html></p></details>
+      <details><summary data-t="q5"></summary><p data-t="a5"></p></details>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
     <h2 data-t="lang_title"></h2>
-    <div class="langs"><span>English</span><span>Français</span><span>Español</span><span>中文（简体）</span><span>हिन्दी</span></div>
-  </section>
+    <p class="lead" data-t="lang_lead"></p>
+    <div class="langs" id="langs">
+      <button data-l="en">English</button><button data-l="fr">Français</button><button data-l="es">Español</button>
+      <button data-l="zh">中文（简体）</button><button data-l="hi">हिन्दी</button>
+    </div>
+  </div>
+</section>
 
-  <footer>
+<footer>
+  <div class="wrap">
     <span>Dotcleaner · <span data-t="license"></span> · © 2026 Shadowix84</span>
     <span><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software">GitHub</a> ·
+      <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/blob/main/CHANGELOG.md" data-t="changelog"></a> ·
       <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new/choose" data-t="report"></a> ·
       <a href="https://discord.gg/4FbhkuhRMm">Discord</a></span>
-  </footer>
-</div>
+  </div>
+</footer>
 
 <script>
 const T = {
   en: {
-    nav_how: "How it works", nav_safe: "Safety",
+    nav_how: "How it works", nav_consoles: "On the console", nav_safe: "Safety", nav_faq: "FAQ",
+    pill: "free & open source",
     hero_title: "Clean your SD cards from <span>macOS junk</span>",
-    hero_sub: "Dotcleaner removes the ._ files, .DS_Store and other hidden files macOS adds to SD cards and USB drives — the ghost games on your emulation handheld — and nothing else.",
-    btn_mac: "Download for macOS", btn_win: "Download for Windows",
-    free: "Free and open source", other: "Linux & consoles", all_versions: "All versions",
-    how_title: "How it works", how_lead: "The same four steps in the app and in the shell version.",
-    s1: "1. Choose a drive", s1d: "Your SD card or USB drive is listed as soon as it is plugged in.",
-    s2: "2. Options", s2d: "Windows files, keep the drive's Trash, eject when done.",
-    s3: "3. Scan", s3d: "See what would be deleted. Nothing is deleted yet.",
-    s4: "4. Clean", s4d: "Confirm, and the junk is gone. The drive can be ejected right away.",
-    rm_title: "What it removes", rm_lead: "Only the hidden files macOS creates when you copy files from a Mac — the ones that show up as games that won't launch.",
+    hero_sub: "Dotcleaner removes the ._ files, .DS_Store and other hidden files a Mac leaves on SD cards and USB drives — the ghost games on your emulation handheld — and nothing else.",
+    btn_mac: "Download for macOS", btn_win: "Download for Windows", btn_linux: "Download for Linux",
+    trust1: "Games, saves and BIOS never touched", trust2: "5 languages", trust3: "macOS · Windows · Linux · consoles",
+    prob_kicker: "The problem", prob_title: "Ghost games? That's macOS.",
+    prob_lead: "When a Mac copies a file to a card, it adds an invisible ._ twin next to it. Your console lists these twins as games that won't launch. Dotcleaner removes them in seconds.",
+    before: "Before", after: "After", ghost: "won't launch",
+    how_title: "Four steps, nothing deleted by surprise", how_lead: "The same four steps in the app and in the shell version.",
+    s1: "Choose a drive", s1d: "Your SD card or USB drive is listed as soon as it is plugged in.",
+    s2: "Options", s2d: "Windows files, keep the drive's Trash, eject when done.",
+    s3: "Scan", s3d: "See what would be deleted. Nothing is deleted yet.",
+    s4: "Clean", s4d: "Confirm, and the junk is gone. The drive can be ejected right away.",
+    con_title: "Clean right on the console", con_lead: "No computer needed: copy one file to the card and launch it from the Ports menu. A simple text screen shows each step — it works on every firmware.",
+    con_s1: "Copy <b>Dotcleaner.sh</b> into the <b>ports</b> folder of the card (on Onion: the <b>Dotcleaner</b> folder into <b>App</b>).",
+    con_s2: "Launch <b>Ports → Dotcleaner</b> (Apps on Onion).", con_s3: "Read the result: it goes back to the menu by itself.",
+    con_dl: "Download for consoles", guide: "Guide",
+    con_note: "On Knulli and Batocera the steps also show as notifications. A dotcleaner.log file is written next to the launcher.",
+    rm_kicker: "The list", rm_title: "What it removes", rm_lead: "Only the hidden files macOS creates when you copy files from a Mac — nothing else, ever.",
     rm_win: "* Windows files only when the Windows option is ticked.",
-    safe_title: "Safe by design",
-    safe1: "Your ROMs, saves, BIOS, photos and documents are never touched.",
-    safe2: "Links are never followed and other drives are never entered; system and home folders are refused.",
-    safe3: "Safe mode on Mac-formatted drives: only junk files are removed, system folders are kept.",
-    safe4: "Every change is checked by an audit of thousands of cards, file by file, on macOS, Windows and Linux.",
-    pf_title: "For every setup",
-    pf_mac: "App for macOS 13+, Intel and Apple Silicon. Drag it to Applications.",
-    pf_win: "App for Windows 10 and 11. Nothing to install.",
-    pf_shell: "Menu in the terminal for macOS, Linux and the console itself (ArkOS, Knulli, ROCKNIX…).",
-    shell_cmd: "Install the shell version in one line, then type dotcleaner:",
-    copy: "Copy", copied: "Copied!",
-    lang_title: "The app speaks 5 languages", license: "MIT License", report: "Report a problem",
-    pf_linux: "App for Steam Deck, PC and Raspberry Pi, plus the shell version with its menu.",
-    pf_console: "Launcher for the Ports menu (ArkOS, Knulli, ROCKNIX…) and an Onion app: clean the card without a computer.",
-    guide: "Guide",
-    console_screen: "On the console, the launcher shows each step and a progress bar (ArkOS, SSH); notifications on Knulli and Batocera.",
+    safe_title: "Safe by design", safe_lead: "Dotcleaner was built to never lose a single save.",
+    safe1t: "Your files stay", safe1: "ROMs, saves, BIOS, photos and documents are never touched.",
+    safe2t: "Stays on the card", safe2: "Links are never followed and other drives are never entered; system and home folders are refused.",
+    safe3t: "Safe mode", safe3: "On Mac-formatted drives only junk files are removed, system folders are kept.",
+    safe4t: "Audited", safe4: "Every change is checked file by file on thousands of test cards, on macOS, Windows and Linux.",
+    dl_kicker: "Download", pf_title: "For every setup", pf_lead: "Free, no account, no ads. Pick the version for your computer or your console.",
+    pf_mac: "macOS 13+, Intel and Apple Silicon. Drag it to Applications.",
+    pf_win: "Windows 10 and 11. Nothing to install.",
+    pf_linux: "Steam Deck, PC and Raspberry Pi.",
+    pf_console_t: "Consoles", pf_console: "ArkOS, Knulli, ROCKNIX, Onion… Clean the card without a computer.",
+    shell_cmd: "Prefer the terminal? Install the shell version in one line, then type dotcleaner:",
+    copy: "Copy", copied: "Copied!", all_versions: "All versions and checksums",
+    faq_title: "Questions",
+    q1: "Why do ghost games come back?", a1: "macOS adds them again every time it writes to the card. Run Dotcleaner after copying new games — on the console it takes a few seconds.",
+    q2: "My computer says the app can't be opened", a2: "The app is free and not signed with a paid certificate, so you are warned once. <b>macOS:</b> System Settings → Privacy & Security → Open Anyway. <b>Windows:</b> More info → Run anyway.",
+    q3: "Can it delete my games or saves?", a3: "No. It only removes the hidden macOS files listed above. It never follows links, never leaves the drive, and refuses system and home folders.",
+    q4: "Which consoles are supported?", a4: "Every firmware with a Ports menu (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion as an app, and the others over SSH with <code>sh dotcleaner.sh --console</code>.",
+    q5: "Something went wrong", a5: "Open dotcleaner.log next to the launcher and attach it to a report on GitHub — or ask on Discord.",
+    lang_title: "Speaks your language", lang_lead: "The app and this site exist in 5 languages. The console screen stays in simple English so it works on every firmware.",
+    license: "MIT License", report: "Report a problem", changelog: "Changelog",
   },
   fr: {
-    nav_how: "Fonctionnement", nav_safe: "Sécurité",
+    nav_how: "Fonctionnement", nav_consoles: "Sur la console", nav_safe: "Sécurité", nav_faq: "FAQ",
+    pill: "gratuit et open source",
     hero_title: "Débarrassez vos cartes SD des <span>parasites de macOS</span>",
-    hero_sub: "Dotcleaner supprime les fichiers ._, .DS_Store et autres fichiers cachés que macOS ajoute sur les cartes SD et clés USB — les jeux fantômes de votre console d'émulation — et rien d'autre.",
-    btn_mac: "Télécharger pour macOS", btn_win: "Télécharger pour Windows",
-    free: "Gratuit et open source", other: "Linux et consoles", all_versions: "Toutes les versions",
-    how_title: "Comment ça marche", how_lead: "Les mêmes quatre étapes dans l'application et dans la version shell.",
-    s1: "1. Choisir un lecteur", s1d: "Votre carte SD ou clé USB apparaît dès qu'elle est branchée.",
-    s2: "2. Options", s2d: "Fichiers Windows, garder la corbeille du lecteur, éjecter à la fin.",
-    s3: "3. Analyser", s3d: "Voyez ce qui serait supprimé. Rien n'est encore supprimé.",
-    s4: "4. Nettoyer", s4d: "Confirmez, et les parasites disparaissent. Le lecteur peut être éjecté tout de suite.",
-    rm_title: "Ce qui est supprimé", rm_lead: "Seulement les fichiers cachés que macOS crée quand on copie depuis un Mac — ceux qui apparaissent comme des jeux qui ne se lancent pas.",
+    hero_sub: "Dotcleaner supprime les fichiers ._, .DS_Store et autres fichiers cachés qu'un Mac laisse sur les cartes SD et clés USB — les jeux fantômes de votre console d'émulation — et rien d'autre.",
+    btn_mac: "Télécharger pour macOS", btn_win: "Télécharger pour Windows", btn_linux: "Télécharger pour Linux",
+    trust1: "Jeux, sauvegardes et BIOS jamais touchés", trust2: "5 langues", trust3: "macOS · Windows · Linux · consoles",
+    prob_kicker: "Le problème", prob_title: "Des jeux fantômes ? C'est macOS.",
+    prob_lead: "Quand un Mac copie un fichier sur une carte, il ajoute à côté un jumeau invisible en ._. Votre console affiche ces jumeaux comme des jeux qui ne se lancent pas. Dotcleaner les supprime en quelques secondes.",
+    before: "Avant", after: "Après", ghost: "ne se lance pas",
+    how_title: "Quatre étapes, aucune suppression surprise", how_lead: "Les mêmes quatre étapes dans l'application et dans la version shell.",
+    s1: "Choisir un lecteur", s1d: "Votre carte SD ou clé USB apparaît dès qu'elle est branchée.",
+    s2: "Options", s2d: "Fichiers Windows, garder la corbeille du lecteur, éjecter à la fin.",
+    s3: "Analyser", s3d: "Voyez ce qui serait supprimé. Rien n'est encore supprimé.",
+    s4: "Nettoyer", s4d: "Confirmez, et les parasites disparaissent. Le lecteur peut être éjecté tout de suite.",
+    con_title: "Nettoyez directement sur la console", con_lead: "Pas besoin d'ordinateur : copiez un fichier sur la carte et lancez-le depuis le menu Ports. Un écran texte simple affiche chaque étape — il fonctionne sur tous les firmwares.",
+    con_s1: "Copiez <b>Dotcleaner.sh</b> dans le dossier <b>ports</b> de la carte (sur Onion : le dossier <b>Dotcleaner</b> dans <b>App</b>).",
+    con_s2: "Lancez <b>Ports → Dotcleaner</b> (Apps sur Onion).", con_s3: "Lisez le résultat : le retour au menu est automatique.",
+    con_dl: "Télécharger pour consoles", guide: "Guide",
+    con_note: "Sur Knulli et Batocera, les étapes s'affichent aussi en notifications. Un fichier dotcleaner.log est écrit à côté du lanceur.",
+    rm_kicker: "La liste", rm_title: "Ce qui est supprimé", rm_lead: "Seulement les fichiers cachés que macOS crée quand on copie depuis un Mac — rien d'autre, jamais.",
     rm_win: "* Fichiers Windows seulement si l'option Windows est cochée.",
-    safe_title: "Sûr par conception",
-    safe1: "Vos ROM, sauvegardes, BIOS, photos et documents ne sont jamais touchés.",
-    safe2: "Les liens ne sont jamais suivis et les autres lecteurs jamais parcourus ; les dossiers système et personnels sont refusés.",
-    safe3: "Mode sûr sur les disques au format Mac : seuls les fichiers parasites sont supprimés, les dossiers système sont conservés.",
-    safe4: "Chaque modification est vérifiée par un audit de milliers de cartes, fichier par fichier, sur macOS, Windows et Linux.",
-    pf_title: "Pour chaque configuration",
-    pf_mac: "Application pour macOS 13+, Intel et Apple Silicon. Glissez-la dans Applications.",
-    pf_win: "Application pour Windows 10 et 11. Rien à installer.",
-    pf_shell: "Menu dans le terminal pour macOS, Linux et la console elle-même (ArkOS, Knulli, ROCKNIX…).",
-    shell_cmd: "Installez la version shell en une ligne, puis tapez dotcleaner :",
-    copy: "Copier", copied: "Copié !",
-    lang_title: "L'application parle 5 langues", license: "Licence MIT", report: "Signaler un problème",
-    pf_linux: "Application pour Steam Deck, PC et Raspberry Pi, plus la version shell et son menu.",
-    pf_console: "Lanceur pour le menu Ports (ArkOS, Knulli, ROCKNIX…) et application Onion : nettoyez la carte sans ordinateur.",
-    guide: "Guide",
-    console_screen: "Sur la console, le lanceur affiche chaque étape et une barre de progression (ArkOS, SSH) ; des notifications sur Knulli et Batocera.",
+    safe_title: "Sûr par conception", safe_lead: "Dotcleaner a été conçu pour ne jamais perdre une seule sauvegarde.",
+    safe1t: "Vos fichiers restent", safe1: "ROM, sauvegardes, BIOS, photos et documents ne sont jamais touchés.",
+    safe2t: "Reste sur la carte", safe2: "Les liens ne sont jamais suivis et les autres lecteurs jamais parcourus ; les dossiers système et personnels sont refusés.",
+    safe3t: "Mode sûr", safe3: "Sur les disques au format Mac, seuls les fichiers parasites sont supprimés, les dossiers système sont conservés.",
+    safe4t: "Audité", safe4: "Chaque modification est vérifiée fichier par fichier sur des milliers de cartes de test, sous macOS, Windows et Linux.",
+    dl_kicker: "Téléchargement", pf_title: "Pour chaque configuration", pf_lead: "Gratuit, sans compte, sans publicité. Choisissez la version pour votre ordinateur ou votre console.",
+    pf_mac: "macOS 13+, Intel et Apple Silicon. Glissez-la dans Applications.",
+    pf_win: "Windows 10 et 11. Rien à installer.",
+    pf_linux: "Steam Deck, PC et Raspberry Pi.",
+    pf_console_t: "Consoles", pf_console: "ArkOS, Knulli, ROCKNIX, Onion… Nettoyez la carte sans ordinateur.",
+    shell_cmd: "Vous préférez le terminal ? Installez la version shell en une ligne, puis tapez dotcleaner :",
+    copy: "Copier", copied: "Copié !", all_versions: "Toutes les versions et sommes de contrôle",
+    faq_title: "Questions",
+    q1: "Pourquoi les jeux fantômes reviennent-ils ?", a1: "macOS les rajoute à chaque fois qu'il écrit sur la carte. Lancez Dotcleaner après avoir copié de nouveaux jeux — sur la console, ça prend quelques secondes.",
+    q2: "Mon ordinateur dit que l'application ne peut pas être ouverte", a2: "L'application est gratuite et n'est pas signée avec un certificat payant : un avertissement s'affiche une fois. <b>macOS :</b> Réglages système → Confidentialité et sécurité → Ouvrir quand même. <b>Windows :</b> Informations complémentaires → Exécuter quand même.",
+    q3: "Peut-il supprimer mes jeux ou mes sauvegardes ?", a3: "Non. Il supprime seulement les fichiers cachés de macOS listés plus haut. Il ne suit jamais les liens, ne sort jamais du lecteur et refuse les dossiers système et personnels.",
+    q4: "Quelles consoles sont compatibles ?", a4: "Tous les firmwares avec un menu Ports (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion en tant qu'application, et les autres en SSH avec <code>sh dotcleaner.sh --console</code>.",
+    q5: "Quelque chose ne marche pas", a5: "Ouvrez dotcleaner.log à côté du lanceur et joignez-le à un signalement sur GitHub — ou demandez sur Discord.",
+    lang_title: "Parle votre langue", lang_lead: "L'application et ce site existent en 5 langues. L'écran de la console reste en anglais simple pour fonctionner sur tous les firmwares.",
+    license: "Licence MIT", report: "Signaler un problème", changelog: "Nouveautés",
   },
   es: {
-    nav_how: "Cómo funciona", nav_safe: "Seguridad",
+    nav_how: "Cómo funciona", nav_consoles: "En la consola", nav_safe: "Seguridad", nav_faq: "Preguntas",
+    pill: "gratis y de código abierto",
     hero_title: "Limpia tus tarjetas SD de la <span>basura de macOS</span>",
-    hero_sub: "Dotcleaner elimina los archivos ._, .DS_Store y otros archivos ocultos que macOS añade a las tarjetas SD y memorias USB — los juegos fantasma de tu consola de emulación — y nada más.",
-    btn_mac: "Descargar para macOS", btn_win: "Descargar para Windows",
-    free: "Gratis y de código abierto", other: "Linux y consolas", all_versions: "Todas las versiones",
-    how_title: "Cómo funciona", how_lead: "Los mismos cuatro pasos en la app y en la versión shell.",
-    s1: "1. Elige una unidad", s1d: "Tu tarjeta SD o memoria USB aparece en cuanto la conectas.",
-    s2: "2. Opciones", s2d: "Archivos de Windows, conservar la papelera, expulsar al terminar.",
-    s3: "3. Analizar", s3d: "Mira lo que se eliminaría. Todavía no se elimina nada.",
-    s4: "4. Limpiar", s4d: "Confirma y la basura desaparece. La unidad se puede expulsar enseguida.",
-    rm_title: "Qué elimina", rm_lead: "Solo los archivos ocultos que macOS crea al copiar desde un Mac — los que aparecen como juegos que no arrancan.",
+    hero_sub: "Dotcleaner elimina los archivos ._, .DS_Store y otros archivos ocultos que un Mac deja en las tarjetas SD y memorias USB — los juegos fantasma de tu consola de emulación — y nada más.",
+    btn_mac: "Descargar para macOS", btn_win: "Descargar para Windows", btn_linux: "Descargar para Linux",
+    trust1: "Juegos, partidas y BIOS intactos", trust2: "5 idiomas", trust3: "macOS · Windows · Linux · consolas",
+    prob_kicker: "El problema", prob_title: "¿Juegos fantasma? Es cosa de macOS.",
+    prob_lead: "Cuando un Mac copia un archivo a una tarjeta, añade a su lado un gemelo invisible ._. Tu consola muestra esos gemelos como juegos que no arrancan. Dotcleaner los elimina en segundos.",
+    before: "Antes", after: "Después", ghost: "no arranca",
+    how_title: "Cuatro pasos, nada se borra por sorpresa", how_lead: "Los mismos cuatro pasos en la app y en la versión shell.",
+    s1: "Elige una unidad", s1d: "Tu tarjeta SD o memoria USB aparece en cuanto la conectas.",
+    s2: "Opciones", s2d: "Archivos de Windows, conservar la papelera, expulsar al terminar.",
+    s3: "Analizar", s3d: "Mira lo que se eliminaría. Todavía no se elimina nada.",
+    s4: "Limpiar", s4d: "Confirma y la basura desaparece. La unidad se puede expulsar enseguida.",
+    con_title: "Limpia directamente en la consola", con_lead: "Sin ordenador: copia un archivo a la tarjeta y ábrelo desde el menú Ports. Una pantalla de texto sencilla muestra cada paso — funciona en todos los firmwares.",
+    con_s1: "Copia <b>Dotcleaner.sh</b> en la carpeta <b>ports</b> de la tarjeta (en Onion: la carpeta <b>Dotcleaner</b> en <b>App</b>).",
+    con_s2: "Abre <b>Ports → Dotcleaner</b> (Apps en Onion).", con_s3: "Lee el resultado: vuelve solo al menú.",
+    con_dl: "Descargar para consolas", guide: "Guía",
+    con_note: "En Knulli y Batocera los pasos también aparecen como notificaciones. Se escribe un archivo dotcleaner.log junto al lanzador.",
+    rm_kicker: "La lista", rm_title: "Qué elimina", rm_lead: "Solo los archivos ocultos que macOS crea al copiar desde un Mac — nada más, nunca.",
     rm_win: "* Archivos de Windows solo si la opción de Windows está marcada.",
-    safe_title: "Seguro por diseño",
-    safe1: "Tus juegos, partidas guardadas, BIOS, fotos y documentos nunca se tocan.",
-    safe2: "Nunca sigue enlaces ni entra en otras unidades; rechaza las carpetas del sistema y personales.",
-    safe3: "Modo seguro en unidades con formato Mac: solo se eliminan los archivos basura, las carpetas del sistema se conservan.",
-    safe4: "Cada cambio se verifica con una auditoría de miles de tarjetas, archivo por archivo, en macOS, Windows y Linux.",
-    pf_title: "Para cada equipo",
-    pf_mac: "App para macOS 13+, Intel y Apple Silicon. Arrástrala a Aplicaciones.",
-    pf_win: "App para Windows 10 y 11. No hay que instalar nada.",
-    pf_shell: "Menú en el terminal para macOS, Linux y la propia consola (ArkOS, Knulli, ROCKNIX…).",
-    shell_cmd: "Instala la versión shell en una línea y escribe dotcleaner:",
-    copy: "Copiar", copied: "¡Copiado!",
-    lang_title: "La app habla 5 idiomas", license: "Licencia MIT", report: "Informar de un problema",
-    pf_linux: "App para Steam Deck, PC y Raspberry Pi, además de la versión shell con su menú.",
-    pf_console: "Lanzador para el menú Ports (ArkOS, Knulli, ROCKNIX…) y app para Onion: limpia la tarjeta sin ordenador.",
-    guide: "Guía",
-    console_screen: "En la consola, el lanzador muestra cada paso y una barra de progreso (ArkOS, SSH); notificaciones en Knulli y Batocera.",
+    safe_title: "Seguro por diseño", safe_lead: "Dotcleaner se creó para no perder jamás una sola partida guardada.",
+    safe1t: "Tus archivos se quedan", safe1: "ROMs, partidas, BIOS, fotos y documentos nunca se tocan.",
+    safe2t: "No sale de la tarjeta", safe2: "Nunca sigue enlaces ni entra en otras unidades; rechaza las carpetas del sistema y personales.",
+    safe3t: "Modo seguro", safe3: "En unidades con formato Mac solo se eliminan los archivos basura; las carpetas del sistema se conservan.",
+    safe4t: "Auditado", safe4: "Cada cambio se verifica archivo por archivo en miles de tarjetas de prueba, en macOS, Windows y Linux.",
+    dl_kicker: "Descarga", pf_title: "Para cada equipo", pf_lead: "Gratis, sin cuenta y sin anuncios. Elige la versión para tu ordenador o tu consola.",
+    pf_mac: "macOS 13+, Intel y Apple Silicon. Arrástrala a Aplicaciones.",
+    pf_win: "Windows 10 y 11. No hay que instalar nada.",
+    pf_linux: "Steam Deck, PC y Raspberry Pi.",
+    pf_console_t: "Consolas", pf_console: "ArkOS, Knulli, ROCKNIX, Onion… Limpia la tarjeta sin ordenador.",
+    shell_cmd: "¿Prefieres el terminal? Instala la versión shell en una línea y escribe dotcleaner:",
+    copy: "Copiar", copied: "¡Copiado!", all_versions: "Todas las versiones y sumas de comprobación",
+    faq_title: "Preguntas",
+    q1: "¿Por qué vuelven los juegos fantasma?", a1: "macOS los vuelve a crear cada vez que escribe en la tarjeta. Usa Dotcleaner después de copiar juegos nuevos — en la consola tarda unos segundos.",
+    q2: "Mi ordenador dice que la app no se puede abrir", a2: "La app es gratuita y no está firmada con un certificado de pago, así que verás un aviso una vez. <b>macOS:</b> Ajustes del Sistema → Privacidad y seguridad → Abrir igualmente. <b>Windows:</b> Más información → Ejecutar de todas formas.",
+    q3: "¿Puede borrar mis juegos o partidas?", a3: "No. Solo elimina los archivos ocultos de macOS de la lista. Nunca sigue enlaces, nunca sale de la unidad y rechaza las carpetas del sistema y personales.",
+    q4: "¿Qué consolas son compatibles?", a4: "Todos los firmwares con menú Ports (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion como app, y los demás por SSH con <code>sh dotcleaner.sh --console</code>.",
+    q5: "Algo ha fallado", a5: "Abre dotcleaner.log junto al lanzador y adjúntalo a un informe en GitHub — o pregunta en Discord.",
+    lang_title: "Habla tu idioma", lang_lead: "La app y este sitio existen en 5 idiomas. La pantalla de la consola se queda en inglés sencillo para funcionar en todos los firmwares.",
+    license: "Licencia MIT", report: "Informar de un problema", changelog: "Novedades",
   },
   zh: {
-    nav_how: "使用方法", nav_safe: "安全性",
+    nav_how: "使用方法", nav_consoles: "在掌机上", nav_safe: "安全性", nav_faq: "常见问题",
+    pill: "免费且开源",
     hero_title: "清除 SD 卡上的 <span>macOS 垃圾文件</span>",
-    hero_sub: "Dotcleaner 会删除 macOS 在 SD 卡和 U 盘上添加的 ._ 文件、.DS_Store 等隐藏文件——也就是游戏掌机上无法启动的幽灵游戏——其他内容一概不碰。",
-    btn_mac: "下载 macOS 版", btn_win: "下载 Windows 版",
-    free: "免费且开源", other: "Linux 和掌机", all_versions: "所有版本",
-    how_title: "使用方法", how_lead: "应用和命令行版本都是同样的四个步骤。",
-    s1: "1. 选择磁盘", s1d: "插入 SD 卡或 U 盘后，它会立即出现在列表中。",
-    s2: "2. 选项", s2d: "Windows 文件、保留废纸篓、完成后推出。",
-    s3: "3. 扫描", s3d: "查看将被删除的内容，此时不会删除任何东西。",
-    s4: "4. 清理", s4d: "确认后垃圾文件即被删除，磁盘可以立即推出。",
-    rm_title: "会删除什么", rm_lead: "只删除从 Mac 复制文件时 macOS 创建的隐藏文件——就是那些显示为无法启动的游戏的文件。",
+    hero_sub: "Dotcleaner 会删除 Mac 在 SD 卡和 U 盘上留下的 ._ 文件、.DS_Store 等隐藏文件——也就是游戏掌机上无法启动的幽灵游戏——其他内容一概不碰。",
+    btn_mac: "下载 macOS 版", btn_win: "下载 Windows 版", btn_linux: "下载 Linux 版",
+    trust1: "游戏、存档和 BIOS 绝不改动", trust2: "5 种语言", trust3: "macOS · Windows · Linux · 掌机",
+    prob_kicker: "问题所在", prob_title: "幽灵游戏？都是 macOS 惹的祸。",
+    prob_lead: "Mac 每复制一个文件到存储卡，就会在旁边加一个看不见的 ._ 副本。掌机会把这些副本显示成无法启动的游戏。Dotcleaner 几秒钟就能把它们清掉。",
+    before: "清理前", after: "清理后", ghost: "无法启动",
+    how_title: "四个步骤，绝不意外删除", how_lead: "应用和命令行版本都是同样的四个步骤。",
+    s1: "选择磁盘", s1d: "插入 SD 卡或 U 盘后，它会立即出现在列表中。",
+    s2: "选项", s2d: "Windows 文件、保留废纸篓、完成后推出。",
+    s3: "扫描", s3d: "查看将被删除的内容，此时不会删除任何东西。",
+    s4: "清理", s4d: "确认后垃圾文件即被删除，磁盘可以立即推出。",
+    con_title: "直接在掌机上清理", con_lead: "无需电脑：把一个文件复制到存储卡，再从 Ports 菜单启动。简单的文字界面会显示每个步骤——适用于所有固件。",
+    con_s1: "把 <b>Dotcleaner.sh</b> 复制到存储卡的 <b>ports</b> 文件夹（Onion：把 <b>Dotcleaner</b> 文件夹复制到 <b>App</b>）。",
+    con_s2: "启动 <b>Ports → Dotcleaner</b>（Onion 上在 Apps 中）。", con_s3: "查看结果，之后会自动返回菜单。",
+    con_dl: "下载掌机版", guide: "指南",
+    con_note: "在 Knulli 和 Batocera 上，各个步骤也会以通知显示。启动器旁会生成 dotcleaner.log 日志文件。",
+    rm_kicker: "清理列表", rm_title: "会删除什么", rm_lead: "只删除从 Mac 复制文件时 macOS 创建的隐藏文件——绝不删除其他任何内容。",
     rm_win: "* 只有勾选 Windows 选项时才会删除 Windows 文件。",
-    safe_title: "安全设计",
-    safe1: "你的游戏、存档、BIOS、照片和文档绝不会被改动。",
-    safe2: "从不跟随链接，从不进入其他磁盘；拒绝处理系统文件夹和个人文件夹。",
-    safe3: "Mac 格式磁盘使用安全模式：只删除垃圾文件，保留系统文件夹。",
-    safe4: "每次修改都会在 macOS、Windows 和 Linux 上对数千张卡逐个文件进行审核。",
-    pf_title: "适用于各种环境",
-    pf_mac: "适用于 macOS 13 及以上的应用，支持 Intel 和 Apple 芯片，拖到“应用程序”即可。",
-    pf_win: "适用于 Windows 10 和 11 的应用，无需安装。",
-    pf_shell: "终端菜单，适用于 macOS、Linux 以及掌机本身（ArkOS、Knulli、ROCKNIX…）。",
-    shell_cmd: "一行命令安装命令行版本，然后输入 dotcleaner：",
-    copy: "复制", copied: "已复制！",
-    lang_title: "应用支持 5 种语言", license: "MIT 许可证", report: "报告问题",
-    pf_linux: "适用于 Steam Deck、PC 和树莓派的应用，另有带菜单的命令行版本。",
-    pf_console: "适用于 Ports 菜单（ArkOS、Knulli、ROCKNIX…）的启动器和 Onion 应用：无需电脑即可清理存储卡。",
-    guide: "指南",
-    console_screen: "在掌机上，启动器会显示每个步骤和进度条（ArkOS、SSH）；在 Knulli 和 Batocera 上以通知显示。",
+    safe_title: "安全设计", safe_lead: "Dotcleaner 的设计目标是绝不丢失任何一个存档。",
+    safe1t: "文件安然无恙", safe1: "游戏、存档、BIOS、照片和文档绝不会被改动。",
+    safe2t: "只在存储卡内", safe2: "从不跟随链接，从不进入其他磁盘；拒绝处理系统文件夹和个人文件夹。",
+    safe3t: "安全模式", safe3: "在 Mac 格式的磁盘上只删除垃圾文件，保留系统文件夹。",
+    safe4t: "经过审核", safe4: "每次修改都会在 macOS、Windows 和 Linux 上用数千张测试卡逐个文件检查。",
+    dl_kicker: "下载", pf_title: "适用于各种环境", pf_lead: "免费、无需账号、没有广告。选择适合你的电脑或掌机的版本。",
+    pf_mac: "macOS 13 及以上，支持 Intel 和 Apple 芯片，拖到“应用程序”即可。",
+    pf_win: "Windows 10 和 11，无需安装。",
+    pf_linux: "Steam Deck、PC 和树莓派。",
+    pf_console_t: "掌机", pf_console: "ArkOS、Knulli、ROCKNIX、Onion…… 无需电脑即可清理存储卡。",
+    shell_cmd: "更喜欢终端？一行命令安装命令行版本，然后输入 dotcleaner：",
+    copy: "复制", copied: "已复制！", all_versions: "所有版本和校验值",
+    faq_title: "常见问题",
+    q1: "为什么幽灵游戏又出现了？", a1: "macOS 每次写入存储卡都会重新生成它们。复制新游戏后运行一次 Dotcleaner 即可——在掌机上只需几秒钟。",
+    q2: "电脑提示无法打开应用", a2: "本应用免费，未使用付费证书签名，所以首次会有提示。<b>macOS：</b>系统设置 → 隐私与安全性 → 仍要打开。<b>Windows：</b>更多信息 → 仍要运行。",
+    q3: "会删除我的游戏或存档吗？", a3: "不会。它只删除上面列出的 macOS 隐藏文件，从不跟随链接，从不离开所选磁盘，并拒绝处理系统和个人文件夹。",
+    q4: "支持哪些掌机？", a4: "所有带 Ports 菜单的固件（ArkOS、dArkOS、Knulli、Batocera、ROCKNIX、AmberELEC、JELOS、EmuELEC），Onion 以应用形式支持，其他固件可通过 SSH 运行 <code>sh dotcleaner.sh --console</code>。",
+    q5: "出现了问题", a5: "打开启动器旁的 dotcleaner.log，附在 GitHub 的问题报告中——或者到 Discord 提问。",
+    lang_title: "支持你的语言", lang_lead: "应用和本网站提供 5 种语言。掌机界面使用简单英文，以便在所有固件上正常显示。",
+    license: "MIT 许可证", report: "报告问题", changelog: "更新日志",
   },
   hi: {
-    nav_how: "यह कैसे काम करता है", nav_safe: "सुरक्षा",
+    nav_how: "यह कैसे काम करता है", nav_consoles: "कंसोल पर", nav_safe: "सुरक्षा", nav_faq: "सवाल-जवाब",
+    pill: "मुफ़्त और ओपन सोर्स",
     hero_title: "अपने SD कार्ड से <span>macOS की बेकार फ़ाइलें</span> साफ़ करें",
-    hero_sub: "Dotcleaner उन ._ फ़ाइलों, .DS_Store और दूसरी छिपी फ़ाइलों को हटाता है जिन्हें macOS SD कार्ड और USB ड्राइव पर जोड़ देता है — आपके इम्यूलेशन कंसोल के नकली गेम — और कुछ नहीं।",
-    btn_mac: "macOS के लिए डाउनलोड करें", btn_win: "Windows के लिए डाउनलोड करें",
-    free: "मुफ़्त और ओपन सोर्स", other: "Linux और कंसोल", all_versions: "सभी संस्करण",
-    how_title: "यह कैसे काम करता है", how_lead: "ऐप और शेल संस्करण दोनों में वही चार चरण।",
-    s1: "1. ड्राइव चुनें", s1d: "SD कार्ड या USB ड्राइव लगाते ही वह सूची में दिख जाती है।",
-    s2: "2. विकल्प", s2d: "Windows फ़ाइलें, ड्राइव का ट्रैश रखें, काम पूरा होने पर इजेक्ट करें।",
-    s3: "3. स्कैन करें", s3d: "देखें कि क्या हटेगा। अभी कुछ नहीं हटाया जाता।",
-    s4: "4. साफ़ करें", s4d: "पुष्टि करें और बेकार फ़ाइलें हट जाती हैं। ड्राइव तुरंत इजेक्ट हो सकती है।",
-    rm_title: "क्या हटाया जाता है", rm_lead: "केवल वे छिपी फ़ाइलें जो Mac से कॉपी करते समय macOS बनाता है — वही जो न चलने वाले गेम की तरह दिखती हैं।",
+    hero_sub: "Dotcleaner उन ._ फ़ाइलों, .DS_Store और दूसरी छिपी फ़ाइलों को हटाता है जो Mac SD कार्ड और USB ड्राइव पर छोड़ देता है — आपके इम्यूलेशन कंसोल के नकली गेम — और कुछ नहीं।",
+    btn_mac: "macOS के लिए डाउनलोड करें", btn_win: "Windows के लिए डाउनलोड करें", btn_linux: "Linux के लिए डाउनलोड करें",
+    trust1: "गेम, सेव और BIOS कभी नहीं छुए जाते", trust2: "5 भाषाएँ", trust3: "macOS · Windows · Linux · कंसोल",
+    prob_kicker: "समस्या", prob_title: "नकली गेम? यह macOS की वजह से है।",
+    prob_lead: "जब Mac किसी कार्ड पर फ़ाइल कॉपी करता है, तो उसके पास एक छिपी ._ जुड़वाँ फ़ाइल बना देता है। कंसोल इन्हें ऐसे गेम की तरह दिखाता है जो चलते नहीं। Dotcleaner इन्हें कुछ सेकंड में हटा देता है।",
+    before: "पहले", after: "बाद में", ghost: "नहीं चलता",
+    how_title: "चार चरण, अचानक कुछ नहीं हटता", how_lead: "ऐप और शेल संस्करण दोनों में वही चार चरण।",
+    s1: "ड्राइव चुनें", s1d: "SD कार्ड या USB ड्राइव लगाते ही वह सूची में दिख जाती है।",
+    s2: "विकल्प", s2d: "Windows फ़ाइलें, ड्राइव का ट्रैश रखें, काम पूरा होने पर इजेक्ट करें।",
+    s3: "स्कैन करें", s3d: "देखें कि क्या हटेगा। अभी कुछ नहीं हटाया जाता।",
+    s4: "साफ़ करें", s4d: "पुष्टि करें और बेकार फ़ाइलें हट जाती हैं। ड्राइव तुरंत इजेक्ट हो सकती है।",
+    con_title: "सीधे कंसोल पर साफ़ करें", con_lead: "कंप्यूटर की ज़रूरत नहीं: एक फ़ाइल कार्ड पर कॉपी करें और Ports मेन्यू से चलाएँ। एक सरल टेक्स्ट स्क्रीन हर चरण दिखाती है — यह हर फ़र्मवेयर पर चलती है।",
+    con_s1: "<b>Dotcleaner.sh</b> को कार्ड के <b>ports</b> फ़ोल्डर में कॉपी करें (Onion पर: <b>Dotcleaner</b> फ़ोल्डर को <b>App</b> में)।",
+    con_s2: "<b>Ports → Dotcleaner</b> चलाएँ (Onion पर Apps में)।", con_s3: "नतीजा पढ़ें: यह अपने आप मेन्यू पर लौट आता है।",
+    con_dl: "कंसोल के लिए डाउनलोड करें", guide: "गाइड",
+    con_note: "Knulli और Batocera पर चरण सूचनाओं के रूप में भी दिखते हैं। लॉन्चर के पास dotcleaner.log फ़ाइल लिखी जाती है।",
+    rm_kicker: "सूची", rm_title: "क्या हटाया जाता है", rm_lead: "केवल वे छिपी फ़ाइलें जो Mac से कॉपी करते समय macOS बनाता है — और कभी कुछ नहीं।",
     rm_win: "* Windows फ़ाइलें केवल तभी, जब Windows विकल्प चुना गया हो।",
-    safe_title: "सुरक्षा को ध्यान में रखकर बनाया गया",
-    safe1: "आपके गेम, सेव, BIOS, फ़ोटो और दस्तावेज़ कभी नहीं छुए जाते।",
-    safe2: "लिंक कभी फ़ॉलो नहीं किए जाते और दूसरी ड्राइव में कभी नहीं जाया जाता; सिस्टम और होम फ़ोल्डर अस्वीकार किए जाते हैं।",
-    safe3: "Mac फ़ॉर्मेट वाली ड्राइव पर सुरक्षित मोड: केवल बेकार फ़ाइलें हटती हैं, सिस्टम फ़ोल्डर रखे जाते हैं।",
-    safe4: "हर बदलाव की जाँच macOS, Windows और Linux पर हज़ारों कार्ड के फ़ाइल-दर-फ़ाइल ऑडिट से होती है।",
-    pf_title: "हर सेटअप के लिए",
-    pf_mac: "macOS 13+ के लिए ऐप, Intel और Apple Silicon दोनों। इसे Applications में खींचें।",
-    pf_win: "Windows 10 और 11 के लिए ऐप। कुछ इंस्टॉल नहीं करना।",
-    pf_shell: "macOS, Linux और खुद कंसोल (ArkOS, Knulli, ROCKNIX…) के लिए टर्मिनल में मेन्यू।",
-    shell_cmd: "शेल संस्करण एक लाइन में इंस्टॉल करें, फिर dotcleaner टाइप करें:",
-    copy: "कॉपी करें", copied: "कॉपी हो गया!",
-    lang_title: "ऐप 5 भाषाएँ बोलता है", license: "MIT लाइसेंस", report: "समस्या बताएँ",
-    pf_linux: "Steam Deck, PC और Raspberry Pi के लिए ऐप, साथ में मेन्यू वाला शेल संस्करण।",
-    pf_console: "Ports मेन्यू (ArkOS, Knulli, ROCKNIX…) के लिए लॉन्चर और Onion ऐप: कंप्यूटर के बिना कार्ड साफ़ करें।",
-    guide: "गाइड",
-    console_screen: "कंसोल पर लॉन्चर हर चरण और प्रगति पट्टी दिखाता है (ArkOS, SSH); Knulli और Batocera पर सूचनाएँ दिखती हैं।",
+    safe_title: "सुरक्षा को ध्यान में रखकर बनाया गया", safe_lead: "Dotcleaner इस तरह बनाया गया है कि एक भी सेव कभी न खोए।",
+    safe1t: "आपकी फ़ाइलें सुरक्षित", safe1: "ROM, सेव, BIOS, फ़ोटो और दस्तावेज़ कभी नहीं छुए जाते।",
+    safe2t: "कार्ड के अंदर ही", safe2: "लिंक कभी फ़ॉलो नहीं किए जाते और दूसरी ड्राइव में कभी नहीं जाया जाता; सिस्टम और होम फ़ोल्डर अस्वीकार किए जाते हैं।",
+    safe3t: "सुरक्षित मोड", safe3: "Mac फ़ॉर्मेट वाली ड्राइव पर केवल बेकार फ़ाइलें हटती हैं, सिस्टम फ़ोल्डर रखे जाते हैं।",
+    safe4t: "जाँचा-परखा", safe4: "हर बदलाव की जाँच macOS, Windows और Linux पर हज़ारों टेस्ट कार्ड पर फ़ाइल-दर-फ़ाइल होती है।",
+    dl_kicker: "डाउनलोड", pf_title: "हर सेटअप के लिए", pf_lead: "मुफ़्त, बिना खाते, बिना विज्ञापन। अपने कंप्यूटर या कंसोल के लिए संस्करण चुनें।",
+    pf_mac: "macOS 13+, Intel और Apple Silicon दोनों। इसे Applications में खींचें।",
+    pf_win: "Windows 10 और 11। कुछ इंस्टॉल नहीं करना।",
+    pf_linux: "Steam Deck, PC और Raspberry Pi।",
+    pf_console_t: "कंसोल", pf_console: "ArkOS, Knulli, ROCKNIX, Onion… कंप्यूटर के बिना कार्ड साफ़ करें।",
+    shell_cmd: "टर्मिनल पसंद है? शेल संस्करण एक लाइन में इंस्टॉल करें, फिर dotcleaner टाइप करें:",
+    copy: "कॉपी करें", copied: "कॉपी हो गया!", all_versions: "सभी संस्करण और चेकसम",
+    faq_title: "सवाल",
+    q1: "नकली गेम फिर क्यों आ जाते हैं?", a1: "macOS हर बार कार्ड पर लिखते समय इन्हें फिर बना देता है। नए गेम कॉपी करने के बाद Dotcleaner चलाएँ — कंसोल पर इसमें कुछ ही सेकंड लगते हैं।",
+    q2: "मेरा कंप्यूटर कहता है कि ऐप नहीं खुल सकता", a2: "ऐप मुफ़्त है और किसी पेड सर्टिफ़िकेट से साइन नहीं है, इसलिए एक बार चेतावनी दिखती है। <b>macOS:</b> System Settings → Privacy & Security → Open Anyway। <b>Windows:</b> More info → Run anyway।",
+    q3: "क्या यह मेरे गेम या सेव हटा सकता है?", a3: "नहीं। यह केवल ऊपर सूचीबद्ध macOS की छिपी फ़ाइलें हटाता है। यह लिंक फ़ॉलो नहीं करता, ड्राइव से बाहर नहीं जाता और सिस्टम व होम फ़ोल्डर अस्वीकार करता है।",
+    q4: "कौन से कंसोल समर्थित हैं?", a4: "Ports मेन्यू वाले सभी फ़र्मवेयर (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion ऐप के रूप में, और बाकी SSH पर <code>sh dotcleaner.sh --console</code> से।",
+    q5: "कुछ गड़बड़ हो गई", a5: "लॉन्चर के पास dotcleaner.log खोलें और उसे GitHub पर रिपोर्ट के साथ जोड़ें — या Discord पर पूछें।",
+    lang_title: "आपकी भाषा में", lang_lead: "ऐप और यह साइट 5 भाषाओं में हैं। कंसोल स्क्रीन सरल अंग्रेज़ी में रहती है ताकि हर फ़र्मवेयर पर चले।",
+    license: "MIT लाइसेंस", report: "समस्या बताएँ", changelog: "बदलाव",
   },
 };
 
 const sel = document.getElementById("lang");
+const langButtons = document.querySelectorAll("#langs button");
 function apply(lang) {
   const t = T[lang] || T.en;
   document.documentElement.lang = lang;
@@ -352,6 +621,7 @@ function apply(lang) {
   });
   document.getElementById("shot").src = "app-" + lang + ".png";
   sel.value = lang;
+  langButtons.forEach(b => b.classList.toggle("on", b.dataset.l === lang));
   try { localStorage.setItem("dotcleaner-lang", lang); } catch (e) {}
 }
 let saved = null;
@@ -359,17 +629,30 @@ try { saved = localStorage.getItem("dotcleaner-lang"); } catch (e) {}
 const nav = (navigator.language || "en").slice(0, 2).toLowerCase();
 apply(saved && T[saved] ? saved : (T[nav] ? nav : "en"));
 sel.addEventListener("change", () => apply(sel.value));
+langButtons.forEach(b => b.addEventListener("click", () => apply(b.dataset.l)));
 
 // Put the download for the visitor's system first
-const ua = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent;
-if (/win/i.test(ua)) {
-  const mac = document.getElementById("btn-mac"), win = document.getElementById("btn-win");
-  win.classList.add("primary"); mac.classList.remove("primary");
-  win.parentNode.insertBefore(win, mac);
+const ua = [(navigator.userAgentData && navigator.userAgentData.platform) || "", navigator.platform || "", navigator.userAgent].join(" ");
+const mac = document.getElementById("btn-mac"), win = document.getElementById("btn-win"), lin = document.getElementById("btn-linux");
+function first(btn, card) {
+  [mac, win, lin].forEach(b => b.classList.remove("primary"));
+  btn.classList.add("primary"); btn.hidden = false;
+  btn.parentNode.insertBefore(btn, btn.parentNode.firstChild);
+  if (card) document.getElementById(card).classList.add("here");
 }
+if (/android|iphone|ipad/i.test(ua)) { /* phone: keep the default order */ }
+else if (/win/i.test(ua)) first(win, "card-win");
+else if (/linux|x11|cros/i.test(ua)) { first(lin, "card-linux"); win.hidden = true; }
+else document.getElementById("card-mac").classList.add("here");
+
+// Show the real latest version (falls back to the one written above)
+fetch("https://api.github.com/repos/Shadowix84/Dotcleaner-Multi-Software/releases/latest")
+  .then(r => r.ok ? r.json() : null)
+  .then(j => { if (j && /^v?\d+\.\d+/.test(j.tag_name || "")) document.getElementById("ver").textContent = "v" + j.tag_name.replace(/^v/, ""); })
+  .catch(() => {});
 
 document.getElementById("copy").addEventListener("click", async e => {
-  const lang = sel.value, t = T[lang] || T.en;
+  const t = T[sel.value] || T.en;
   try { await navigator.clipboard.writeText(document.getElementById("cmd").textContent); } catch (err) {}
   e.target.textContent = t.copied;
   setTimeout(() => { e.target.textContent = t.copy; }, 1600);

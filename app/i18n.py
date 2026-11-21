@@ -87,6 +87,9 @@ T = {
             "Your games, saves, BIOS, photos and documents are never touched. "
             "On Mac-formatted drives (APFS, HFS+) only junk files are removed."
         ),
+        "found_title": "Junk found",
+        "untouched": "Your games, saves and BIOS are never touched.",
+        "ready": "Choose a drive, then scan it.",
         "about": "Version {version} · MIT License · Shadowix84",
     },
     # ------------------------------------------------------------------- French
@@ -150,6 +153,9 @@ T = {
             "Vos jeux, sauvegardes, BIOS, photos et documents ne sont jamais touchés. "
             "Sur les disques au format Mac (APFS, HFS+), seuls les fichiers parasites sont supprimés."
         ),
+        "found_title": "Parasites trouvés",
+        "untouched": "Vos jeux, sauvegardes et BIOS ne sont jamais touchés.",
+        "ready": "Choisissez un lecteur, puis analysez-le.",
         "about": "Version {version} · Licence MIT · Shadowix84",
     },
     # ------------------------------------------------------------------ Spanish
@@ -213,6 +219,9 @@ T = {
             "Tus juegos, partidas guardadas, BIOS, fotos y documentos nunca se tocan. "
             "En unidades con formato Mac (APFS, HFS+) solo se eliminan los archivos basura."
         ),
+        "found_title": "Basura encontrada",
+        "untouched": "Tus juegos, partidas guardadas y BIOS nunca se tocan.",
+        "ready": "Elige una unidad y analízala.",
         "about": "Versión {version} · Licencia MIT · Shadowix84",
     },
     # ---------------------------------------------------- Chinese (Mandarin, simplified)
@@ -276,6 +285,9 @@ T = {
             "你的游戏、存档、BIOS、照片和文档绝不会被改动。"
             "在 Mac 格式的磁盘（APFS、HFS+）上，只删除垃圾文件。"
         ),
+        "found_title": "发现的垃圾文件",
+        "untouched": "你的游戏、存档和 BIOS 绝不会被改动。",
+        "ready": "请选择一个磁盘，然后扫描。",
         "about": "版本 {version} · MIT 许可证 · Shadowix84",
     },
     # -------------------------------------------------------------------- Hindi
@@ -339,6 +351,9 @@ T = {
             "आपके गेम, सेव, BIOS, फ़ोटो और दस्तावेज़ कभी नहीं छुए जाते। "
             "Mac फ़ॉर्मेट वाली ड्राइव (APFS, HFS+) पर केवल बेकार फ़ाइलें हटाई जाती हैं।"
         ),
+        "found_title": "मिली बेकार फ़ाइलें",
+        "untouched": "आपके गेम, सेव और BIOS कभी नहीं छुए जाते।",
+        "ready": "एक ड्राइव चुनें, फिर उसे स्कैन करें।",
         "about": "संस्करण {version} · MIT लाइसेंस · Shadowix84",
     },
 }

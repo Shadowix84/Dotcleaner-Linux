@@ -2,6 +2,23 @@
 
 All notable changes to dotcleaner.
 
+## [2.3.0] — 2026-11-21
+
+### On the console
+- **Very simple screen that works on every firmware** (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX,
+  AmberELEC, JELOS, Onion, SSH…): plain ASCII lines, at most 40 columns, no colours and no cursor
+  moves — `[1/4] ROM card`, `[2/4] Scan`, `[3/4] Clean` with a progress bar, `[4/4] Done!`.
+
+### Desktop app
+- **New look**: header with the version and the language menu, numbered step cards, result tiles per
+  kind of junk, a real progress bar while cleaning, coloured result banner, and a light and dark theme
+  that follows the system (same look on macOS, Windows and Linux).
+
+### Website
+- Redesigned: download button for your system (macOS, Windows or Linux), a before/after view of the
+  ghost games, a section for cleaning on the console with the supported firmwares, safety cards, FAQ,
+  the latest version shown automatically, and a better layout on phones.
+
 ## [2.2.1] — 2026-11-21
 
 ### Full check of every version

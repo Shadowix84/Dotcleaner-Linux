@@ -95,7 +95,7 @@ def main():
         for code in LANGUAGES:
             w.set_language(code)
             check(f"window switches to {LANGUAGES[code]}", w.scan_btn.text() == T[code]["scan_btn"]
-                  and w.t_drive.text() == T[code]["step_drive"])
+                  and w.t_drive.text() == gui.step_title(T[code]["step_drive"]))
         w.set_language("en")
         check("language is remembered", settings.value("language") == "en")
 

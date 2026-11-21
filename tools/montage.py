@@ -21,6 +21,10 @@ for code in LANGS:
     shutil.copy(path, os.path.join(docs, f"app-{code}.png"))
     shots.append(Image.open(path).convert("RGB"))
 
+done = os.path.join(src, "app-done.png")
+if os.path.exists(done):
+    shutil.copy(done, os.path.join(docs, "app-done.png"))
+
 # 3 + 2 grid, every screenshot scaled to the same width
 w = 600
 scaled = [im.resize((w, round(im.height * w / im.width)), Image.LANCZOS) for im in shots]
