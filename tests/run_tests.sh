@@ -44,7 +44,7 @@ check() {
 # run dotcleaner with English messages and no colours; stdin is not a terminal
 run() {
   # shellcheck disable=SC2086  # SHELL_CMD may be "busybox sh"
-  DOTCLEANER_LANG=en NO_COLOR=1 $SHELL_CMD "$SCRIPT" "$@" $FORCE_ARG </dev/null >"$OUT" 2>&1
+  DOTCLEANER_LANG=en NO_COLOR=1 $SHELL_CMD "$SCRIPT" $FORCE_ARG "$@" </dev/null >"$OUT" 2>&1
   RC=$?
 }
 

@@ -204,9 +204,10 @@ def make_outside(base):
 # ---- Running dotcleaner -------------------------------------------------------
 def run(shell, args):
     env = dict(os.environ, DOTCLEANER_LANG="en", NO_COLOR="1")
-    cmd = shlex.split(shell) + [SCRIPT] + args
+    cmd = shlex.split(shell) + [SCRIPT]
     if platform.system() == "Darwin":
         cmd.append("--force")   # temp folders are on the Mac's own APFS disk
+    cmd += args
     return subprocess.run(cmd, env=env, stdin=subprocess.DEVNULL,
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
