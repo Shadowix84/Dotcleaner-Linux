@@ -32,7 +32,10 @@ RC=0
 DOTCLEANER_FS_TYPE=exfat; export DOTCLEANER_FS_TYPE
 
 ok() { PASS=$((PASS + 1)); printf '  ok    %s\n' "$1"; }
-ko() { FAIL=$((FAIL + 1)); printf '  FAIL  %s\n' "$1"; }
+ko() {
+  FAIL=$((FAIL + 1)); printf '  FAIL  %s\n' "$1"
+  if [ -s "$OUT" ]; then sed -n '1,12s/^/        | /p' "$OUT"; fi    # last output, to debug
+}
 
 # check "description" test-command...
 check() {
@@ -217,7 +220,7 @@ check "-k: junk names inside the Trash kept" eval 'rc_is 0 && exists "$CARD/.Tra
 
 # --- Mac-formatted drives: safe mode ---------------------------------------------------
 make_card
-DOTCLEANER_FS_TYPE=apfs run -y "$CARD"
+DOTCLEANER_FS_TYPE=apfs; run -y "$CARD"; DOTCLEANER_FS_TYPE=exfat   # (no "VAR=x func": it sticks in some shells)
 check "Mac disk: safe mode announced"       eval 'rc_is 0 && out_has "safe mode"'
 check "Mac disk: junk files removed"        eval 'missing "$CARD/roms/gba/._Pokemon Emerald.gba" && missing "$CARD/roms/gba/.DS_Store" && missing "$CARD/.apdisk"'
 check "Mac disk: __MACOSX removed"          missing "$CARD/__MACOSX"
@@ -250,7 +253,7 @@ check "no --lang option any more -> exit 2" rc_is 2
 
 # --- Old BusyBox without "find -exec ... {} +" ---------------------------------------------
 make_card
-DOTCLEANER_NO_EXEC_PLUS=1 run -y "$CARD"
+DOTCLEANER_NO_EXEC_PLUS=1; export DOTCLEANER_NO_EXEC_PLUS; run -y "$CARD"; unset DOTCLEANER_NO_EXEC_PLUS
 check "fallback for old find: junk deleted"  eval 'rc_is 0 && junk_gone && keep_list'
 
 # --- Console mode: launcher started from the console menu (no keyboard, no terminal) ------
