@@ -2,6 +2,18 @@
 
 All notable changes to dotcleaner.
 
+## [2.2.0] — 2026-11-21
+
+### On the console
+- **The console launcher now shows what is happening**: a full-screen view on ArkOS-like firmwares and
+  over SSH, with the 4 steps (find the card, scan, clean, done), a **progress bar** while cleaning, the
+  number of items per kind, and the result; it goes back to the menu after 8 seconds.
+- Knulli / Batocera: a notification at each step (scanning, cleaning, done); Onion: a message box.
+- The log (`dotcleaner.log`) lists the card, what was found and what was deleted.
+
+### Tests
+- The deletion audit now also checks the console launcher, file by file (including old BusyBox).
+
 ## [2.1.0] — 2026-11-21
 
 ### On the console

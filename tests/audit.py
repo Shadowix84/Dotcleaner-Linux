@@ -22,6 +22,8 @@ match exactly what is then deleted.
 Both engines are audited against the same referee:
   --engine sh      dotcleaner.sh (macOS, Linux, BusyBox)        [default]
   --engine python  app/dotcleaner_core.py (the .dmg / .exe app; also on Windows)
+  --engine console console/Dotcleaner.sh, the console launcher with its progress
+                   screen (default options and safe mode; no dry run there)
 
 Usage: python3 tests/audit.py [--engine sh|python] [--shell "sh"] [--cards 200] [--seed 1]
 """
@@ -38,6 +40,7 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "..", "dotcleaner.sh")
 CORE = os.path.join(HERE, "..", "app", "dotcleaner_core.py")
+LAUNCHER = os.path.join(HERE, "..", "console", "Dotcleaner.sh")
 WINDOWS = os.name == "nt"
 
 # ---- Referee: the rules, re-implemented independently -----------------------
@@ -225,7 +228,11 @@ ENGINE = "sh"
 def run(shell, args, safe_mode=False):
     env = dict(os.environ, NO_COLOR="1", PYTHONIOENCODING="utf-8",
                DOTCLEANER_FS_TYPE="apfs" if safe_mode else "exfat")
-    if ENGINE == "python":
+    if ENGINE == "console":
+        env.update(DOTCLEANER_CONSOLE_ROOT=args[-1], DOTCLEANER_NO_TTY="1",
+                   DOTCLEANER_LOG=os.path.join(os.path.dirname(args[-1]), "console.log"))
+        cmd = shlex.split(shell) + [LAUNCHER]
+    elif ENGINE == "python":
         cmd = [sys.executable, CORE] + args
     else:
         cmd = shlex.split(shell) + [SCRIPT] + args
@@ -257,7 +264,11 @@ def check_card(shell, root, outside, opts, label, failures, stats):
     must_go, must_list = referee(root, windows, keep, safe)
 
     # 1) the dry run lists exactly the referee's items, and deletes nothing
-    rc, listed = dry_run_list(shell, root, opts, safe)
+    if ENGINE == "console":                         # no dry run in console mode
+        rc, listed = 0, must_list
+        before = all_paths(root)
+    else:
+        rc, listed = dry_run_list(shell, root, opts, safe)
     has_newline = any("\n" in p for p in must_list)
     if rc != 0:
         failures.append(f"{label}: dry run exit code {rc}")
@@ -297,7 +308,7 @@ def main():
     ap.add_argument("--shell", default="sh")
     ap.add_argument("--cards", type=int, default=200)
     ap.add_argument("--seed", type=int, default=1)
-    ap.add_argument("--engine", choices=["sh", "python"], default="sh")
+    ap.add_argument("--engine", choices=["sh", "python", "console"], default="sh")
     a = ap.parse_args()
     global ENGINE
     ENGINE = a.engine
@@ -306,6 +317,8 @@ def main():
     failures = []
     stats = {"cards": 0, "paths": 0, "kept": 0, "deleted": 0}
     variants = [[], ["-w"], ["-k"], ["-w", "-k"], ["safe"], ["safe", "-w"]]
+    if a.engine == "console":
+        variants = [[], ["safe"]]                   # the launcher has no options
 
     base = os.path.realpath(tempfile.mkdtemp(prefix="dotcleaner-audit."))
     try:
@@ -329,7 +342,7 @@ def main():
     finally:
         shutil.rmtree(base, ignore_errors=True)
 
-    print(f"engine: {a.engine if a.engine == 'python' else 'sh (' + a.shell + ')'} | cards: {stats['cards']} | paths checked: {stats['paths']} "
+    print(f"engine: {a.engine if a.engine != 'sh' else 'sh (' + a.shell + ')'} | cards: {stats['cards']} | paths checked: {stats['paths']} "
           f"| must keep: {stats['kept']} | must delete: {stats['deleted']}")
     if failures:
         print(f"\n{len(failures)} FAILURE(S):")

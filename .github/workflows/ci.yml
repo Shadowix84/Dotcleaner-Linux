@@ -50,6 +50,8 @@ jobs:
         run: python3 tests/audit.py --shell sh --cards 300 --seed ${{ github.run_number }}
       - name: Deletion audit (bash)
         run: python3 tests/audit.py --shell bash --cards 300 --seed 7${{ github.run_number }}
+      - name: Deletion audit (console launcher with progress screen)
+        run: python3 tests/audit.py --engine console --shell sh --cards 200 --seed 5${{ github.run_number }}
       - name: Real exFAT / FAT32 cards (macOS only)
         if: runner.os == 'macOS'
         run: sh tests/macos_card.sh
@@ -70,6 +72,7 @@ jobs:
         run: |
           BB=$(command -v busybox)
           PATH="$RUNNER_TEMP/bb:$PATH" python3 tests/audit.py --shell "$BB sh" --cards 300 --seed 9${{ github.run_number }}
+          PATH="$RUNNER_TEMP/bb:$PATH" python3 tests/audit.py --engine console --shell "$BB sh" --cards 150 --seed 3${{ github.run_number }}
 
   shells:
     name: Tests (other shells)
