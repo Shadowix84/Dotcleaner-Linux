@@ -1,7 +1,7 @@
 name: Apps (.dmg / .exe)
 
 # Tests the Python engine and the desktop app on macOS, Windows and Linux,
-# then builds dotcleaner-x.y.z-macos.dmg and dotcleaner-x.y.z-windows.exe.
+# then builds Dotcleaner-macOS.dmg, Dotcleaner-Windows.exe and the Linux apps.
 # The built files are available under "Artifacts" on each run, and are
 # attached to the GitHub release by release.yml.
 

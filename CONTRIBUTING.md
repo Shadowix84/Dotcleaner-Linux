@@ -15,7 +15,8 @@ Open an [issue](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/n
 | Path | What it is |
 | --- | --- |
 | `dotcleaner.sh` | The shell version and the cleaning engine for consoles — plain POSIX `sh` |
-| `console/` | Console launchers, **generated** from `dotcleaner.sh` by `tools/make_console.sh` |
+| `console/` | Console launchers and `README.txt`, **generated** from `dotcleaner.sh` by `tools/make_console.sh` |
+| `console/menu-logo/` | Optional logo for the console menus (`gamelist.xml` + images from `tools/make_logos.py`) |
 | `app/dotcleaner_core.py` | The engine of the desktop app (same rules as the shell) |
 | `app/dotcleaner_gui.py` | The desktop app (PySide6), packaged as `.dmg`, `.exe` and Linux binaries |
 | `app/i18n.py` | App texts in 5 languages |
@@ -78,10 +79,12 @@ mistake, or one junk file left behind, and it fails.
 ## Releasing (maintainer)
 
 1. Bump `VERSION` in `dotcleaner.sh` **and** `app/dotcleaner_core.py`, run `sh tools/make_console.sh`,
-   and add a `## [x.y.z]` section at the top of `CHANGELOG.md`.
+   and add a section at the top of `CHANGELOG.md`: `## [x.y.z] — YYYY-MM-DD — Short title`.
+   The short title becomes the release title (`Dotcleaner x.y.z — Short title`).
 2. Push to `main` and wait for CI to be green.
 3. Optional: **Actions → Apps → Run workflow** with *update screenshots* ticked, to refresh the app
    pictures in the READMEs and on the website.
 4. **Actions → Release → Run workflow.** It runs the tests, creates the `vx.y.z` tag and the release
-   with every file (`.dmg`, `.exe`, Linux apps, console zip, shell zip, script, `SHA256SUMS.txt`),
-   using the CHANGELOG section as release notes.
+   with every file (`.dmg`, `.exe`, Linux apps, `Dotcleaner-console.zip`, `Dotcleaner-shell.zip`,
+   `dotcleaner.sh`, `SHA256SUMS.txt`). The notes start with a "Which file do I need?" table, then the
+   CHANGELOG section.

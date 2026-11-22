@@ -83,7 +83,8 @@ Choisissez votre langue dans le menu en haut à droite :
 
 Nettoyez la carte **sans ordinateur**, depuis le menu de la console — pas besoin de clavier.
 
-1. Téléchargez [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip) et décompressez-le.
+1. Téléchargez [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip) et décompressez-le. Dedans :
+   `Dotcleaner.sh` (le lanceur), `Onion/` (l'appli Onion), `menu-logo/` (logo facultatif) et un `README.txt`.
 2. Copiez le lanceur sur la carte (créez le dossier s'il n'existe pas) :
 
    | Firmware (consoles) | Copier | Nom de la carte sur l'ordinateur |
@@ -98,8 +99,7 @@ Nettoyez la carte **sans ordinateur**, depuis le menu de la console — pas beso
 3. Sur la console, ouvrez **Ports → Dotcleaner** — **Tools → Dotcleaner** sur Knulli, **Apps →
    Dotcleaner** sur Onion. Sur Knulli / Batocera, mettez d'abord à jour les listes de jeux pour qu'il apparaisse.
 
-Le lanceur trouve tout seul la carte des ROM et la nettoie sans rien demander. Un `README.txt` dans le
-zip rappelle où le copier.
+Le lanceur trouve tout seul la carte des ROM et la nettoie sans rien demander.
 
 **Ce qui s'affiche dépend du firmware :**
 
@@ -118,6 +118,23 @@ Partout, un fichier **`dotcleaner.log`** est écrit à côté du lanceur (sur Kn
 carte `SHARE`) : il liste ce qui a été trouvé et supprimé — joignez-le à tout signalement de bug. Si des
 jeux fantômes restent dans la liste ensuite, mettez à jour les listes de jeux.
 
+<details>
+<summary><b>Facultatif : le logo de Dotcleaner dans le menu de la console</b></summary>
+
+<p align="center"><img src="docs/console-menu-logo.png" alt="Le logo Dotcleaner dans les menus d'ArkOS et de Knulli" width="760"></p>
+
+Le dossier `menu-logo/` du zip contient le logo (fond transparent) et un `gamelist.xml`, le fichier
+que lit le menu pour afficher les images. La carte dans l'ordinateur :
+
+1. Copiez le dossier `images` de `menu-logo/` à côté de `Dotcleaner.sh` (`ports/`, ou `roms/tools/` sur Knulli).
+2. **Pas encore de `gamelist.xml` dans ce dossier ?** Copiez aussi `menu-logo/gamelist.xml`.
+   **Il y en a déjà un** (PortMaster en crée un) ? **Ne le remplacez pas** : ouvrez-le et collez le
+   bloc `<game>…</game>` de `menu-logo/gamelist.xml` juste avant la dernière ligne `</gameList>`.
+
+Faites-le avec la carte dans l'ordinateur, pas sur la console allumée : le menu réécrit ce fichier.
+Onion n'en a pas besoin : l'appli Onion a sa propre icône.
+</details>
+
 > [!TIP]
 > **Deux cartes SD ?** Le lanceur nettoie la carte des ROM qu'il trouve en premier. Une version qui
 > nettoie les deux cartes arrive — voir [À venir](#️-à-venir) et la [FAQ](#faq) pour faire en attendant.
@@ -135,7 +152,7 @@ Puis tapez `dotcleaner` pour ouvrir le menu (en anglais) :
 
 <img src="docs/demo.svg" alt="Le menu dotcleaner dans le Terminal" width="620">
 
-Pas de Terminal ? Téléchargez le [zip](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest)
+Pas de Terminal ? Téléchargez [**Dotcleaner-shell.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-shell.zip), décompressez-le
 et double-cliquez sur **`dotcleaner.command`** (macOS).
 
 <details>

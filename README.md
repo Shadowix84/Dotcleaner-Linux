@@ -83,7 +83,8 @@ Choose your language in the top-right menu:
 
 Clean the card **without a computer**, from the console's menu — no keyboard needed.
 
-1. Download [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip) and unzip it.
+1. Download [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip) and unzip it. Inside: `Dotcleaner.sh`
+   (the launcher), `Onion/` (the Onion app), `menu-logo/` (optional logo) and a `README.txt`.
 2. Copy the launcher to the card (create the folder if it does not exist):
 
    | Firmware (consoles) | Copy | Card name on a computer |
@@ -98,8 +99,7 @@ Clean the card **without a computer**, from the console's menu — no keyboard n
 3. On the console, open **Ports → Dotcleaner** — **Tools → Dotcleaner** on Knulli, **Apps → Dotcleaner**
    on Onion. On Knulli / Batocera, update the game lists first so it appears.
 
-The launcher finds the ROM card by itself and cleans it without asking. A `README.txt` in the zip
-recalls where to copy it.
+The launcher finds the ROM card by itself and cleans it without asking.
 
 **What you see depends on the firmware:**
 
@@ -118,6 +118,23 @@ Everywhere, a **`dotcleaner.log`** file is written next to the launcher (on Knul
 the `SHARE` card): it lists what was found and deleted — send it with any bug report. If ghost games
 are still listed afterwards, update the game lists.
 
+<details>
+<summary><b>Optional: Dotcleaner's logo in the console menu</b></summary>
+
+<p align="center"><img src="docs/console-menu-logo.png" alt="The Dotcleaner logo in the ArkOS and Knulli menus" width="760"></p>
+
+The `menu-logo/` folder of the zip holds the logo (transparent background) and a `gamelist.xml`,
+the file the menu reads to show pictures. With the card in your computer:
+
+1. Copy the `images` folder of `menu-logo/` next to `Dotcleaner.sh` (`ports/`, or `roms/tools/` on Knulli).
+2. **No `gamelist.xml` there yet?** Copy `menu-logo/gamelist.xml` too.
+   **There is one already** (PortMaster creates one)? **Do not replace it**: open it and paste the
+   `<game>…</game>` block of `menu-logo/gamelist.xml` just before the last line `</gameList>`.
+
+Do it with the card in your computer, not on the running console: the menu rewrites this file.
+Onion does not need it: the Onion app has its own icon.
+</details>
+
 > [!TIP]
 > **Two SD cards?** The launcher cleans the ROM card it finds first. A version that cleans both cards
 > is coming — see the [roadmap](#️-roadmap) and the [FAQ](#faq) for what to do until then.
@@ -134,7 +151,7 @@ Then type `dotcleaner` to open the menu:
 
 <img src="docs/demo.svg" alt="The dotcleaner menu in Terminal" width="620">
 
-No Terminal? Download the [zip](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest)
+No Terminal? Download [**Dotcleaner-shell.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-shell.zip), unzip it
 and double-click **`dotcleaner.command`** (macOS).
 
 <details>

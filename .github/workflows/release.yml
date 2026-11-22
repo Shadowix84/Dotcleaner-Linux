@@ -2,7 +2,8 @@ name: Release
 
 # One click: Actions -> Release -> Run workflow.
 # Uses VERSION from dotcleaner.sh and the matching section of CHANGELOG.md,
-# builds the .dmg and .exe (apps.yml) and attaches everything to the release.
+# builds the apps (apps.yml) and attaches everything to the release.
+# Title: "Dotcleaner x.y.z — <short title>" from the CHANGELOG heading "## [x.y.z] — date — <short title>".
 on:
   workflow_dispatch:
 
@@ -39,56 +40,72 @@ jobs:
       - name: Run the tests
         run: sh tests/run_tests.sh
 
-      - name: Release notes (download table, first launch, CHANGELOG section)
+      - name: Release title and notes
+        id: notes
         env:
           VERSION: ${{ steps.v.outputs.version }}
         run: |
           awk -v v="[$VERSION]" '/^## \[/ { if (p) exit; if (index($0, v)) { p = 1; next } } p' CHANGELOG.md > changes.md
           if [ ! -s changes.md ]; then echo "::error::No '## [$VERSION]' section in CHANGELOG.md"; exit 1; fi
+          # "## [x.y.z] — date — Short title"  ->  "Dotcleaner x.y.z — Short title"
+          subtitle=$(grep -m1 "^## \[$VERSION\]" CHANGELOG.md | awk -F ' — ' 'NF >= 3 { print $3 }')
+          title="Dotcleaner $VERSION"
+          if [ -n "$subtitle" ]; then title="$title — $subtitle"; fi
+          echo "title=$title" >> "$GITHUB_OUTPUT"
           DL="https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION"
           RAW="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main"
+          REPO="https://github.com/$GITHUB_REPOSITORY"
           {
-            echo "## ⬇️ Download"
+            echo "## ⬇️ Which file do I need?"
             echo
-            echo "| Platform | File |"
+            echo "**You only need one file.** Pick the line that matches what you want to do:"
+            echo
+            echo "| I want to clean my card… | Download |"
             echo "| --- | --- |"
-            echo "| 🍎 **macOS** 13+ (Intel and Apple Silicon) | [**Dotcleaner-macOS.dmg**]($DL/Dotcleaner-macOS.dmg) |"
-            echo "| 🪟 **Windows** 10 / 11 (x64, ARM) | [**Dotcleaner-Windows.exe**]($DL/Dotcleaner-Windows.exe) |"
-            echo "| 🐧 **Linux** x86_64 (Steam Deck, PC) | [Dotcleaner-Linux-x86_64]($DL/Dotcleaner-Linux-x86_64) |"
-            echo "| 🐧 **Linux** ARM64 (Raspberry Pi…) | [Dotcleaner-Linux-arm64]($DL/Dotcleaner-Linux-arm64) |"
-            echo "| 🎮 **On the console** (Ports / Onion app) | [Dotcleaner-console.zip]($DL/Dotcleaner-console.zip) |"
-            echo "| ⌨️ **Shell** (macOS, Linux, consoles) | [dotcleaner.sh]($DL/dotcleaner.sh) · [zip with the double-click launcher]($DL/dotcleaner-$VERSION.zip) |"
+            echo "| 🍎 on my **Mac** (macOS 13+, Intel and Apple Silicon) | [**Dotcleaner-macOS.dmg**]($DL/Dotcleaner-macOS.dmg) |"
+            echo "| 🪟 on my **Windows** PC (10 / 11) | [**Dotcleaner-Windows.exe**]($DL/Dotcleaner-Windows.exe) |"
+            echo "| 🐧 on **Linux** (PC, Steam Deck) | [**Dotcleaner-Linux-x86_64**]($DL/Dotcleaner-Linux-x86_64) |"
+            echo "| 🐧 on a **Raspberry Pi** (64-bit) | [**Dotcleaner-Linux-arm64**]($DL/Dotcleaner-Linux-arm64) |"
+            echo "| 🎮 **on the console itself** — ArkOS, Knulli, Batocera, ROCKNIX, Onion… | [**Dotcleaner-console.zip**]($DL/Dotcleaner-console.zip) — its \`README.txt\` says where to copy it |"
             echo
-            echo "Shell one-line install: \`curl -fsSL $RAW/install.sh | sh\`"
+            echo "The other files below are for advanced use, and *Source code* is added by GitHub: you can ignore them."
             echo
-            echo "> **First launch** — the app is not signed with a paid certificate, so the system asks once:"
+            echo "> **First launch of the app** — it is free and not signed with a paid certificate, so your computer asks once:"
             echo "> - **macOS:** System Settings → Privacy & Security → **Open Anyway**"
             echo "> - **Windows:** *Windows protected your PC* → **More info → Run anyway**"
             echo
-            echo "## ✨ What's new"
+            echo "## ✨ What's new in $VERSION"
             echo
             cat changes.md
             echo
-            echo "## 🔒 Checksums"
+            echo "<details>"
+            echo "<summary><b>Advanced files</b> (terminal version, checksums)</summary>"
             echo
-            echo "SHA-256 of every file in \`SHA256SUMS.txt\` — check with \`shasum -a 256 -c SHA256SUMS.txt\` (macOS/Linux) or \`Get-FileHash\` (Windows)."
+            echo "| File | What it is |"
+            echo "| --- | --- |"
+            echo "| [dotcleaner.sh]($DL/dotcleaner.sh) | The terminal version alone: \`sh dotcleaner.sh\` (macOS, Linux, SSH on a console) |"
+            echo "| [Dotcleaner-shell.zip]($DL/Dotcleaner-shell.zip) | The terminal version + \`dotcleaner.command\` to start it with a double-click on macOS |"
+            echo "| [SHA256SUMS.txt]($DL/SHA256SUMS.txt) | Checksums: \`shasum -a 256 -c SHA256SUMS.txt --ignore-missing\` (macOS/Linux) or \`Get-FileHash\` (Windows) |"
+            echo
+            echo "Install the terminal version in one line: \`curl -fsSL $RAW/install.sh | sh\`"
+            echo
+            echo "</details>"
             echo
             echo "## 💬 Help"
             echo
-            echo "[FAQ](https://github.com/$GITHUB_REPOSITORY#faq) · [Report a bug](https://github.com/$GITHUB_REPOSITORY/issues/new/choose) · [Discord](https://discord.gg/4FbhkuhRMm) (French-speaking community 🇫🇷)"
+            echo "[Guide and FAQ]($REPO#readme) · [Report a bug]($REPO/issues/new/choose) · [Discord](https://discord.gg/4FbhkuhRMm) (French-speaking community 🇫🇷) · [All changes]($REPO/blob/main/CHANGELOG.md)"
           } > notes.md
           cat notes.md
 
-      - name: Build the zip
+      - name: Build the terminal zip
         env:
           VERSION: ${{ steps.v.outputs.version }}
         run: |
           dir="dotcleaner-$VERSION"
           mkdir "$dir"
           cp dotcleaner.sh dotcleaner.command install.sh README.md README.fr.md LICENSE "$dir/"
-          cp -R console "$dir/console"
           chmod 755 "$dir/dotcleaner.sh" "$dir/dotcleaner.command" "$dir/install.sh"
-          zip -r "$dir.zip" "$dir"
+          zip -r Dotcleaner-shell.zip "$dir"
 
       - name: Get the apps built by apps.yml (.dmg, .exe, Linux)
         uses: actions/download-artifact@v4
@@ -104,7 +121,7 @@ jobs:
           (cd console && zip -r ../Dotcleaner-console.zip .)
           cp apps/Dotcleaner-macOS.dmg apps/Dotcleaner-Windows.exe apps/Dotcleaner-Linux-* .
           sha256sum Dotcleaner-macOS.dmg Dotcleaner-Windows.exe Dotcleaner-Linux-* Dotcleaner-console.zip \
-            "dotcleaner-$VERSION.zip" dotcleaner.sh > SHA256SUMS.txt
+            Dotcleaner-shell.zip dotcleaner.sh > SHA256SUMS.txt
           cat SHA256SUMS.txt
           rm Dotcleaner-macOS.dmg Dotcleaner-Windows.exe Dotcleaner-Linux-*
 
@@ -115,7 +132,7 @@ jobs:
         run: |
           gh release create "v$VERSION" \
             --target "$GITHUB_SHA" \
-            --title "dotcleaner $VERSION" \
+            --title "${{ steps.notes.outputs.title }}" \
             --notes-file notes.md \
             apps/Dotcleaner-macOS.dmg apps/Dotcleaner-Windows.exe apps/Dotcleaner-Linux-* Dotcleaner-console.zip \
-            "dotcleaner-$VERSION.zip" dotcleaner.sh SHA256SUMS.txt
+            Dotcleaner-shell.zip dotcleaner.sh SHA256SUMS.txt
