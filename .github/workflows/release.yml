@@ -12,6 +12,9 @@ permissions:
 jobs:
   apps:
     uses: ./.github/workflows/apps.yml
+    permissions:          # what apps.yml may ask for (its screenshot job needs actions: write)
+      contents: write
+      actions: write
 
   release:
     needs: apps
