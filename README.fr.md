@@ -84,30 +84,39 @@ Choisissez votre langue dans le menu en haut à droite :
 Nettoyez la carte **sans ordinateur**, depuis le menu de la console — pas besoin de clavier.
 
 1. Téléchargez [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip) et décompressez-le.
-2. Copiez le lanceur sur la carte (créez le dossier `ports` s'il n'existe pas) :
+2. Copiez le lanceur sur la carte (créez le dossier s'il n'existe pas) :
 
    | Firmware (consoles) | Copier | Nom de la carte sur l'ordinateur |
    | --- | --- | --- |
    | **ArkOS**, dArkOS (R36S, RG351, RG353…) | `Dotcleaner.sh` → `ports/` | `EASYROMS` |
-   | **Knulli**, Batocera (RG40XXV, RG35XX…) | `Dotcleaner.sh` → `roms/ports/` | `SHARE` |
+   | **Knulli** (RG40XXV, RG35XX…) | `Dotcleaner.sh` → `roms/tools/` | `SHARE` |
+   | **Batocera** | `Dotcleaner.sh` → `roms/ports/` | `SHARE` |
    | **ROCKNIX**, AmberELEC, JELOS, EmuELEC | `Dotcleaner.sh` → `roms/ports/` | dépend de la carte |
    | **Onion** (Miyoo Mini) | le dossier `Onion/App/Dotcleaner` → `App/` | dépend de la carte |
    | muOS, MinUI, spruceOS, autres | `dotcleaner.sh` n'importe où, puis en SSH : `sh dotcleaner.sh --console` | dépend de la carte |
 
-3. Sur la console, ouvrez **Ports → Dotcleaner** (**Apps → Dotcleaner** sur Onion).
-   Sur Knulli / Batocera, mettez d'abord à jour les listes de jeux pour qu'il apparaisse.
+3. Sur la console, ouvrez **Ports → Dotcleaner** — **Tools → Dotcleaner** sur Knulli, **Apps →
+   Dotcleaner** sur Onion. Sur Knulli / Batocera, mettez d'abord à jour les listes de jeux pour qu'il apparaisse.
 
-Le lanceur trouve tout seul la carte des ROM et la nettoie sans rien demander. Il affiche un **écran
-texte très simple** — le même sur tous les firmwares et toutes les tailles d'écran — puis revient au
-menu après 6 secondes :
+Le lanceur trouve tout seul la carte des ROM et la nettoie sans rien demander. Un `README.txt` dans le
+zip rappelle où le copier.
+
+**Ce qui s'affiche dépend du firmware :**
+
+- **ArkOS et similaires** (dArkOS, ROCKNIX, AmberELEC, JELOS…) : un **écran texte très simple** montre
+  chaque étape, puis la console revient au menu après 6 secondes.
+- **Knulli : aucun écran** — c'est normal. Le nettoyage prend quelques secondes, puis vous revenez au
+  menu. Le résultat est dans `dotcleaner.log`.
+- **Onion :** une fenêtre de message à chaque étape.
 
 <p align="center">
   <img src="docs/console-cleaning.svg" alt="Écran de la console pendant le nettoyage, avec une barre de progression" width="400">
   <img src="docs/console-done.svg" alt="Écran de la console à la fin" width="400">
 </p>
 
-Sur Knulli / Batocera, chaque étape s'affiche aussi en notification ; sur Onion, dans une fenêtre.
-Un fichier **`dotcleaner.log`** est écrit à côté du lanceur : joignez-le à tout signalement de bug.
+Partout, un fichier **`dotcleaner.log`** est écrit à côté du lanceur (sur Knulli : `roms/tools/` de la
+carte `SHARE`) : il liste ce qui a été trouvé et supprimé — joignez-le à tout signalement de bug. Si des
+jeux fantômes restent dans la liste ensuite, mettez à jour les listes de jeux.
 
 > [!TIP]
 > **Deux cartes SD ?** Le lanceur nettoie la carte des ROM qu'il trouve en premier. Une version qui
@@ -223,8 +232,10 @@ lecteur** (`-k`) pour les conserver.
 
 1. Utilisez le **lanceur** `Dotcleaner.sh` (D majuscule, dans `Dotcleaner-console.zip`), pas
    `dotcleaner.sh` : le script simple attend un clavier.
-2. Vérifiez qu'il est dans le dossier `ports` (`App/` sur Onion) et, sur Knulli / Batocera, mettez à jour les listes de jeux.
-3. Ouvrez **`dotcleaner.log`** à côté : il indique ce qui a été trouvé et nettoyé. Toujours bloqué ?
+2. Vérifiez qu'il est dans le bon dossier (`ports`, `tools` sur Knulli, `App/` sur Onion) et, sur
+   Knulli / Batocera, mettez à jour les listes de jeux.
+3. **Sur Knulli, rien ne s'affiche à l'écran** : c'est normal, le nettoyage ne prend que quelques secondes.
+4. Ouvrez **`dotcleaner.log`** à côté : il indique ce qui a été trouvé et nettoyé. Toujours bloqué ?
    Ouvrez un [signalement de bug](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=bug_report.yml) avec ce fichier.
 </details>
 

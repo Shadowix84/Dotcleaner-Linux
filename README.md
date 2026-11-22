@@ -84,29 +84,39 @@ Choose your language in the top-right menu:
 Clean the card **without a computer**, from the console's menu — no keyboard needed.
 
 1. Download [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip) and unzip it.
-2. Copy the launcher to the card (create the `ports` folder if it does not exist):
+2. Copy the launcher to the card (create the folder if it does not exist):
 
    | Firmware (consoles) | Copy | Card name on a computer |
    | --- | --- | --- |
    | **ArkOS**, dArkOS (R36S, RG351, RG353…) | `Dotcleaner.sh` → `ports/` | `EASYROMS` |
-   | **Knulli**, Batocera (RG40XXV, RG35XX…) | `Dotcleaner.sh` → `roms/ports/` | `SHARE` |
+   | **Knulli** (RG40XXV, RG35XX…) | `Dotcleaner.sh` → `roms/tools/` | `SHARE` |
+   | **Batocera** | `Dotcleaner.sh` → `roms/ports/` | `SHARE` |
    | **ROCKNIX**, AmberELEC, JELOS, EmuELEC | `Dotcleaner.sh` → `roms/ports/` | depends on the card |
    | **Onion** (Miyoo Mini) | the `Onion/App/Dotcleaner` folder → `App/` | depends on the card |
    | muOS, MinUI, spruceOS, others | `dotcleaner.sh` anywhere, then over SSH: `sh dotcleaner.sh --console` | depends on the card |
 
-3. On the console, open **Ports → Dotcleaner** (**Apps → Dotcleaner** on Onion).
-   On Knulli / Batocera, update the game lists first so it appears.
+3. On the console, open **Ports → Dotcleaner** — **Tools → Dotcleaner** on Knulli, **Apps → Dotcleaner**
+   on Onion. On Knulli / Batocera, update the game lists first so it appears.
 
-The launcher finds the ROM card by itself and cleans it without asking. It shows a **very simple text
-screen** — the same on every firmware and screen size — then goes back to the menu after 6 seconds:
+The launcher finds the ROM card by itself and cleans it without asking. A `README.txt` in the zip
+recalls where to copy it.
+
+**What you see depends on the firmware:**
+
+- **ArkOS and similar** (dArkOS, ROCKNIX, AmberELEC, JELOS…): a **very simple text screen** shows each
+  step, then the console goes back to the menu after 6 seconds.
+- **Knulli: no screen** — that is normal. The cleaning takes a few seconds, then you are back in the
+  menu. Check the result in `dotcleaner.log`.
+- **Onion:** a message box at each step.
 
 <p align="center">
   <img src="docs/console-cleaning.svg" alt="Console screen while cleaning, with a progress bar" width="400">
   <img src="docs/console-done.svg" alt="Console screen when done" width="400">
 </p>
 
-On Knulli / Batocera each step also appears as a notification; on Onion, as a message box.
-A **`dotcleaner.log`** file is written next to the launcher: send it with any bug report.
+Everywhere, a **`dotcleaner.log`** file is written next to the launcher (on Knulli: `roms/tools/` on
+the `SHARE` card): it lists what was found and deleted — send it with any bug report. If ghost games
+are still listed afterwards, update the game lists.
 
 > [!TIP]
 > **Two SD cards?** The launcher cleans the ROM card it finds first. A version that cleans both cards
@@ -218,8 +228,10 @@ Dotcleaner warns you before erasing them. Tick **Keep the drive's Trash** (`-k`)
 
 1. Use the **launcher** `Dotcleaner.sh` (capital D, from `Dotcleaner-console.zip`), not `dotcleaner.sh`:
    the plain script waits for a keyboard.
-2. Check that it is in the `ports` folder (`App/` on Onion), and on Knulli / Batocera update the game lists.
-3. Open **`dotcleaner.log`** next to it: it says what was found and cleaned. Still stuck? Open a
+2. Check that it is in the right folder (`ports`, `tools` on Knulli, `App/` on Onion), and on Knulli /
+   Batocera update the game lists.
+3. **On Knulli nothing appears on screen**: that is normal, the cleaning only takes a few seconds.
+4. Open **`dotcleaner.log`** next to it: it says what was found and cleaned. Still stuck? Open a
    [bug report](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=bug_report.yml) with this file.
 </details>
 

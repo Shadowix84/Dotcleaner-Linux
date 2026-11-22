@@ -2,6 +2,20 @@
 
 All notable changes to dotcleaner.
 
+## [2.3.1] — 2026-11-22
+
+### On the console
+- **Knulli: put the launcher in `roms/tools/`** and start it from **Tools → Dotcleaner** (tested on an
+  RG40XXV). Knulli shows no screen while a script runs: the launcher now finishes as soon as the card
+  is clean instead of waiting 6 seconds in front of nothing. The result is in `dotcleaner.log`.
+- `Dotcleaner-console.zip` now contains a `README.txt` (English and French) saying where to copy the
+  launcher on each firmware.
+
+### Documentation
+- Clearer READMEs: which version to use, before/after example, console setup in 3 steps, what each
+  firmware shows, FAQ for two SD cards, roadmap (console version for two SD cards), Discord marked as
+  a French-speaking community.
+
 ## [2.3.0] — 2026-11-21
 
 ### On the console

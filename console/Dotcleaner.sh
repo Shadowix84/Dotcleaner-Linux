@@ -14,7 +14,7 @@
 
 set -u
 
-VERSION="2.3.0"
+VERSION="2.3.1"
 PROG=${0##*/}
 
 # --- What gets removed (keep in sync with app/dotcleaner_core.py) ------------
@@ -481,7 +481,8 @@ clean_target() {
 
 # --- Console mode ----------------------------------------------------------------
 # Started from the console's own menu (Ports, Tools, Apps): no keyboard and often
-# no visible terminal. Finds the ROM card, cleans it without questions, shows the
+# no visible terminal (Knulli and Batocera show nothing: only the log and, when the
+# frontend supports it, a notification). Finds the ROM card, cleans it without questions, shows the
 # result on screen when the firmware allows it, and writes dotcleaner.log.
 
 notify_frontend() {
@@ -533,9 +534,13 @@ console_mode() {
   _log=${DOTCLEANER_LOG:-${SCRIPT_DIR:-.}/dotcleaner.log}
   : >"$_log" 2>/dev/null
 
-  # Screen: the terminal (SSH), else the text screen of the console if any
+  # Screen: the terminal (SSH), else the text screen of the console if any.
+  # Knulli / Batocera keep their menu on screen while a script runs: the text
+  # screen behind it is never seen, so do not use it (and do not wait at the end).
   if [ -t 1 ]; then
     LIVE=1
+  elif [ -d "${DOTCLEANER_USERDATA:-/userdata}/system" ]; then
+    :
   elif [ -z "${DOTCLEANER_NO_TTY:-}" ]; then
     for _t in /dev/tty1 /dev/tty0; do
       if [ -e "$_t" ] && [ ! -w "$_t" ] && command -v sudo >/dev/null 2>&1; then
