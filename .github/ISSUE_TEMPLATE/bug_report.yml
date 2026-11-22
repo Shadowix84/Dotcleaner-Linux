@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting! Please fill in as much as you can.
+        Thanks for reporting! Please fill in as much as you can — in English or in French.
         ⚠️ If a file was deleted that should not have been, please use **Security → Report a vulnerability** instead.
   - type: dropdown
     id: version_used
@@ -14,8 +14,10 @@ body:
       options:
         - App on macOS (.dmg)
         - App on Windows (.exe)
+        - App on Linux
+        - Console launcher (Ports / Onion app)
         - Shell on macOS
-        - Shell on Linux
+        - Shell on Linux / WSL
         - Shell on the console (SSH)
     validations:
       required: true
@@ -24,7 +26,7 @@ body:
     attributes:
       label: Version
       description: Shown at the top of the app, or `dotcleaner --version`
-      placeholder: "2.0.1"
+      placeholder: "2.3.0"
     validations:
       required: true
   - type: input
@@ -53,5 +55,7 @@ body:
     id: output
     attributes:
       label: Scan result, messages or screenshots
-      description: For the shell, the output of `dotcleaner -n -v YOUR_DRIVE` helps a lot.
+      description: |
+        Console launcher: paste the content of `dotcleaner.log` (next to the launcher on the card).
+        Shell: the output of `dotcleaner -n -v YOUR_DRIVE` helps a lot.
       render: text

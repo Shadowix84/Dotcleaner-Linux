@@ -69,6 +69,10 @@ jobs:
             echo "## 🔒 Checksums"
             echo
             echo "SHA-256 of every file in \`SHA256SUMS.txt\` — check with \`shasum -a 256 -c SHA256SUMS.txt\` (macOS/Linux) or \`Get-FileHash\` (Windows)."
+            echo
+            echo "## 💬 Help"
+            echo
+            echo "[FAQ](https://github.com/$GITHUB_REPOSITORY#faq) · [Report a bug](https://github.com/$GITHUB_REPOSITORY/issues/new/choose) · [Discord](https://discord.gg/4FbhkuhRMm) (French-speaking community 🇫🇷)"
           } > notes.md
           cat notes.md
 

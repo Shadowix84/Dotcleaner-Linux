@@ -6,7 +6,7 @@ body:
     id: where
     attributes:
       label: For which version?
-      options: [The app (macOS / Windows), The shell version, Both]
+      options: [The app (macOS / Windows / Linux), The console launcher, The shell version, All of them]
     validations:
       required: true
   - type: textarea

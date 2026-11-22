@@ -127,6 +127,9 @@
           padding: 6px 12px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); }
   .chip.win { border-style: dashed; }
   .small { font-size: .9rem; color: var(--muted); }
+  .note2sd { margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--soft); font-size: .93rem; }
+  .soon { display: inline-block; font-size: .74rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em;
+          color: #fff; background: var(--accent); border-radius: 6px; padding: 2px 7px; margin-right: 4px; }
 
   /* downloads */
   .dl .card { display: flex; flex-direction: column; gap: 10px; }
@@ -292,6 +295,7 @@
           <a class="btn" href="https://github.com/Shadowix84/Dotcleaner-Multi-Software#-on-the-console-itself" data-t="guide"></a>
         </div>
         <p class="small" data-t="con_note" style="margin-top:16px"></p>
+        <p class="note2sd"><span class="soon" data-t="soon"></span> <span data-t="con_2sd"></span></p>
       </div>
       <div class="pair">
         <img src="console-cleaning.svg" alt="Console screen while cleaning">
@@ -386,13 +390,14 @@
     <span><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software">GitHub</a> ·
       <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/blob/main/CHANGELOG.md" data-t="changelog"></a> ·
       <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new/choose" data-t="report"></a> ·
-      <a href="https://discord.gg/4FbhkuhRMm">Discord</a></span>
+      <a href="https://discord.gg/4FbhkuhRMm" data-t="discord"></a></span>
   </div>
 </footer>
 
 <script>
 const T = {
   en: {
+    discord: "Discord (French)", soon: "Coming soon", con_2sd: "Two SD cards (R36S, RG40XXV, RG35XX…)? A version that cleans both cards in one go is on the way. Until then the launcher cleans the ROM card it finds first.",
     nav_how: "How it works", nav_consoles: "On the console", nav_safe: "Safety", nav_faq: "FAQ",
     pill: "free & open source",
     hero_title: "Clean your SD cards from <span>macOS junk</span>",
@@ -431,11 +436,12 @@ const T = {
     q2: "My computer says the app can't be opened", a2: "The app is free and not signed with a paid certificate, so you are warned once. <b>macOS:</b> System Settings → Privacy & Security → Open Anyway. <b>Windows:</b> More info → Run anyway.",
     q3: "Can it delete my games or saves?", a3: "No. It only removes the hidden macOS files listed above. It never follows links, never leaves the drive, and refuses system and home folders.",
     q4: "Which consoles are supported?", a4: "Every firmware with a Ports menu (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion as an app, and the others over SSH with <code>sh dotcleaner.sh --console</code>.",
-    q5: "Something went wrong", a5: "Open dotcleaner.log next to the launcher and attach it to a report on GitHub — or ask on Discord.",
+    q5: "Something went wrong", a5: "Open dotcleaner.log next to the launcher and attach it to a report on GitHub — or ask on Discord (French-speaking).",
     lang_title: "Speaks your language", lang_lead: "The app and this site exist in 5 languages. The console screen stays in simple English so it works on every firmware.",
     license: "MIT License", report: "Report a problem", changelog: "Changelog",
   },
   fr: {
+    discord: "Discord (français)", soon: "Bientôt", con_2sd: "Deux cartes SD (R36S, RG40XXV, RG35XX…) ? Une version qui nettoie les deux cartes d'un coup est en préparation. En attendant, le lanceur nettoie la carte des ROM qu'il trouve en premier.",
     nav_how: "Fonctionnement", nav_consoles: "Sur la console", nav_safe: "Sécurité", nav_faq: "FAQ",
     pill: "gratuit et open source",
     hero_title: "Débarrassez vos cartes SD des <span>parasites de macOS</span>",
@@ -474,11 +480,12 @@ const T = {
     q2: "Mon ordinateur dit que l'application ne peut pas être ouverte", a2: "L'application est gratuite et n'est pas signée avec un certificat payant : un avertissement s'affiche une fois. <b>macOS :</b> Réglages système → Confidentialité et sécurité → Ouvrir quand même. <b>Windows :</b> Informations complémentaires → Exécuter quand même.",
     q3: "Peut-il supprimer mes jeux ou mes sauvegardes ?", a3: "Non. Il supprime seulement les fichiers cachés de macOS listés plus haut. Il ne suit jamais les liens, ne sort jamais du lecteur et refuse les dossiers système et personnels.",
     q4: "Quelles consoles sont compatibles ?", a4: "Tous les firmwares avec un menu Ports (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion en tant qu'application, et les autres en SSH avec <code>sh dotcleaner.sh --console</code>.",
-    q5: "Quelque chose ne marche pas", a5: "Ouvrez dotcleaner.log à côté du lanceur et joignez-le à un signalement sur GitHub — ou demandez sur Discord.",
+    q5: "Quelque chose ne marche pas", a5: "Ouvrez dotcleaner.log à côté du lanceur et joignez-le à un signalement sur GitHub — ou demandez sur le Discord (francophone).",
     lang_title: "Parle votre langue", lang_lead: "L'application et ce site existent en 5 langues. L'écran de la console reste en anglais simple pour fonctionner sur tous les firmwares.",
     license: "Licence MIT", report: "Signaler un problème", changelog: "Nouveautés",
   },
   es: {
+    discord: "Discord (en francés)", soon: "Próximamente", con_2sd: "¿Dos tarjetas SD (R36S, RG40XXV, RG35XX…)? Está en camino una versión que limpia las dos tarjetas de una vez. Mientras tanto, el lanzador limpia la tarjeta de ROMs que encuentra primero.",
     nav_how: "Cómo funciona", nav_consoles: "En la consola", nav_safe: "Seguridad", nav_faq: "Preguntas",
     pill: "gratis y de código abierto",
     hero_title: "Limpia tus tarjetas SD de la <span>basura de macOS</span>",
@@ -517,11 +524,12 @@ const T = {
     q2: "Mi ordenador dice que la app no se puede abrir", a2: "La app es gratuita y no está firmada con un certificado de pago, así que verás un aviso una vez. <b>macOS:</b> Ajustes del Sistema → Privacidad y seguridad → Abrir igualmente. <b>Windows:</b> Más información → Ejecutar de todas formas.",
     q3: "¿Puede borrar mis juegos o partidas?", a3: "No. Solo elimina los archivos ocultos de macOS de la lista. Nunca sigue enlaces, nunca sale de la unidad y rechaza las carpetas del sistema y personales.",
     q4: "¿Qué consolas son compatibles?", a4: "Todos los firmwares con menú Ports (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion como app, y los demás por SSH con <code>sh dotcleaner.sh --console</code>.",
-    q5: "Algo ha fallado", a5: "Abre dotcleaner.log junto al lanzador y adjúntalo a un informe en GitHub — o pregunta en Discord.",
+    q5: "Algo ha fallado", a5: "Abre dotcleaner.log junto al lanzador y adjúntalo a un informe en GitHub — o pregunta en Discord (en francés).",
     lang_title: "Habla tu idioma", lang_lead: "La app y este sitio existen en 5 idiomas. La pantalla de la consola se queda en inglés sencillo para funcionar en todos los firmwares.",
     license: "Licencia MIT", report: "Informar de un problema", changelog: "Novedades",
   },
   zh: {
+    discord: "Discord（法语）", soon: "即将推出", con_2sd: "双 SD 卡（R36S、RG40XXV、RG35XX……）？一次清理两张卡的版本正在开发中。在此之前，启动器会清理它最先找到的游戏卡。",
     nav_how: "使用方法", nav_consoles: "在掌机上", nav_safe: "安全性", nav_faq: "常见问题",
     pill: "免费且开源",
     hero_title: "清除 SD 卡上的 <span>macOS 垃圾文件</span>",
@@ -560,11 +568,12 @@ const T = {
     q2: "电脑提示无法打开应用", a2: "本应用免费，未使用付费证书签名，所以首次会有提示。<b>macOS：</b>系统设置 → 隐私与安全性 → 仍要打开。<b>Windows：</b>更多信息 → 仍要运行。",
     q3: "会删除我的游戏或存档吗？", a3: "不会。它只删除上面列出的 macOS 隐藏文件，从不跟随链接，从不离开所选磁盘，并拒绝处理系统和个人文件夹。",
     q4: "支持哪些掌机？", a4: "所有带 Ports 菜单的固件（ArkOS、dArkOS、Knulli、Batocera、ROCKNIX、AmberELEC、JELOS、EmuELEC），Onion 以应用形式支持，其他固件可通过 SSH 运行 <code>sh dotcleaner.sh --console</code>。",
-    q5: "出现了问题", a5: "打开启动器旁的 dotcleaner.log，附在 GitHub 的问题报告中——或者到 Discord 提问。",
+    q5: "出现了问题", a5: "打开启动器旁的 dotcleaner.log，附在 GitHub 的问题报告中——或者到 Discord（法语社区）提问。",
     lang_title: "支持你的语言", lang_lead: "应用和本网站提供 5 种语言。掌机界面使用简单英文，以便在所有固件上正常显示。",
     license: "MIT 许可证", report: "报告问题", changelog: "更新日志",
   },
   hi: {
+    discord: "Discord (फ़्रेंच)", soon: "जल्द आ रहा है", con_2sd: "दो SD कार्ड (R36S, RG40XXV, RG35XX…)? दोनों कार्ड एक साथ साफ़ करने वाला संस्करण आ रहा है। तब तक लॉन्चर वही ROM कार्ड साफ़ करता है जो उसे पहले मिलता है।",
     nav_how: "यह कैसे काम करता है", nav_consoles: "कंसोल पर", nav_safe: "सुरक्षा", nav_faq: "सवाल-जवाब",
     pill: "मुफ़्त और ओपन सोर्स",
     hero_title: "अपने SD कार्ड से <span>macOS की बेकार फ़ाइलें</span> साफ़ करें",
@@ -603,7 +612,7 @@ const T = {
     q2: "मेरा कंप्यूटर कहता है कि ऐप नहीं खुल सकता", a2: "ऐप मुफ़्त है और किसी पेड सर्टिफ़िकेट से साइन नहीं है, इसलिए एक बार चेतावनी दिखती है। <b>macOS:</b> System Settings → Privacy & Security → Open Anyway। <b>Windows:</b> More info → Run anyway।",
     q3: "क्या यह मेरे गेम या सेव हटा सकता है?", a3: "नहीं। यह केवल ऊपर सूचीबद्ध macOS की छिपी फ़ाइलें हटाता है। यह लिंक फ़ॉलो नहीं करता, ड्राइव से बाहर नहीं जाता और सिस्टम व होम फ़ोल्डर अस्वीकार करता है।",
     q4: "कौन से कंसोल समर्थित हैं?", a4: "Ports मेन्यू वाले सभी फ़र्मवेयर (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion ऐप के रूप में, और बाकी SSH पर <code>sh dotcleaner.sh --console</code> से।",
-    q5: "कुछ गड़बड़ हो गई", a5: "लॉन्चर के पास dotcleaner.log खोलें और उसे GitHub पर रिपोर्ट के साथ जोड़ें — या Discord पर पूछें।",
+    q5: "कुछ गड़बड़ हो गई", a5: "लॉन्चर के पास dotcleaner.log खोलें और उसे GitHub पर रिपोर्ट के साथ जोड़ें — या Discord (फ़्रेंच समुदाय) पर पूछें।",
     lang_title: "आपकी भाषा में", lang_lead: "ऐप और यह साइट 5 भाषाओं में हैं। कंसोल स्क्रीन सरल अंग्रेज़ी में रहती है ताकि हर फ़र्मवेयर पर चले।",
     license: "MIT लाइसेंस", report: "समस्या बताएँ", changelog: "बदलाव",
   },

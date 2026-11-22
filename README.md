@@ -2,89 +2,135 @@
 
 # 🧹 Dotcleaner
 
-**Remove the junk files macOS leaves on SD cards and USB drives — made for emulation handhelds.**<br>
-`._*` · `.DS_Store` · `.Spotlight-V100` · `.Trashes` · `.fseventsd` · `__MACOSX` …
+**Remove the hidden junk files macOS leaves on SD cards and USB drives — made for emulation handhelds.**<br>
+No more ghost games. Your games, saves and BIOS are never touched.
 
-[![Download for macOS](https://img.shields.io/badge/Download-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg)
-[![Download for Windows](https://img.shields.io/badge/Download-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe)
-[![Shell version](https://img.shields.io/badge/Shell-macOS%20·%20Linux%20·%20consoles-4EAA25?style=for-the-badge&logo=gnubash&logoColor=white)](#%EF%B8%8F-the-shell-version-macos-linux-consoles)
+[![Download for macOS](https://img.shields.io/badge/macOS-Download-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg)
+[![Download for Windows](https://img.shields.io/badge/Windows-Download-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe)
+[![Download for Linux](https://img.shields.io/badge/Linux-Download-E95420?style=for-the-badge&logo=linux&logoColor=white)](#️-the-app-macos-windows-linux)
+[![Download for consoles](https://img.shields.io/badge/Consoles-Download-4EAA25?style=for-the-badge&logo=retroarch&logoColor=white)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip)
 
-[![Release](https://img.shields.io/github/v/release/Shadowix84/Dotcleaner-Multi-Software?label=release)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest)
+[![Release](https://img.shields.io/github/v/release/Shadowix84/Dotcleaner-Multi-Software?label=version)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Shadowix84/Dotcleaner-Multi-Software/total?label=downloads)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases)
-[![CI](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/ci.yml/badge.svg)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/ci.yml)
-[![Apps](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/apps.yml/badge.svg)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/apps.yml)
-[![Languages](https://img.shields.io/badge/languages-EN%20·%20FR%20·%20ES%20·%20中文%20·%20हिन्दी-8A2BE2)](#️-the-app-macos--windows)
-[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/4FbhkuhRMm)
+[![Tests](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/ci.yml/badge.svg)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/ci.yml)
+[![Discord (French)](https://img.shields.io/badge/Discord-French%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/4FbhkuhRMm)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 🌐 [Website](https://shadowix84.github.io/Dotcleaner-Multi-Software/) · 🇫🇷 [Version française](README.fr.md)
 
-<img src="docs/app-en.png" alt="Dotcleaner app" width="560">
+<img src="docs/app-en.png" alt="The Dotcleaner app after scanning a card" width="520">
 
 </div>
 
-**Contents:** [Why?](#why) · [Two versions](#two-versions-same-menu) · [The app](#️-the-app-macos--windows) ·
-[The shell](#️-the-shell-version-macos-linux-consoles) · [On the console](#-on-the-console-itself) ·
-[Compatibility](#compatibility) · [What it removes](#what-it-removes) ·
-[FAQ](#faq) · [Building and testing](#building-and-testing) · [Community](#community)
+**Contents** — [Why?](#why) · [Which version?](#which-version-do-i-need) · [App](#️-the-app-macos-windows-linux) ·
+[On the console](#-on-the-console-itself) · [Shell](#️-the-shell-version-terminal) ·
+[What it removes](#what-it-removes) · [Compatibility](#compatibility) · [FAQ](#faq) ·
+[Roadmap](#️-roadmap) · [Community](#community)
 
 ## Why?
 
-When you copy ROMs to an SD card or USB drive from a Mac, macOS quietly adds hidden files:
-a `._` twin for every file (`._Pokemon Emerald.gba`), a `.DS_Store` in every folder you open
-in Finder, and `.Spotlight-V100`, `.Trashes` or `.fseventsd` folders at the root.
+When a Mac copies files to an SD card, it adds hidden files next to them: a `._` twin for every file,
+a `.DS_Store` in every folder opened in Finder, and folders like `.Spotlight-V100` or `.Trashes`.
+Your console lists the `._` twins as **games that won't launch**:
 
-On the console they can show up as **ghost games that won't launch**, confuse scrapers and
-waste space. **Dotcleaner** removes them — and **only them**.
+```text
+Before                                  After Dotcleaner
+roms/gba/                               roms/gba/
+├── ._Pokemon Emerald.gba   ← ghost     └── Pokemon Emerald.gba
+└── Pokemon Emerald.gba
+```
 
-## Two versions, same menu
+Dotcleaner finds these files and removes them — **only them**.
 
-| | 🖥️ **App** — `.dmg` / `.exe` | ⌨️ **Shell** — `dotcleaner.sh` |
+## Which version do I need?
+
+| You want to… | Use | Languages |
 | --- | --- | --- |
-| Runs on | macOS (Intel & Apple Silicon), Windows, Linux (x86_64 & ARM) | macOS, Linux, WSL, the console itself |
-| Drives | any SD card or USB drive | any SD card or USB drive, or a folder |
-| Languages | English, Français, Español, 中文, हिन्दी | English |
-| Menu | **1.** Choose a drive · **2.** Options · **3.** Scan · **4.** Clean · Help · Quit | same |
+| Clean the card **on your Mac or PC** (easiest) | 🖥️ [The app](#️-the-app-macos-windows-linux) | English, Français, Español, 中文, हिन्दी |
+| Clean the card **on the console**, without a computer | 🎮 [The console launcher](#-on-the-console-itself) | English (simple screen) |
+| Use the **terminal** or scripts | ⌨️ [The shell version](#️-the-shell-version-terminal) | English |
 
-Both use exactly the same cleaning rules, checked by the same audit.
+All three use the same cleaning rules and the same four steps:
+**1.** Choose a drive · **2.** Options · **3.** Scan (preview, deletes nothing) · **4.** Clean.
 
-## 🖥️ The app (macOS & Windows)
+## 🖥️ The app (macOS, Windows, Linux)
 
-1. Download the latest version:
-   - **macOS** 13+ (Intel & Apple Silicon): [**Dotcleaner-macOS.dmg**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg) → open it, drag **Dotcleaner** to **Applications**.
-   - **Windows** 10 / 11: [**Dotcleaner-Windows.exe**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe) → double-click it (nothing to install).
-   - **Linux**: [x86_64](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-x86_64) (Steam Deck, PC) or [ARM64](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-arm64) (Raspberry Pi) → `chmod +x` it, then run it.
-2. Plug in your SD card or USB drive and open Dotcleaner.
-3. **1.** Choose the drive · **2.** tick the options · **3.** Scan to preview · **4.** Clean.
+1. **Download** the version for your computer:
 
-Pick your language in the top-right menu:
+   | System | File | Then |
+   | --- | --- | --- |
+   | **macOS** 13+ (Intel & Apple Silicon) | [Dotcleaner-macOS.dmg](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-macOS.dmg) | Open it, drag **Dotcleaner** to **Applications** |
+   | **Windows** 10 / 11 | [Dotcleaner-Windows.exe](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Windows.exe) | Double-click it (nothing to install) |
+   | **Linux** PC, Steam Deck | [Dotcleaner-Linux-x86_64](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-x86_64) | `chmod +x` it, then run it |
+   | **Linux** Raspberry Pi (64-bit) | [Dotcleaner-Linux-arm64](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-Linux-arm64) | `chmod +x` it, then run it |
+
+2. **Plug in** your SD card or USB drive and open Dotcleaner.
+3. **Choose** the drive → **Scan** to see what would be deleted → **Clean**.
+   With **Eject when done** ticked, you can unplug the card right away.
+
+> [!NOTE]
+> **First launch.** The app is free and not signed with a paid Apple / Microsoft certificate, so your
+> computer warns you once:
+> - **macOS:** **System Settings → Privacy & Security**, scroll down, click **Open Anyway**.
+>   Then allow access to *removable volumes* when asked.
+> - **Windows:** on the blue *Windows protected your PC* screen, click **More info → Run anyway**.
+
+Choose your language in the top-right menu:
 
 <img src="docs/app-languages.png" alt="Dotcleaner in English, French, Spanish, Chinese and Hindi" width="900">
 
-> **First launch.** The app is free and not signed with a paid Apple / Microsoft certificate, so the
-> system warns you once:
-> - **macOS:** open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
->   Then allow Dotcleaner to access *removable volumes* when asked.
-> - **Windows:** on the blue *Windows protected your PC* screen, click **More info → Run anyway**.
+## 🎮 On the console itself
 
-## ⌨️ The shell version (macOS, Linux, consoles)
+Clean the card **without a computer**, from the console's menu — no keyboard needed.
 
-Install the `dotcleaner` command — open **Terminal** and paste:
+1. Download [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip) and unzip it.
+2. Copy the launcher to the card (create the `ports` folder if it does not exist):
+
+   | Firmware (consoles) | Copy | Card name on a computer |
+   | --- | --- | --- |
+   | **ArkOS**, dArkOS (R36S, RG351, RG353…) | `Dotcleaner.sh` → `ports/` | `EASYROMS` |
+   | **Knulli**, Batocera (RG40XXV, RG35XX…) | `Dotcleaner.sh` → `roms/ports/` | `SHARE` |
+   | **ROCKNIX**, AmberELEC, JELOS, EmuELEC | `Dotcleaner.sh` → `roms/ports/` | depends on the card |
+   | **Onion** (Miyoo Mini) | the `Onion/App/Dotcleaner` folder → `App/` | depends on the card |
+   | muOS, MinUI, spruceOS, others | `dotcleaner.sh` anywhere, then over SSH: `sh dotcleaner.sh --console` | depends on the card |
+
+3. On the console, open **Ports → Dotcleaner** (**Apps → Dotcleaner** on Onion).
+   On Knulli / Batocera, update the game lists first so it appears.
+
+The launcher finds the ROM card by itself and cleans it without asking. It shows a **very simple text
+screen** — the same on every firmware and screen size — then goes back to the menu after 6 seconds:
+
+<p align="center">
+  <img src="docs/console-cleaning.svg" alt="Console screen while cleaning, with a progress bar" width="400">
+  <img src="docs/console-done.svg" alt="Console screen when done" width="400">
+</p>
+
+On Knulli / Batocera each step also appears as a notification; on Onion, as a message box.
+A **`dotcleaner.log`** file is written next to the launcher: send it with any bug report.
+
+> [!TIP]
+> **Two SD cards?** The launcher cleans the ROM card it finds first. A version that cleans both cards
+> is coming — see the [roadmap](#️-roadmap) and the [FAQ](#faq) for what to do until then.
+
+## ⌨️ The shell version (terminal)
+
+For macOS, Linux, WSL and SSH on a console. Install the `dotcleaner` command — open **Terminal** and paste:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Shadowix84/Dotcleaner-Multi-Software/main/install.sh | sh
 ```
 
-Then run `dotcleaner` to open the menu:
+Then type `dotcleaner` to open the menu:
 
-<img src="docs/demo.svg" alt="dotcleaner menu in Terminal" width="640">
+<img src="docs/demo.svg" alt="The dotcleaner menu in Terminal" width="620">
 
-No Terminal? Download the release zip and double-click **`dotcleaner.command`** (macOS).
-On the console itself, see [On the console itself](#-on-the-console-itself) below.
+No Terminal? Download the [zip](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest)
+and double-click **`dotcleaner.command`** (macOS).
 
-### Command-line options
+<details>
+<summary><b>Command-line options</b> (for scripts)</summary>
 
-For scripts, give one or more paths instead of using the menu:
+Give one or more paths instead of using the menu:
 
 ```sh
 dotcleaner -n /Volumes/EASYROMS      # preview: show what would be deleted
@@ -101,149 +147,109 @@ dotcleaner -w "/Volumes/NO NAME"     # also remove Windows files
 | `-e`, `--eject` | Eject the drive when done (macOS) |
 | `-v`, `--verbose` | List every deleted item |
 | `-q`, `--quiet` | Only print errors |
+| `--console` | Console mode: find the ROM card and clean it with the simple screen |
 | `-h`, `--help` / `-V`, `--version` | Help / version |
 
 Exit codes: `0` OK · `1` error on at least one drive · `2` wrong usage · `130` interrupted.
-
-## 🎮 On the console itself
-
-Clean the card **without a computer**, from the console's own menu: no keyboard, no terminal.
-Download [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip) and copy the launcher to the card:
-
-| Firmware (examples of consoles) | Copy | Then on the console |
-| --- | --- | --- |
-| **ArkOS**, dArkOS (R36S, RG351, RG353…) | `Dotcleaner.sh` → `EASYROMS/ports/` | **Ports → Dotcleaner** — the result shows on screen |
-| **Knulli**, Batocera (Anbernic RG40XX, RG35XX…) | `Dotcleaner.sh` → `SHARE/roms/ports/` | Update the game lists, then **Ports → Dotcleaner** — a notification shows the result |
-| **ROCKNIX**, AmberELEC, JELOS, EmuELEC | `Dotcleaner.sh` → `roms/ports/` | **Ports → Dotcleaner** |
-| **Onion** (Miyoo Mini) | folder `Onion/App/Dotcleaner` → `App/` | **Apps → Dotcleaner** |
-| muOS, MinUI, others | `dotcleaner.sh` anywhere | over SSH: `sh dotcleaner.sh --console` |
-
-Create the `ports` folder if it does not exist. The launcher finds the ROM card by itself, cleans it
-without asking, and writes **`dotcleaner.log`** next to itself — send this file with any bug report.
-
-**What you see.** A very simple text screen (plain ASCII, 40 columns, no colours) so it shows the same
-on every firmware and screen size: `[1/4] ROM card`, `[2/4] Scan`, `[3/4] Clean` with a progress bar,
-`[4/4] Done!` — then it goes back to the menu after 6 seconds.
-On Knulli / Batocera a notification appears at each step; on Onion, a message box.
-
-<p align="center">
-  <img src="docs/console-cleaning.svg" alt="Console screen while cleaning, with a progress bar" width="440">
-  <img src="docs/console-done.svg" alt="Console screen when done" width="440">
-</p>
-
-It even removes the `._Dotcleaner.sh` ghost that macOS creates when you copy the launcher.
-
-## Compatibility
-
-| System | App | Shell |
-| --- | --- | --- |
-| macOS 13 or newer, Intel and Apple Silicon | ✅ `.dmg` | ✅ |
-| macOS 12 or older | — | ✅ |
-| Windows 10 / 11 (x64, and ARM through emulation) | ✅ `.exe` | ✅ in WSL |
-| Linux x86_64 with glibc 2.35+ (Steam Deck, Ubuntu 22.04+, Debian 12+, Fedora…) | ✅ `Dotcleaner-Linux-x86_64` | ✅ |
-| Linux ARM64 with glibc 2.39+ (Raspberry Pi OS 13+, Ubuntu 24.04+…) | ✅ `Dotcleaner-Linux-arm64` | ✅ |
-| ChromeOS (Linux), WSL | — | ✅ |
-| Consoles: ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC, Onion, muOS, MinUI, Allium, spruceOS, TrimUI, RetroPie | — | ✅ launcher or SSH |
-
-The shell version is pure POSIX `sh` and pure ASCII. It is tested at every change with **bash, dash,
-BusyBox ash (recent and old `find`), ksh, mksh, posh, yash and zsh**, on Ubuntu and macOS.
-On Linux, the Linux app needs the usual desktop libraries; if it does not start, install `libxcb-cursor0`.
+</details>
 
 ## What it removes
 
-| Item | Where it comes from |
+| Item | What it is |
 | --- | --- |
-| `._*` | AppleDouble files: macOS metadata of every copied file |
+| `._*` | macOS metadata saved next to every copied file — the **ghost games** |
 | `.DS_Store` | Finder folder view settings |
-| `.Spotlight-V100` | Spotlight index of the drive |
-| `.Trashes` | The drive's Trash (files deleted in Finder without emptying the Trash) |
+| `.Spotlight-V100` | Spotlight search index of the drive |
+| `.Trashes` | The drive's Trash (files deleted in Finder) |
 | `.fseventsd` | File system event log |
 | `.TemporaryItems`, `.DocumentRevisions-V100` | Temporary files and document versions |
 | `.apdisk`, `.AppleDouble`, `.AppleDB`, `.AppleDesktop` | Disk and network share metadata |
-| `__MACOSX` | Leftovers from zip archives made on a Mac |
-| `Thumbs.db`, `ehthumbs.db`, `desktop.ini` | Windows — **only with the Windows option** |
+| `__MACOSX` | Leftovers from zip files made on a Mac |
+| `Thumbs.db`, `ehthumbs.db`, `desktop.ini` | Windows files — **only if you tick the Windows option** |
 
-**Never touched:** your ROMs, saves, BIOS, photos, documents and every other file, hidden or not.
-Links are never followed and other drives are never entered. System and home folders are refused.
+**Never touched:** ROMs, saves, BIOS, photos, documents and every other file, hidden or not.
 
-🛡️ **Safe mode on Mac-formatted drives (APFS, HFS+).** There, the macOS system folders hold real
-data (document versions, the Trash…), so only the junk files (`._*`, `.DS_Store`, `.apdisk`,
-`__MACOSX`) are removed. Consoles use FAT32/exFAT cards, which are cleaned completely.
+- 🔗 Links are never followed and other drives are never entered; system and home folders are refused.
+- 🛡️ **Safe mode on Mac-formatted drives** (APFS, HFS+): there, the macOS folders hold real data, so
+  only `._*`, `.DS_Store`, `.apdisk` and `__MACOSX` are removed. Console cards (FAT32, exFAT) are cleaned completely.
+- 🔬 Every change is checked by an automatic audit: thousands of test cards are compared file by file
+  before and after cleaning, with every version. One wrong deletion and the release is blocked.
 
-### Where is my card?
+## Compatibility
 
-| Firmware (examples) | Name on the computer | Path on the console |
+| System | App | Shell / launcher |
 | --- | --- | --- |
-| ArkOS (R36S, RG351…) | `EASYROMS` | `/roms` |
-| Knulli, Batocera (Anbernic RG40XX…) | `SHARE` | `/userdata/roms` |
-| ROCKNIX | depends on the card | `/storage/roms` |
-| Onion (Miyoo Mini) | depends on the card | `/mnt/SDCARD` |
-| muOS | depends on the card | `/mnt/mmc` |
+| macOS 13+ (Intel & Apple Silicon) | ✅ | ✅ |
+| macOS 12 or older | — | ✅ |
+| Windows 10 / 11 | ✅ | ✅ in WSL |
+| Linux x86_64 — Steam Deck, Ubuntu 22.04+, Debian 12+, Fedora… | ✅ | ✅ |
+| Linux ARM64 — Raspberry Pi OS 13+, Ubuntu 24.04+… | ✅ | ✅ |
+| **Consoles** — ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC, Onion, muOS, MinUI, Allium, spruceOS, TrimUI, RetroPie | — | ✅ |
+
+If the Linux app does not start, install `libxcb-cursor0`. The shell version is plain POSIX `sh`: it
+runs with bash, dash, BusyBox, ksh, mksh, posh, yash and zsh.
 
 ## FAQ
 
 <details>
 <summary><b>Can it delete my games or saves?</b></summary>
 
-No. It only deletes the exact names listed above. A file like `Game._beta.gba` or a hidden save
-like `.game.srm` is kept. Scan first to see the full list before anything is deleted.
-
-This is checked at every change by an audit ([`tests/audit.py`](tests/audit.py)): realistic cards
-(ArkOS, Knulli, PortMaster…) and hundreds of random cards full of tricky names are scanned path by
-path before and after cleaning — with **both** the app and the shell — and compared with an
-independent referee. One file deleted by mistake, or one junk file left behind, and the audit fails.
+No. It only deletes the exact names listed in [What it removes](#what-it-removes). A file like
+`Game._beta.gba` or a hidden save like `.game.srm` is kept. Use **Scan** first: it shows the full list
+and deletes nothing.
 </details>
 
 <details>
 <summary><b>The <code>._</code> files came back. Why?</b></summary>
 
-macOS creates them every time you copy files from the Mac to the drive. Clean after each copy
-session, with **Eject when done** ticked: the drive is ejected right away.
+macOS creates them again every time it copies files to the card. Clean after each copy — on the
+console it only takes a few seconds.
 </details>
 
 <details>
 <summary><b>What about the drive's Trash?</b></summary>
 
-Files you delete in Finder on the drive go to its hidden `.Trashes` folder and still take space.
-Dotcleaner warns you and erases them for good. Tick **Keep the drive's Trash** (`-k`) to keep them.
+Files deleted in Finder on the drive go to its hidden `.Trashes` folder and still take space.
+Dotcleaner warns you before erasing them. Tick **Keep the drive's Trash** (`-k`) to keep them.
 </details>
 
 <details>
 <summary><b>Nothing happens when I start it on my console.</b></summary>
 
-Use the **launcher** (`Dotcleaner.sh` from `Dotcleaner-console.zip`), not `dotcleaner.sh`: launched from
-a console menu there is no keyboard, and the plain script waits for one. Check that it is in the `ports`
-folder (or `App/` on Onion), then open **`dotcleaner.log`** next to it: it says what was found and cleaned.
-If it still fails, open a bug report with this file.
+1. Use the **launcher** `Dotcleaner.sh` (capital D, from `Dotcleaner-console.zip`), not `dotcleaner.sh`:
+   the plain script waits for a keyboard.
+2. Check that it is in the `ports` folder (`App/` on Onion), and on Knulli / Batocera update the game lists.
+3. Open **`dotcleaner.log`** next to it: it says what was found and cleaned. Still stuck? Open a
+   [bug report](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=bug_report.yml) with this file.
 </details>
 
-## Building and testing
+<details>
+<summary><b>My console has two SD cards.</b></summary>
 
-Everything is built and tested by GitHub Actions on every change:
+For now the launcher cleans the ROM card it finds first (for example `/roms` on ArkOS). To clean the
+other card: put it in your computer and use the app, or connect over SSH and run `dotcleaner.sh`
+without options — the menu lists both cards (`/roms2` on ArkOS). A launcher that cleans both cards
+in one go is [planned](#️-roadmap).
+</details>
 
-- [`ci.yml`](.github/workflows/ci.yml) — ShellCheck, shell tests and deletion audit on Ubuntu, macOS and
-  BusyBox, real exFAT/FAT32 cards mounted on macOS.
-- [`apps.yml`](.github/workflows/apps.yml) — app engine audit and app tests on macOS, Windows and Linux,
-  then builds and launches the `.dmg` and the `.exe`.
-- [`full-check.yml`](.github/workflows/full-check.yml) — every Monday, [`tests/full_check.py`](tests/full_check.py)
-  checks every version at once: 8 shells + BusyBox, the 3 engines audited file by file and compared with
-  each other, extreme cards (10 000 junk files, 120 nested folders, Unicode…), the menu, the app, and
-  deliberate bugs that the audit must catch.
-- [`release.yml`](.github/workflows/release.yml) — **Actions → Release → Run workflow** publishes the
-  release with the `.dmg`, the `.exe`, the zip and the script.
+## 🗺️ Roadmap
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to run the tests yourself.
+- [ ] **Console version for two SD cards** — for handhelds with a system card and a games card
+      (R36S, RG40XXV, RG35XX…): find both cards and clean them in one go from the Ports menu.
+- Ideas? [Suggest one](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=feature_request.yml).
 
-Every release lists the SHA-256 of its files in `SHA256SUMS.txt` — see [SECURITY.md](SECURITY.md).
+What changed in each version: [CHANGELOG](CHANGELOG.md).
 
 ## Community
 
-- 💬 Chat with other users on [Discord](https://discord.gg/4FbhkuhRMm)
+- 💬 **[Discord](https://discord.gg/4FbhkuhRMm) — French-speaking community 🇫🇷.**
+  Prefer English? Open an issue on GitHub: questions are welcome in any language.
 - 🐞 [Report a bug](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=bug_report.yml) ·
   💡 [Suggest an idea](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=feature_request.yml) ·
   🌍 [Improve a translation](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=translation.yml)
-- 🤝 [Contributing](CONTRIBUTING.md) · [Code of conduct](CODE_OF_CONDUCT.md) · [Support](SUPPORT.md) · [Security](SECURITY.md)
-- ⭐ If Dotcleaner saved your card, a star on GitHub helps other players find it!
+- 🛠️ Want to help with the code or run the tests? See [CONTRIBUTING.md](CONTRIBUTING.md).
+- 🔒 A file deleted that should not have been? See [SECURITY.md](SECURITY.md).
+- ⭐ If Dotcleaner saved your card, a star helps other players find it!
 
 ## License
 
