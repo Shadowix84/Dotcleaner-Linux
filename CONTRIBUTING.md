@@ -75,6 +75,7 @@ mistake, or one junk file left behind, and it fails.
 | [`full-check.yml`](.github/workflows/full-check.yml) | every Monday | `tests/full_check.py`: every version at once, extreme cards, and deliberate bugs the audit must catch |
 | [`pages.yml`](.github/workflows/pages.yml) | changes to `site/` or `docs/` | Publishes the website |
 | [`release.yml`](.github/workflows/release.yml) | by hand | Publishes a release (see below) |
+| [`tidy-releases.yml`](.github/workflows/tidy-releases.yml) | after each release, or by hand | Titles every release from the CHANGELOG and marks the older ones "old version" |
 
 ## Releasing (maintainer)
 

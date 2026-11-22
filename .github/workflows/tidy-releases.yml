@@ -1,0 +1,23 @@
+name: Tidy releases
+
+# Titles every release "Dotcleaner x.y.z — <short title>" (from CHANGELOG.md) and puts an
+# "old version" notice with a link to the latest release on every older release.
+# Runs by hand (Actions -> Tidy releases -> Run workflow) and after each release.
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  tidy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Titles and old-version notices
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sh tools/tidy_releases.sh --self-test
+          sh tools/tidy_releases.sh

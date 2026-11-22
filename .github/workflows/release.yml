@@ -136,3 +136,9 @@ jobs:
             --notes-file notes.md \
             apps/Dotcleaner-macOS.dmg apps/Dotcleaner-Windows.exe apps/Dotcleaner-Linux-* Dotcleaner-console.zip \
             Dotcleaner-shell.zip dotcleaner.sh SHA256SUMS.txt
+
+  tidy:
+    needs: release
+    uses: ./.github/workflows/tidy-releases.yml
+    permissions:
+      contents: write

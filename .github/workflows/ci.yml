@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: ShellCheck
-        run: shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh tests/macos_card.sh tools/make_console.sh console/Dotcleaner.sh
+        run: shellcheck -s sh dotcleaner.sh install.sh dotcleaner.command tests/run_tests.sh tests/macos_card.sh tools/make_console.sh tools/tidy_releases.sh console/Dotcleaner.sh
       - name: Shell scripts are pure ASCII (console screens, strict shells)
         run: "! grep -nP '[^\\x00-\\x7F]' dotcleaner.sh install.sh dotcleaner.command console/Dotcleaner.sh"
       - name: Console launchers are up to date (tools/make_console.sh)
