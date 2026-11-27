@@ -16,7 +16,7 @@ Open an [issue](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/n
 | --- | --- |
 | `dotcleaner.sh` | The shell version and the cleaning engine for consoles — plain POSIX `sh` |
 | `console/` | Console launchers and `README.txt`, **generated** from `dotcleaner.sh` by `tools/make_console.sh` |
-| `console/menu-logo/` | Optional logo for the console menus (`gamelist.xml` + images from `tools/make_logos.py`) |
+| `console/icons/` | Icon for the console menus, drawn by `tools/make_logos.py`; the launcher adds itself to the menu's `gamelist.xml` with it (Knulli / Batocera: through the menu's local web API) |
 | `app/dotcleaner_core.py` | The engine of the desktop app (same rules as the shell) |
 | `app/dotcleaner_gui.py` | The desktop app (PySide6), packaged as `.dmg`, `.exe` and Linux binaries |
 | `app/i18n.py` | App texts in 5 languages |

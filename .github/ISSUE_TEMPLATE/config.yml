@@ -1,8 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 💬 Discord (French-speaking community 🇫🇷)
-    url: https://discord.gg/4FbhkuhRMm
-    about: Questions and chat with other users, in French. In English? Open an issue here instead.
   - name: 📖 FAQ
     url: https://github.com/Shadowix84/Dotcleaner-Multi-Software#faq
     about: First launch, ._ files coming back, the drive's Trash, two SD cards…

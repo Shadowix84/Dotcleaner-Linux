@@ -4,7 +4,8 @@
 #   - titles every release "Dotcleaner x.y.z — <short title>", from the CHANGELOG heading
 #     "## [x.y.z] — date — <short title>";
 #   - adds a notice "This is an old version" with a link to the latest release at the top
-#     of every release except the latest one (and removes it from the latest one).
+#     of every release except the latest one (and removes it from the latest one);
+#   - removes links that are no longer used (the Discord).
 # Safe to run again: the notice is added only once.
 #
 # Needs: gh (logged in with GH_TOKEN), jq, GITHUB_REPOSITORY=owner/repo, run from the repo root.
@@ -33,11 +34,20 @@ remove_notice() {
   printf '%s\n' "$1" | awk -v m="$MARKER" '$0 == m { skip = 3; next } skip > 0 { skip--; next } { print }'
 }
 
+# drop_old_links BODY -> BODY without the Discord link (removed from the project)
+drop_old_links() {
+  printf '%s\n' "$1" | sed 's/ · \[Discord\](https:\/\/discord\.gg\/[A-Za-z0-9]*)\( ([^)]*)\)\{0,1\}//'
+}
+
 if [ "${1:-}" = "--self-test" ]; then
   REPO=owner/repo
   b=$(add_notice "Notes")
   [ "$(add_notice "$b")" = "$b" ] || { echo "notice added twice"; exit 1; }
   [ "$(remove_notice "$b")" = "Notes" ] || { echo "notice not removed"; exit 1; }
+  l='[FAQ](x) · [Report a bug](y) · [Discord](https://discord.gg/4FbhkuhRMm) (French-speaking community)'
+  [ "$(drop_old_links "$l")" = '[FAQ](x) · [Report a bug](y)' ] || { echo "Discord link not removed"; exit 1; }
+  l='[FAQ](x) · [Discord](https://discord.gg/4FbhkuhRMm) (French) · [All changes](z)'
+  [ "$(drop_old_links "$l")" = '[FAQ](x) · [All changes](z)' ] || { echo "Discord link not removed (middle)"; exit 1; }
   echo "self-test ok"
   exit 0
 fi
@@ -46,6 +56,7 @@ fi
 latest=$(gh api "repos/$REPO/releases/latest" -q .tag_name)
 gh api "repos/$REPO/releases?per_page=100" -q '.[] | "\(.id) \(.tag_name)"' | while read -r id tag; do
   body=$(gh api "repos/$REPO/releases/$id" -q .body)
+  body=$(drop_old_links "$body")
   if [ "$tag" = "$latest" ]; then body=$(remove_notice "$body"); else body=$(add_notice "$body"); fi
   title=$(release_title "${tag#v}")
   jq -n --arg n "$title" --arg b "$body" '{name: $n, body: $b}' |

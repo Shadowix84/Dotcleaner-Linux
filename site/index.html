@@ -389,15 +389,14 @@
     <span>Dotcleaner · <span data-t="license"></span> · © 2026 Shadowix84</span>
     <span><a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software">GitHub</a> ·
       <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/blob/main/CHANGELOG.md" data-t="changelog"></a> ·
-      <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new/choose" data-t="report"></a> ·
-      <a href="https://discord.gg/4FbhkuhRMm" data-t="discord"></a></span>
+      <a href="https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new/choose" data-t="report"></a></span>
   </div>
 </footer>
 
 <script>
 const T = {
   en: {
-    discord: "Discord (French)", soon: "Coming soon", con_2sd: "Two SD cards (R36S, RG40XXV, RG35XX…)? A version that cleans both cards in one go is on the way. Until then the launcher cleans the ROM card it finds first.",
+    soon: "New", con_2sd: "Two SD cards (R36S, RG40XXV, RG35XX…) or one card split in several partitions? Nothing to set up: every card and partition with a roms folder is found and cleaned.",
     nav_how: "How it works", nav_consoles: "On the console", nav_safe: "Safety", nav_faq: "FAQ",
     pill: "free & open source",
     hero_title: "Clean your SD cards from <span>macOS junk</span>",
@@ -413,7 +412,7 @@ const T = {
     s3: "Scan", s3d: "See what would be deleted. Nothing is deleted yet.",
     s4: "Clean", s4d: "Confirm, and the junk is gone. The drive can be ejected right away.",
     con_title: "Clean right on the console", con_lead: "No computer needed: copy one file to the card and launch it from the Ports menu. A simple text screen shows each step — it works on every firmware.",
-    con_s1: "Copy <b>Dotcleaner.sh</b> into the <b>ports</b> folder of the card — on Knulli into <b>roms/tools</b>, on Onion the <b>Dotcleaner</b> folder into <b>App</b>.",
+    con_s1: "Copy <b>Dotcleaner.sh</b> and the <b>icons</b> folder into the <b>ports</b> folder of the card — on Knulli into <b>roms/tools</b>, on Onion the <b>Dotcleaner</b> folder into <b>App</b>.",
     con_s2: "Launch <b>Ports → Dotcleaner</b> (<b>Tools</b> on Knulli, <b>Apps</b> on Onion).", con_s3: "Done in a few seconds: it goes back to the menu by itself.",
     con_dl: "Download for consoles", guide: "Guide",
     con_note: "ArkOS and similar firmwares show each step on screen. On Knulli nothing is shown — that is normal. A dotcleaner.log file next to the launcher always gives the result.",
@@ -436,12 +435,12 @@ const T = {
     q2: "My computer says the app can't be opened", a2: "The app is free and not signed with a paid certificate, so you are warned once. <b>macOS:</b> System Settings → Privacy & Security → Open Anyway. <b>Windows:</b> More info → Run anyway.",
     q3: "Can it delete my games or saves?", a3: "No. It only removes the hidden macOS files listed above. It never follows links, never leaves the drive, and refuses system and home folders.",
     q4: "Which consoles are supported?", a4: "Every firmware with a Ports or Tools menu (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion as an app, and the others over SSH with <code>sh dotcleaner.sh --console</code>.",
-    q5: "Something went wrong", a5: "Open dotcleaner.log next to the launcher and attach it to a report on GitHub — or ask on Discord (French-speaking).",
+    q5: "Something went wrong", a5: "Open dotcleaner.log next to the launcher and attach it to a report on GitHub.",
     lang_title: "Speaks your language", lang_lead: "The app and this site exist in 5 languages. The console screen stays in simple English so it works on every firmware.",
     license: "MIT License", report: "Report a problem", changelog: "Changelog",
   },
   fr: {
-    discord: "Discord (français)", soon: "Bientôt", con_2sd: "Deux cartes SD (R36S, RG40XXV, RG35XX…) ? Une version qui nettoie les deux cartes d'un coup est en préparation. En attendant, le lanceur nettoie la carte des ROM qu'il trouve en premier.",
+    soon: "Nouveau", con_2sd: "Deux cartes SD (R36S, RG40XXV, RG35XX…) ou une carte divisée en plusieurs partitions ? Rien à régler : chaque carte et chaque partition avec un dossier roms est trouvée et nettoyée.",
     nav_how: "Fonctionnement", nav_consoles: "Sur la console", nav_safe: "Sécurité", nav_faq: "FAQ",
     pill: "gratuit et open source",
     hero_title: "Débarrassez vos cartes SD des <span>parasites de macOS</span>",
@@ -457,7 +456,7 @@ const T = {
     s3: "Analyser", s3d: "Voyez ce qui serait supprimé. Rien n'est encore supprimé.",
     s4: "Nettoyer", s4d: "Confirmez, et les parasites disparaissent. Le lecteur peut être éjecté tout de suite.",
     con_title: "Nettoyez directement sur la console", con_lead: "Pas besoin d'ordinateur : copiez un fichier sur la carte et lancez-le depuis le menu Ports. Un écran texte simple affiche chaque étape — il fonctionne sur tous les firmwares.",
-    con_s1: "Copiez <b>Dotcleaner.sh</b> dans le dossier <b>ports</b> de la carte — sur Knulli dans <b>roms/tools</b>, sur Onion le dossier <b>Dotcleaner</b> dans <b>App</b>.",
+    con_s1: "Copiez <b>Dotcleaner.sh</b> et le dossier <b>icons</b> dans le dossier <b>ports</b> de la carte — sur Knulli dans <b>roms/tools</b>, sur Onion le dossier <b>Dotcleaner</b> dans <b>App</b>.",
     con_s2: "Lancez <b>Ports → Dotcleaner</b> (<b>Tools</b> sur Knulli, <b>Apps</b> sur Onion).", con_s3: "C'est fait en quelques secondes : le retour au menu est automatique.",
     con_dl: "Télécharger pour consoles", guide: "Guide",
     con_note: "ArkOS et les firmwares similaires affichent chaque étape à l'écran. Sur Knulli, rien ne s'affiche — c'est normal. Le fichier dotcleaner.log, à côté du lanceur, donne toujours le résultat.",
@@ -480,12 +479,12 @@ const T = {
     q2: "Mon ordinateur dit que l'application ne peut pas être ouverte", a2: "L'application est gratuite et n'est pas signée avec un certificat payant : un avertissement s'affiche une fois. <b>macOS :</b> Réglages système → Confidentialité et sécurité → Ouvrir quand même. <b>Windows :</b> Informations complémentaires → Exécuter quand même.",
     q3: "Peut-il supprimer mes jeux ou mes sauvegardes ?", a3: "Non. Il supprime seulement les fichiers cachés de macOS listés plus haut. Il ne suit jamais les liens, ne sort jamais du lecteur et refuse les dossiers système et personnels.",
     q4: "Quelles consoles sont compatibles ?", a4: "Tous les firmwares avec un menu Ports ou Tools (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion en tant qu'application, et les autres en SSH avec <code>sh dotcleaner.sh --console</code>.",
-    q5: "Quelque chose ne marche pas", a5: "Ouvrez dotcleaner.log à côté du lanceur et joignez-le à un signalement sur GitHub — ou demandez sur le Discord (francophone).",
+    q5: "Quelque chose ne marche pas", a5: "Ouvrez dotcleaner.log à côté du lanceur et joignez-le à un signalement sur GitHub.",
     lang_title: "Parle votre langue", lang_lead: "L'application et ce site existent en 5 langues. L'écran de la console reste en anglais simple pour fonctionner sur tous les firmwares.",
     license: "Licence MIT", report: "Signaler un problème", changelog: "Nouveautés",
   },
   es: {
-    discord: "Discord (en francés)", soon: "Próximamente", con_2sd: "¿Dos tarjetas SD (R36S, RG40XXV, RG35XX…)? Está en camino una versión que limpia las dos tarjetas de una vez. Mientras tanto, el lanzador limpia la tarjeta de ROMs que encuentra primero.",
+    soon: "Nuevo", con_2sd: "¿Dos tarjetas SD (R36S, RG40XXV, RG35XX…) o una tarjeta dividida en varias particiones? Nada que configurar: se encuentra y limpia cada tarjeta y partición con una carpeta roms.",
     nav_how: "Cómo funciona", nav_consoles: "En la consola", nav_safe: "Seguridad", nav_faq: "Preguntas",
     pill: "gratis y de código abierto",
     hero_title: "Limpia tus tarjetas SD de la <span>basura de macOS</span>",
@@ -501,7 +500,7 @@ const T = {
     s3: "Analizar", s3d: "Mira lo que se eliminaría. Todavía no se elimina nada.",
     s4: "Limpiar", s4d: "Confirma y la basura desaparece. La unidad se puede expulsar enseguida.",
     con_title: "Limpia directamente en la consola", con_lead: "Sin ordenador: copia un archivo a la tarjeta y ábrelo desde el menú Ports. Una pantalla de texto sencilla muestra cada paso — funciona en todos los firmwares.",
-    con_s1: "Copia <b>Dotcleaner.sh</b> en la carpeta <b>ports</b> de la tarjeta — en Knulli en <b>roms/tools</b>, en Onion la carpeta <b>Dotcleaner</b> en <b>App</b>.",
+    con_s1: "Copia <b>Dotcleaner.sh</b> y la carpeta <b>icons</b> en la carpeta <b>ports</b> de la tarjeta — en Knulli en <b>roms/tools</b>, en Onion la carpeta <b>Dotcleaner</b> en <b>App</b>.",
     con_s2: "Abre <b>Ports → Dotcleaner</b> (<b>Tools</b> en Knulli, <b>Apps</b> en Onion).", con_s3: "Listo en unos segundos: vuelve solo al menú.",
     con_dl: "Descargar para consolas", guide: "Guía",
     con_note: "ArkOS y los firmwares similares muestran cada paso en pantalla. En Knulli no se muestra nada — es normal. El archivo dotcleaner.log, junto al lanzador, siempre da el resultado.",
@@ -524,12 +523,12 @@ const T = {
     q2: "Mi ordenador dice que la app no se puede abrir", a2: "La app es gratuita y no está firmada con un certificado de pago, así que verás un aviso una vez. <b>macOS:</b> Ajustes del Sistema → Privacidad y seguridad → Abrir igualmente. <b>Windows:</b> Más información → Ejecutar de todas formas.",
     q3: "¿Puede borrar mis juegos o partidas?", a3: "No. Solo elimina los archivos ocultos de macOS de la lista. Nunca sigue enlaces, nunca sale de la unidad y rechaza las carpetas del sistema y personales.",
     q4: "¿Qué consolas son compatibles?", a4: "Todos los firmwares con menú Ports o Tools (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion como app, y los demás por SSH con <code>sh dotcleaner.sh --console</code>.",
-    q5: "Algo ha fallado", a5: "Abre dotcleaner.log junto al lanzador y adjúntalo a un informe en GitHub — o pregunta en Discord (en francés).",
+    q5: "Algo ha fallado", a5: "Abre dotcleaner.log junto al lanzador y adjúntalo a un informe en GitHub.",
     lang_title: "Habla tu idioma", lang_lead: "La app y este sitio existen en 5 idiomas. La pantalla de la consola se queda en inglés sencillo para funcionar en todos los firmwares.",
     license: "Licencia MIT", report: "Informar de un problema", changelog: "Novedades",
   },
   zh: {
-    discord: "Discord（法语）", soon: "即将推出", con_2sd: "双 SD 卡（R36S、RG40XXV、RG35XX……）？一次清理两张卡的版本正在开发中。在此之前，启动器会清理它最先找到的游戏卡。",
+    soon: "新功能", con_2sd: "双 SD 卡（R36S、RG40XXV、RG35XX……）或一张卡分成多个分区？无需设置：每张带有 roms 文件夹的卡和分区都会被找到并清理。",
     nav_how: "使用方法", nav_consoles: "在掌机上", nav_safe: "安全性", nav_faq: "常见问题",
     pill: "免费且开源",
     hero_title: "清除 SD 卡上的 <span>macOS 垃圾文件</span>",
@@ -545,7 +544,7 @@ const T = {
     s3: "扫描", s3d: "查看将被删除的内容，此时不会删除任何东西。",
     s4: "清理", s4d: "确认后垃圾文件即被删除，磁盘可以立即推出。",
     con_title: "直接在掌机上清理", con_lead: "无需电脑：把一个文件复制到存储卡，再从 Ports 菜单启动。简单的文字界面会显示每个步骤——适用于所有固件。",
-    con_s1: "把 <b>Dotcleaner.sh</b> 复制到存储卡的 <b>ports</b> 文件夹——Knulli 上复制到 <b>roms/tools</b>，Onion 上把 <b>Dotcleaner</b> 文件夹复制到 <b>App</b>。",
+    con_s1: "把 <b>Dotcleaner.sh</b> 和 <b>icons</b> 文件夹复制到存储卡的 <b>ports</b> 文件夹——Knulli 上复制到 <b>roms/tools</b>，Onion 上把 <b>Dotcleaner</b> 文件夹复制到 <b>App</b>。",
     con_s2: "启动 <b>Ports → Dotcleaner</b>（Knulli 上在 <b>Tools</b> 中，Onion 上在 <b>Apps</b> 中）。", con_s3: "几秒钟即可完成，之后会自动返回菜单。",
     con_dl: "下载掌机版", guide: "指南",
     con_note: "ArkOS 及类似固件会在屏幕上显示每个步骤。Knulli 上不会显示任何内容——这是正常的。启动器旁的 dotcleaner.log 文件始终记录结果。",
@@ -568,12 +567,12 @@ const T = {
     q2: "电脑提示无法打开应用", a2: "本应用免费，未使用付费证书签名，所以首次会有提示。<b>macOS：</b>系统设置 → 隐私与安全性 → 仍要打开。<b>Windows：</b>更多信息 → 仍要运行。",
     q3: "会删除我的游戏或存档吗？", a3: "不会。它只删除上面列出的 macOS 隐藏文件，从不跟随链接，从不离开所选磁盘，并拒绝处理系统和个人文件夹。",
     q4: "支持哪些掌机？", a4: "所有带 Ports 或 Tools 菜单的固件（ArkOS、dArkOS、Knulli、Batocera、ROCKNIX、AmberELEC、JELOS、EmuELEC），Onion 以应用形式支持，其他固件可通过 SSH 运行 <code>sh dotcleaner.sh --console</code>。",
-    q5: "出现了问题", a5: "打开启动器旁的 dotcleaner.log，附在 GitHub 的问题报告中——或者到 Discord（法语社区）提问。",
+    q5: "出现了问题", a5: "打开启动器旁的 dotcleaner.log，附在 GitHub 的问题报告中。",
     lang_title: "支持你的语言", lang_lead: "应用和本网站提供 5 种语言。掌机界面使用简单英文，以便在所有固件上正常显示。",
     license: "MIT 许可证", report: "报告问题", changelog: "更新日志",
   },
   hi: {
-    discord: "Discord (फ़्रेंच)", soon: "जल्द आ रहा है", con_2sd: "दो SD कार्ड (R36S, RG40XXV, RG35XX…)? दोनों कार्ड एक साथ साफ़ करने वाला संस्करण आ रहा है। तब तक लॉन्चर वही ROM कार्ड साफ़ करता है जो उसे पहले मिलता है।",
+    soon: "नया", con_2sd: "दो SD कार्ड (R36S, RG40XXV, RG35XX…) या कई पार्टीशन में बँटा एक कार्ड? कुछ सेट नहीं करना: roms फ़ोल्डर वाला हर कार्ड और पार्टीशन ढूँढकर साफ़ किया जाता है।",
     nav_how: "यह कैसे काम करता है", nav_consoles: "कंसोल पर", nav_safe: "सुरक्षा", nav_faq: "सवाल-जवाब",
     pill: "मुफ़्त और ओपन सोर्स",
     hero_title: "अपने SD कार्ड से <span>macOS की बेकार फ़ाइलें</span> साफ़ करें",
@@ -589,7 +588,7 @@ const T = {
     s3: "स्कैन करें", s3d: "देखें कि क्या हटेगा। अभी कुछ नहीं हटाया जाता।",
     s4: "साफ़ करें", s4d: "पुष्टि करें और बेकार फ़ाइलें हट जाती हैं। ड्राइव तुरंत इजेक्ट हो सकती है।",
     con_title: "सीधे कंसोल पर साफ़ करें", con_lead: "कंप्यूटर की ज़रूरत नहीं: एक फ़ाइल कार्ड पर कॉपी करें और Ports मेन्यू से चलाएँ। एक सरल टेक्स्ट स्क्रीन हर चरण दिखाती है — यह हर फ़र्मवेयर पर चलती है।",
-    con_s1: "<b>Dotcleaner.sh</b> को कार्ड के <b>ports</b> फ़ोल्डर में कॉपी करें — Knulli पर <b>roms/tools</b> में, Onion पर <b>Dotcleaner</b> फ़ोल्डर को <b>App</b> में।",
+    con_s1: "<b>Dotcleaner.sh</b> और <b>icons</b> फ़ोल्डर को कार्ड के <b>ports</b> फ़ोल्डर में कॉपी करें — Knulli पर <b>roms/tools</b> में, Onion पर <b>Dotcleaner</b> फ़ोल्डर को <b>App</b> में।",
     con_s2: "<b>Ports → Dotcleaner</b> चलाएँ (Knulli पर <b>Tools</b> में, Onion पर <b>Apps</b> में)।", con_s3: "कुछ ही सेकंड में पूरा: यह अपने आप मेन्यू पर लौट आता है।",
     con_dl: "कंसोल के लिए डाउनलोड करें", guide: "गाइड",
     con_note: "ArkOS और इसी तरह के फ़र्मवेयर हर चरण स्क्रीन पर दिखाते हैं। Knulli पर कुछ नहीं दिखता — यह सामान्य है। लॉन्चर के पास की dotcleaner.log फ़ाइल में हमेशा नतीजा होता है।",
@@ -612,7 +611,7 @@ const T = {
     q2: "मेरा कंप्यूटर कहता है कि ऐप नहीं खुल सकता", a2: "ऐप मुफ़्त है और किसी पेड सर्टिफ़िकेट से साइन नहीं है, इसलिए एक बार चेतावनी दिखती है। <b>macOS:</b> System Settings → Privacy & Security → Open Anyway। <b>Windows:</b> More info → Run anyway।",
     q3: "क्या यह मेरे गेम या सेव हटा सकता है?", a3: "नहीं। यह केवल ऊपर सूचीबद्ध macOS की छिपी फ़ाइलें हटाता है। यह लिंक फ़ॉलो नहीं करता, ड्राइव से बाहर नहीं जाता और सिस्टम व होम फ़ोल्डर अस्वीकार करता है।",
     q4: "कौन से कंसोल समर्थित हैं?", a4: "Ports या Tools मेन्यू वाले सभी फ़र्मवेयर (ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC), Onion ऐप के रूप में, और बाकी SSH पर <code>sh dotcleaner.sh --console</code> से।",
-    q5: "कुछ गड़बड़ हो गई", a5: "लॉन्चर के पास dotcleaner.log खोलें और उसे GitHub पर रिपोर्ट के साथ जोड़ें — या Discord (फ़्रेंच समुदाय) पर पूछें।",
+    q5: "कुछ गड़बड़ हो गई", a5: "लॉन्चर के पास dotcleaner.log खोलें और उसे GitHub पर रिपोर्ट के साथ जोड़ें।",
     lang_title: "आपकी भाषा में", lang_lead: "ऐप और यह साइट 5 भाषाओं में हैं। कंसोल स्क्रीन सरल अंग्रेज़ी में रहती है ताकि हर फ़र्मवेयर पर चले।",
     license: "MIT लाइसेंस", report: "समस्या बताएँ", changelog: "बदलाव",
   },

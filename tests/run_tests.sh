@@ -257,7 +257,10 @@ DOTCLEANER_NO_EXEC_PLUS=1; export DOTCLEANER_NO_EXEC_PLUS; run -y "$CARD"; unset
 check "fallback for old find: junk deleted"  eval 'rc_is 0 && junk_gone && keep_list'
 
 # --- Console mode: launcher started from the console menu (no keyboard, no terminal) ------
-LAUNCHER="$HERE/../console/Dotcleaner.sh"
+# the launcher writes next to itself (dotcleaner.log, gamelist.xml when an icon sits there):
+# test a copy, never the one in the repository
+mkdir -p "$TMP/launcher"; cp "$HERE/../console/Dotcleaner.sh" "$TMP/launcher/Dotcleaner.sh"
+LAUNCHER="$TMP/launcher/Dotcleaner.sh"
 make_card
 # shellcheck disable=SC2086
 DOTCLEANER_CONSOLE_ROOT="$CARD" DOTCLEANER_NO_TTY=1 DOTCLEANER_LOG="$TMP/console.log" NO_COLOR=1 \
@@ -282,6 +285,84 @@ make_card
 DOTCLEANER_CONSOLE_ROOT="$CARD" DOTCLEANER_NO_TTY=1 DOTCLEANER_LOG="$TMP/console.log" NO_COLOR=1 \
   $SHELL_CMD "$SCRIPT" --console </dev/null >"$OUT" 2>&1; RC=$?
 check "--console option does the same"      eval 'rc_is 0 && junk_gone'
+
+# --- Console mode: two SD cards, or one card split in several partitions ------------------
+# DOTCLEANER_KNOWN_ROOTS replaces /roms, /roms2, /userdata...; DOTCLEANER_MOUNTS replaces
+# /proc/mounts (device, mount point, file system), so no real card is touched.
+SD1="$TMP/sd1"; SD2="$TMP/sd2"; MNT="$TMP/mounts"; MD="$TMP/media"
+run_cards() {
+  # shellcheck disable=SC2086
+  DOTCLEANER_KNOWN_ROOTS="$1" DOTCLEANER_MOUNTS="$MNT" DOTCLEANER_NO_TTY=1 \
+    DOTCLEANER_LOG="$TMP/console.log" NO_COLOR=1 $SHELL_CMD "$LAUNCHER" </dev/null >"$OUT" 2>&1; RC=$?
+}
+both_clean() { junk_gone "$SD1" && keep_list "$SD1" && junk_gone "$SD2" && keep_list "$SD2"; }
+
+make_card "$SD1"; make_card "$SD2"; : >"$MNT"
+run_cards "$SD1:$SD2"
+check "two SD cards (ArkOS /roms + /roms2): both cleaned" eval 'rc_is 0 && both_clean && out_has "ROM cards: 2" && out_has "24 items deleted"'
+check "two SD cards: log fits 40 columns" eval '[ "$(grep -v "^      /" "$TMP/console.log" | awk "length > 40" | wc -l)" -eq 0 ]'
+
+# Knulli with two cards: /userdata is SD2, and both SHARE partitions are also in /media
+rm -rf "$MD"; mkdir -p "$MD"; make_card "$SD1"; make_card "$SD2"
+ln -s "$SD1" "$MD/SHARE"; ln -s "$SD2" "$MD/SHARE_1"
+printf '/dev/mmcblk0p3 %s exfat rw 0 0\n/dev/mmcblk1p1 %s exfat rw 0 0\n' "$MD/SHARE" "$MD/SHARE_1" >"$MNT"
+run_cards "$SD2"
+check "two SD cards (Knulli): each card cleaned once" eval 'rc_is 0 && both_clean && out_has "ROM cards: 2" && out_has "24 items deleted" && ! out_has "SHARE_1"'
+
+# one card split in two game partitions, plus a boot partition without a roms folder
+P1="$TMP/part1"; P2="$TMP/part 2"; BOOT="$TMP/boot"
+make_card "$P1"; make_card "$P2"; rm -rf "$BOOT"; mkdir -p "$BOOT"; touch "$BOOT/._kernel.img"
+printf '/dev/mmcblk0p1 %s vfat rw 0 0\n/dev/mmcblk0p2 %s exfat rw 0 0\n/dev/mmcblk0p3 %s exfat rw 0 0\nproc /proc proc rw 0 0\n' \
+  "$BOOT" "$P1" "$(printf '%s' "$P2" | sed 's/ /\\040/g')" >"$MNT"
+run_cards ""
+check "one card split in two partitions: both cleaned" eval 'rc_is 0 && junk_gone "$P1" && keep_list "$P1" && junk_gone "$P2" && keep_list "$P2" && out_has "ROM cards: 2"'
+check "split card: partition without games left alone" eval 'exists "$BOOT/._kernel.img"'
+
+# a union folder (mergerfs pool of several cards) is skipped: its cards are cleaned directly
+POOL="$TMP/pool"; make_card "$POOL"; make_card "$SD2"
+printf 'mergerfs %s fuse.mergerfs rw 0 0\n' "$POOL" >"$MNT"
+run_cards "$POOL:$SD2"
+check "union folder (mergerfs) skipped, real card cleaned" eval 'rc_is 0 && junk_there "$POOL" && junk_gone "$SD2" && out_has "^\[1/4\] ROM card$"'
+
+# the same card reached by its games folder and by its root: the whole card is cleaned
+make_card "$SD1"; printf '/dev/mmcblk1p1 %s exfat rw 0 0\n' "$SD1" >"$MNT"
+run_cards "$SD1/roms"
+check "same card twice: the whole card is cleaned once" eval 'rc_is 0 && junk_gone "$SD1" && keep_list "$SD1" && out_has "^\[1/4\] ROM card$" && out_has "12 items deleted"'
+
+# --- Console mode: menu entry with the icon (gamelist.xml next to the launcher) -------------
+PD="$TMP/ports"; GL="$PD/gamelist.xml"
+mkdir -p "$PD/icons"; cp "$LAUNCHER" "$PD/Dotcleaner.sh"
+run_menu() {
+  make_card
+  # shellcheck disable=SC2086
+  DOTCLEANER_CONSOLE_ROOT="$CARD" DOTCLEANER_NO_TTY=1 DOTCLEANER_LOG="$TMP/console.log" NO_COLOR=1 \
+    $SHELL_CMD "$PD/Dotcleaner.sh" </dev/null >"$OUT" 2>&1; RC=$?
+}
+games() { grep -c '<game[ >]' "$GL"; }
+ours()  { grep -c '<path>./Dotcleaner.sh</path>' "$GL"; }
+imgs()  { grep -c '<image>./icons/dotcleaner.png</image>' "$GL"; }
+no_tmp(){ [ -z "$(find "$PD" -name '.gamelist.xml.dotcleaner.*')" ]; }
+
+run_menu
+check "menu: no icon -> no gamelist.xml created" eval 'rc_is 0 && missing "$GL"'
+: >"$PD/icons/dotcleaner.png"
+run_menu
+check "menu: icon -> gamelist.xml created with the entry" eval 'rc_is 0 && junk_gone && [ "$(games)" -eq 1 ] && [ "$(imgs)" -eq 1 ] && tail -n 1 "$GL" | grep -q "^</gameList>$" && no_tmp'
+check "menu: log still fits 40 columns" eval '[ "$(grep -v "^      /" "$TMP/console.log" | awk "length > 40" | wc -l)" -eq 0 ] && grep -q "^Menu: entry with icon added$" "$TMP/console.log"'
+cp "$GL" "$TMP/gl.before"
+run_menu
+check "menu: second run changes nothing"     eval 'rc_is 0 && cmp -s "$GL" "$TMP/gl.before"'
+printf '<?xml version="1.0"?>\n<gameList>\n\t<game>\n\t\t<path>./Doom.sh</path>\n\t\t<name>Doom</name>\n\t\t<image>./Imgs/doom.png</image>\n\t</game>\n</gameList>\n' >"$GL"
+run_menu
+check "menu: existing list kept, entry added" eval 'rc_is 0 && [ "$(games)" -eq 2 ] && [ "$(ours)" -eq 1 ] && grep -q "<path>./Doom.sh</path>" "$GL" && grep -q "./Imgs/doom.png" "$GL" && tail -n 1 "$GL" | grep -q "^</gameList>$" && no_tmp'
+printf '<?xml version="1.0"?>\n<gameList>\n\t<game>\n\t\t<path>./Doom.sh</path>\n\t\t<name>Doom</name>\n\t</game>\n\t<game>\n\t\t<path>./Dotcleaner.sh</path>\n\t\t<name>Dotcleaner</name>\n\t\t<playcount>3</playcount>\n\t</game>\n</gameList>\n' >"$GL"
+run_menu
+check "menu: entry rewritten by the menu gets its icon back" eval 'rc_is 0 && [ "$(games)" -eq 2 ] && [ "$(ours)" -eq 1 ] && [ "$(imgs)" -eq 1 ] && grep -q "<playcount>3</playcount>" "$GL" && [ "$(grep -c "<image>" "$GL")" -eq 1 ]'
+printf '<gameList />\n' >"$GL"; cp "$GL" "$TMP/gl.before"
+run_menu
+check "menu: unknown gamelist format left alone" eval 'rc_is 0 && junk_gone && cmp -s "$GL" "$TMP/gl.before" && no_tmp'
+
+check "tests leave the repository's console folder untouched" eval '[ ! -e "$HERE/../console/gamelist.xml" ] && [ ! -e "$HERE/../console/dotcleaner.log" ]'
 
 # --- Installer -----------------------------------------------------------------------------
 INSTALLER="$HERE/../install.sh"

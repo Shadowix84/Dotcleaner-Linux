@@ -14,7 +14,7 @@
 
 set -u
 
-VERSION="2.3.2"
+VERSION="2.4.0"
 PROG=${0##*/}
 
 # --- What gets removed (keep in sync with app/dotcleaner_core.py) ------------
@@ -76,7 +76,7 @@ Options:
   -e, --eject       eject the drive when done (macOS)
   -v, --verbose     list every deleted item
   -q, --quiet       only print errors
-      --console     console mode: find the ROM card of this console, clean it
+      --console     console mode: find the ROM card(s) of this console, clean them
                     without questions, show the result and write dotcleaner.log
   -h, --help        show this help
   -V, --version     show the version
@@ -295,19 +295,89 @@ is_mountpoint() {
   [ -n "$_mp" ] && [ "$_mp" = "$1" ]
 }
 
-# console_root -> the ROM card of the console we are running on, if any
-console_root() {
-  if [ -n "${DOTCLEANER_CONSOLE_ROOT+x}" ]; then        # tests
+# --- ROM cards of the console (one or two SD cards, one or more partitions) ----
+#
+# console_roots -> every card or partition with games, one path per line, each one once.
+#   ArkOS, dArkOS            /roms (EASYROMS), /roms2 (second SD card)
+#   Knulli, Batocera         /userdata (SHARE), /media/SHARE, /media/SHARE_1... (other card)
+#   ROCKNIX, AmberELEC, JELOS /storage/roms, /storage/games-internal, /storage/games-external
+#   muOS                     /mnt/mmc (SD1), /mnt/sdcard (SD2)
+#   Onion, MinUI, spruceOS   /mnt/SDCARD
+#   any firmware             every other mounted card or partition with a roms folder
+# The same partition reached by two paths (/userdata = /media/SHARE_1 on Knulli with two
+# cards) is kept once; union folders (mergerfs, overlay) are skipped: their real cards
+# are cleaned directly.
+
+KNOWN_ROOTS='/userdata
+/roms
+/roms2
+/storage/roms
+/storage/games-internal
+/storage/games-external
+/mnt/mmc
+/mnt/sdcard
+/mnt/SDCARD'
+
+# mounted cards / partitions (not the system) holding a roms folder
+mounted_game_dirs() {
+  _mf=${DOTCLEANER_MOUNTS:-/proc/mounts}
+  [ -r "$_mf" ] || return 0
+  awk '$1 ~ /^\/dev\// { print $3 " " $2 }' "$_mf" 2>/dev/null |
+    while read -r _ft _mp; do
+      case $_ft in vfat|exfat|ntfs|ntfs3|fuseblk|msdos|ext2|ext3|ext4|f2fs|btrfs|xfs|hfsplus) ;; *) continue ;; esac
+      _mp=$(printf '%s' "$_mp" | sed 's/\\040/ /g; s/\\011/	/g')
+      case $_mp in /media/*|/mnt/*|/run/media/*|/storage/*|/userdata/*) ;; *) [ -n "${DOTCLEANER_MOUNTS:-}" ] || continue ;; esac
+      if [ -d "$_mp/roms" ] || [ -d "$_mp/ROMS" ] || [ -d "$_mp/Roms" ]; then printf '%s\n' "$_mp"; fi
+    done
+}
+
+# fs_of_mount PATH -> file system type if PATH is itself a mount point
+fs_of_mount() {
+  awk -v m="$1" '{ p = $2; gsub(/\\040/, " ", p); if (p == m) t = $3 } END { if (t != "") print t }' \
+    "${DOTCLEANER_MOUNTS:-/proc/mounts}" 2>/dev/null
+}
+
+# dir_id PATH -> device:inode of the folder that holds the games (same id = same place)
+dir_id() {
+  _g=$1
+  for _sub in roms ROMS Roms; do
+    if [ -d "$1/$_sub" ]; then _g=$1/$_sub; break; fi
+  done
+  stat -L -c '%d:%i' "$_g" 2>/dev/null && return 0
+  stat -L -f '%d:%i' "$_g" 2>/dev/null && return 0        # BSD / macOS stat
+  # shellcheck disable=SC2012
+  _ino=$(ls -id "$_g" 2>/dev/null | awk '{ print $1 }')
+  _dev=$(df -P "$_g" 2>/dev/null | awk 'NR == 2 { print $1 }')
+  printf '%s:%s\n' "$_dev" "$_ino"
+}
+
+console_roots() {
+  if [ -n "${DOTCLEANER_CONSOLE_ROOT+x}" ]; then          # tests: one given card
     if [ -n "$DOTCLEANER_CONSOLE_ROOT" ]; then printf '%s\n' "$DOTCLEANER_CONSOLE_ROOT"; fi
     return 0
   fi
-  if [ -d /userdata/roms ]; then printf '%s\n' /userdata; return 0; fi        # Knulli, Batocera
-  for _cr in /roms /storage/roms /mnt/mmc /mnt/SDCARD /mnt/sdcard; do
-    # ArkOS, dArkOS | ROCKNIX, AmberELEC, JELOS, EmuELEC, Lakka | muOS |
-    # Onion, MinUI, Allium, spruceOS, TrimUI, Miyoo stock
-    if [ -d "$_cr" ] && [ ! -L "$_cr" ]; then printf '%s\n' "$_cr"; return 0; fi
-  done
-  if [ -n "${HOME:-}" ] && [ -d "$HOME/RetroPie/roms" ]; then printf '%s\n' "$HOME/RetroPie/roms"; fi
+  _known=${DOTCLEANER_KNOWN_ROOTS-$KNOWN_ROOTS}           # tests can give their own list
+  {
+    printf '%s\n' "$_known" | tr ':' '\n' | while IFS= read -r _cr; do
+      [ -n "$_cr" ] && [ -d "$_cr" ] && [ ! -L "$_cr" ] || continue
+      case $_cr in */userdata) [ -d "$_cr/roms" ] || continue ;; esac   # Knulli, Batocera
+      printf '%s\n' "$_cr"
+    done
+    if [ -z "${DOTCLEANER_KNOWN_ROOTS+x}" ] && [ -n "${HOME:-}" ] && [ -d "$HOME/RetroPie/roms" ]; then
+      printf '%s\n' "$HOME/RetroPie/roms"
+    fi
+    mounted_game_dirs
+  } | while IFS= read -r _cr; do
+    case $(fs_of_mount "$_cr") in fuse.mergerfs|mergerfs|overlay|aufs|unionfs*) continue ;; esac
+    # rank 0: the whole card (games in its roms folder), 1: the games folder itself
+    _rank=1
+    if [ -d "$_cr/roms" ] || [ -d "$_cr/ROMS" ] || [ -d "$_cr/Roms" ]; then _rank=0; fi
+    printf '%s\t%s\t%s\n' "$(dir_id "$_cr")" "$_rank" "$_cr"
+  done | awk -F '\t' '
+    $1 == ":" { next }
+    !($1 in best) { order[++n] = $1; best[$1] = $3; rank[$1] = $2; next }
+    $2 < rank[$1] { best[$1] = $3; rank[$1] = $2 }      # same card: keep the whole card
+    END { for (i = 1; i <= n; i++) print best[order[i]] }'
 }
 
 # SD cards and USB drives plugged in, one path per line
@@ -321,9 +391,8 @@ candidate_dirs() {
     return 0
   fi
   {
-    # The console itself (when run on the handheld)
-    console_root
-    if [ -d /roms2 ]; then printf '%s\n' /roms2; fi            # ArkOS: second card
+    # The console itself (when run on the handheld): every ROM card / partition
+    console_roots
     # Linux desktops, Raspberry Pi, Steam Deck (/run/media/deck/NAME or /run/media/mmcblk0p1)
     for _cd in /media/*/* /run/media/*/*; do
       if [ -d "$_cd" ]; then printf '%s\n' "$_cd"; fi
@@ -482,7 +551,7 @@ clean_target() {
 # --- Console mode ----------------------------------------------------------------
 # Started from the console's own menu (Ports, Tools, Apps): no keyboard and often
 # no visible terminal (Knulli and Batocera show nothing: only the log and, when the
-# frontend supports it, a notification). Finds the ROM card, cleans it without questions, shows the
+# frontend supports it, a notification). Finds the ROM card(s), cleans them without questions, shows the
 # result on screen when the firmware allows it, and writes dotcleaner.log.
 
 notify_frontend() {
@@ -528,6 +597,88 @@ cbar() {
   }'
 }
 
+# Menu entry with the icon, like other console tools (e.g. PlayTime on Knulli): when
+# icons/dotcleaner.png sits next to the launcher, add the launcher to the gamelist.xml of
+# that folder (or create it) so the menu shows the icon. Only adds lines, never removes
+# any; the new file is checked, then swapped in at once.
+menu_entry() {
+  printf '\t<game>\n\t\t<path>%s</path>\n\t\t<name>Dotcleaner</name>\n' "$1"
+  printf '\t\t<desc>Removes the macOS junk files (._*, .DS_Store...) from the ROM card. Games, saves and BIOS are never touched.</desc>\n'
+  printf '\t\t<image>./icons/dotcleaner.png</image>\n\t\t<thumbnail>./icons/dotcleaner.png</thumbnail>\n'
+  printf '\t\t<developer>Shadowix84</developer>\n\t\t<genre>Tools</genre>\n\t</game>\n'
+}
+
+register_menu() {
+  _md=${SCRIPT_DIR:-}
+  [ -n "$_md" ] && [ -f "$_md/icons/dotcleaner.png" ] || return 0
+  _me="./${0##*/}"
+  _gl="$_md/gamelist.xml"
+  _tmp="$_md/.gamelist.xml.dotcleaner.$$"
+  _add=1
+  if [ ! -f "$_gl" ]; then
+    { printf '<?xml version="1.0"?>\n<gameList>\n'; menu_entry "$_me"; printf '</gameList>\n'; } >"$_tmp" ||
+      { rm -f "$_tmp"; return 1; }
+    _before=0
+  else
+    _before=$(grep -c '<game[ >]' "$_gl")
+    if grep -F -q "<path>$_me</path>" "$_gl"; then
+      _add=0
+      # already listed: add the picture if that entry has none
+      awk -v me="<path>$_me</path>" '
+        /<game[ >]/ { g = 1; m = 0; i = 0 }
+        g && index($0, me) { m = 1 }
+        g && index($0, "<image>") { i = 1 }
+        g && index($0, "</game>") && !index($0, "<game") && !index($0, "<path>") {
+          if (m && !i) {
+            print "\t\t<image>./icons/dotcleaner.png</image>"
+            print "\t\t<thumbnail>./icons/dotcleaner.png</thumbnail>"
+          }
+          g = 0
+        }
+        { print }' "$_gl" >"$_tmp" || { rm -f "$_tmp"; return 1; }
+    elif grep -q '</gameList>' "$_gl"; then
+      _entry=$(menu_entry "$_me")
+      awk -v e="$_entry" '!d && index($0, "</gameList>") { sub(/<\/gameList>/, e "\n</gameList>"); d = 1 } { print }' \
+        "$_gl" >"$_tmp" || { rm -f "$_tmp"; return 1; }
+    else
+      return 1                                    # unknown format: leave it alone
+    fi
+  fi
+  # check: still a game list, every game kept, ours added once
+  _after=$(grep -c '<game[ >]' "$_tmp")
+  if ! grep -q '</gameList>' "$_tmp" || [ "$_after" -ne $((_before + _add)) ] ||
+     [ "$(grep -F -c "<path>$_me</path>" "$_tmp")" -ne 1 ]; then
+    rm -f "$_tmp"; return 1
+  fi
+  if cmp -s "$_tmp" "$_gl" 2>/dev/null; then rm -f "$_tmp"; return 0; fi
+  mv -f "$_tmp" "$_gl" || { rm -f "$_tmp"; return 1; }
+  echo "Menu: entry with icon added" >>"$_log" 2>/dev/null
+  return 0
+}
+
+# The menu keeps its game list in memory and writes it back to gamelist.xml when it
+# quits, so a line added to the file while it runs is lost again. Knulli / Batocera have
+# a local web API: hand the icon to the menu itself, it saves it with the entry.
+api_menu_icon() {
+  _md=${SCRIPT_DIR:-}
+  _icon="$_md/icons/dotcleaner.png"
+  [ -n "$_md" ] && [ -f "$_icon" ] && command -v curl >/dev/null 2>&1 || return 0
+  command -v md5sum >/dev/null 2>&1 || return 0
+  _sys=${_md##*/}                                   # tools (Knulli), ports (Batocera)
+  _id=$(printf '%s' "$_md/${0##*/}" | md5sum | cut -d' ' -f1)
+  _url="http://127.0.0.1:1234/systems/$_sys/games/$_id"
+  _json=$(curl -s -f -m 2 "$_url" 2>/dev/null) || return 0          # no menu API here
+  case $_json in *'"image"'*) return 0 ;; esac                       # already has a picture
+  if curl -s -f -m 5 -H 'Content-Type: image/png' --data-binary "@$_icon" "$_url/media/image" >/dev/null 2>&1; then
+    curl -s -f -m 5 -H 'Content-Type: image/png' --data-binary "@$_icon" "$_url/media/thumbnail" >/dev/null 2>&1
+    curl -s -f -m 5 -H 'Content-Type: application/json' \
+      -d '{"desc":"Removes the macOS junk files (._*, .DS_Store...) from the ROM card. Games, saves and BIOS are never touched.","developer":"Shadowix84","genre":"Tools"}' \
+      "$_url" >/dev/null 2>&1
+    echo "Menu: icon sent to the menu" >>"$_log" 2>/dev/null
+  fi
+  return 0
+}
+
 console_mode() {
   ASSUME_YES=1 DRY_RUN=0 EJECT=0 MENU=0 QUIET=0
   C_BOLD='' C_DIM='' C_RED='' C_GRN='' C_YEL='' C_CYN='' C_OFF=''
@@ -564,38 +715,72 @@ console_mode() {
   cout ""
   _rc=1
 
-  # 1. Find the ROM card
-  cout "[1/4] ROM card"
-  _found=$(console_root)
-  if [ -z "$_found" ]; then
-    cout "      No ROM card found."
-    cout "      Run it from a computer, or:"
-    cout "      sh dotcleaner.sh /path/to/roms"
-    notify_frontend "Dotcleaner: no ROM card found"
-  elif ! _why=$(resolve_target "$_found" 2>&1); then
-    cout "      $_found cannot be cleaned."
-    printf '%s\n' "$_why" >>"$_log" 2>/dev/null
-    notify_frontend "Dotcleaner: $_found cannot be cleaned"
-  else
-    resolve_target "$_found"
-    _info=$(drive_info "$_root")
-    cout "      $_root${_info:+ ($_info)}"
-    if [ "$_files_only" -eq 1 ]; then cout "      Mac disk: safe mode"; fi
+  # 1. Find the ROM cards (one or two SD cards, one or more partitions)
+  _roots='' _n=0
+  _all=$(console_roots)
+  _nl='
+'
+  _oifs=$IFS; IFS=$_nl; set -f
+  for _cand in $_all; do
+    IFS=$_oifs
+    if _why=$(resolve_target "$_cand" 2>&1); then
+      resolve_target "$_cand"
+      _roots="$_roots$_root$_nl" _n=$((_n + 1))
+    else
+      printf '%s\n' "$_why" >>"$_log" 2>/dev/null
+    fi
+  done
+  IFS=$_oifs; set +f
 
-    # 2. Scan
+  if [ "$_n" -le 1 ]; then cout "[1/4] ROM card"; else cout "[1/4] ROM cards: $_n"; fi
+  if [ "$_n" -eq 0 ]; then
+    if [ -n "$_all" ]; then
+      cout "      $(printf '%s' "$_all" | head -n 1) cannot be cleaned."
+      notify_frontend "Dotcleaner: the ROM card cannot be cleaned"
+    else
+      cout "      No ROM card found."
+      cout "      Run it from a computer, or:"
+      cout "      sh dotcleaner.sh /path/to/roms"
+      notify_frontend "Dotcleaner: no ROM card found"
+    fi
+  else
+    _oifs=$IFS; IFS=$_nl; set -f
+    for _r in $_roots; do
+      IFS=$_oifs
+      resolve_target "$_r"
+      _info=$(drive_info "$_root")
+      cout "      $_root${_info:+ ($_info)}"
+      if [ "$_files_only" -eq 1 ]; then cout "      Mac disk: safe mode"; fi
+    done
+    IFS=$_oifs; set +f
+
+    # 2. Scan every card
     cout "[2/4] Scan"
     clive "      please wait..."
-    notify_frontend "Dotcleaner: scanning $_root..."
-    # shellcheck disable=SC2046
-    set -- $(junk_find "$_root" print 2>/dev/null | classify)
-    _total=$5
-    _kb=$(junk_find "$_root" size 2>/dev/null | awk '{ s += $1 } END { print s + 0 }')
+    notify_frontend "Dotcleaner: scanning..."
+    _total=0 _kb=0 _a=0 _ds=0 _ot=0
+    _oifs=$IFS; IFS=$_nl; set -f
+    for _r in $_roots; do
+      IFS=$_oifs
+      resolve_target "$_r"
+      # shellcheck disable=SC2046
+      set -- $(junk_find "$_root" print 2>/dev/null | classify)
+      _k=$(junk_find "$_root" size 2>/dev/null | awk '{ s += $1 } END { print s + 0 }')
+      _total=$((_total + $5)) _kb=$((_kb + _k)) _a=$((_a + $1)) _ds=$((_ds + $2)) _ot=$((_ot + $3 + $4))
+      if [ "$_n" -gt 1 ]; then
+        clive "                    "; clive ""
+        cout "      $_root"
+        cout "        $(n_items "$5"), $(human_size "$_k")"
+      fi
+    done
+    IFS=$_oifs; set +f
     _size=$(human_size "$_kb")
     clive "                    "; clive ""
-    cout "      $(n_items "$_total") of junk, $_size"
-    if [ "$_total" -gt 0 ]; then cout "      ($1 ._*, $2 .DS_Store, $(($3 + $4)) other)"; fi
+    if [ "$_n" -gt 1 ]; then cout "      total: $(n_items "$_total"), $_size"
+    else cout "      $(n_items "$_total") of junk, $_size"; fi
+    if [ "$_total" -gt 0 ]; then cout "      ($_a ._*, $_ds .DS_Store, $_ot other)"; fi
 
-    # 3. Clean
+    # 3. Clean every card, one progress bar for all
     cout "[3/4] Clean"
     if [ "$_total" -eq 0 ]; then
       cout "      nothing to delete"
@@ -606,7 +791,14 @@ console_mode() {
     else
       notify_frontend "Dotcleaner: cleaning $(n_items "$_total")..."
       clive "      $(cbar 0 "$_total")"
-      junk_find "$_root" progress 2>/dev/null | {
+      {
+        _oifs=$IFS; IFS=$_nl; set -f
+        for _r in $_roots; do
+          IFS=$_oifs
+          resolve_target "$_r"
+          junk_find "$_root" progress 2>/dev/null
+        done
+      } | {
         _d=0 _last=-1
         while IFS= read -r _x; do
           case $_x in ''|*[!0-9]*) continue ;; esac
@@ -615,9 +807,18 @@ console_mode() {
           if [ "$_p" -ne "$_last" ]; then _last=$_p; clive "      $(cbar "$_d" "$_total")"; fi
         done
       }
-      # shellcheck disable=SC2046
-      set -- $(junk_find "$_root" print 2>/dev/null | classify)
-      _left=$5
+      # What is left (system folders in use, read-only card...)
+      _left=0 _lf=0
+      _oifs=$IFS; IFS=$_nl; set -f
+      for _r in $_roots; do
+        IFS=$_oifs
+        resolve_target "$_r"
+        # shellcheck disable=SC2046
+        set -- $(junk_find "$_root" print 2>/dev/null | classify)
+        _left=$((_left + $5)) _lf=$((_lf + $1 + $2 + $4))
+        if [ "$5" -gt 0 ]; then list_items "$_root" >>"$_log" 2>/dev/null; fi
+      done
+      IFS=$_oifs; set +f
       _done=$((_total - _left))
       if [ "$LIVE" -eq 1 ]; then                    # finish the progress line
         clive "      $(cbar "$_done" "$_total")"
@@ -627,7 +828,7 @@ console_mode() {
         cout "      $(cbar "$_done" "$_total")"
       fi
       cout "      $(n_items "$_done") deleted"
-      if [ "$_left" -eq 0 ] || { [ "$1" -eq 0 ] && [ "$2" -eq 0 ] && [ "$4" -eq 0 ]; }; then
+      if [ "$_left" -eq 0 ] || [ "$_lf" -eq 0 ]; then
         cout "[4/4] Done!"
         cout "      $_size freed"
         if [ "$_left" -gt 0 ]; then cout "      ($_left system folder(s) in use)"; fi
@@ -638,13 +839,14 @@ console_mode() {
         cout "[4/4] Not finished"
         cout "      $_left item(s) could not be deleted"
         cout "      (read-only card?) See the log."
-        list_items "$_root" >>"$_log" 2>/dev/null
         notify_frontend "Dotcleaner: $_left item(s) could not be deleted, see dotcleaner.log"
       fi
     fi
   fi
 
   cout ""
+  register_menu || echo "Menu: gamelist.xml left as it is" >>"$_log" 2>/dev/null
+  api_menu_icon
   cout "Log: dotcleaner.log"
   if [ -n "$SCREEN" ]; then
     _s=6

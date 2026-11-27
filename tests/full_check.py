@@ -116,7 +116,11 @@ def shell_tests(shells):
         r = run(["sh", "tests/run_tests.sh", cmd], env=env)
         m = re.search(rb"(\d+) passed, (\d+) failed", r.stdout)
         ok = r.returncode == 0 and m and m.group(2) == b"0"
-        record("shells", f"run_tests.sh with {name}", bool(ok), m.group(0).decode() if m else r.stdout.decode()[-200:])
+        detail = m.group(0).decode() if m else r.stdout.decode()[-200:]
+        failed = [l.split("FAIL", 1)[1].strip() for l in r.stdout.decode(errors="replace").splitlines() if l.startswith("  FAIL")]
+        if failed:
+            detail += " — " + "; ".join(failed)
+        record("shells", f"run_tests.sh with {name}", bool(ok), detail)
 
 
 # ------------------------------------------------------------------ 3. audits
@@ -148,10 +152,13 @@ def audits(shells, cards, seed):
 # ------------------------------------------------------------------ helpers for 4-6
 def engines(shells):
     dash = next((c for n, c, e in shells if n == "dash"), "sh")
+    # the launcher writes next to itself: run a copy outside the repository
+    launcher = os.path.join(tempfile.mkdtemp(prefix="dotcleaner-launcher."), "Dotcleaner.sh")
+    shutil.copy(os.path.join(ROOT, "console", "Dotcleaner.sh"), launcher)
     return [
         ("shell", lambda card, extra=(): [*shlex.split(dash), "dotcleaner.sh", "-y", *extra, card], {}),
         ("app engine", lambda card, extra=(): [sys.executable, "app/dotcleaner_core.py", "-y", *extra, card], {}),
-        ("console", lambda card, extra=(): [*shlex.split(dash), "console/Dotcleaner.sh"],
+        ("console", lambda card, extra=(): [*shlex.split(dash), launcher],
          {"DOTCLEANER_NO_TTY": "1"}),
     ]
 

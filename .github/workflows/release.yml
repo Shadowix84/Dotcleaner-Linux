@@ -93,7 +93,7 @@ jobs:
             echo
             echo "## 💬 Help"
             echo
-            echo "[Guide and FAQ]($REPO#readme) · [Report a bug]($REPO/issues/new/choose) · [Discord](https://discord.gg/4FbhkuhRMm) (French-speaking community 🇫🇷) · [All changes]($REPO/blob/main/CHANGELOG.md)"
+            echo "[Guide and FAQ]($REPO#readme) · [Report a bug]($REPO/issues/new/choose) · [All changes]($REPO/blob/main/CHANGELOG.md)"
           } > notes.md
           cat notes.md
 

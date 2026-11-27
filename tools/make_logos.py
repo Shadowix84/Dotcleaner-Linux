@@ -1,103 +1,118 @@
 #!/usr/bin/env python3
 """
-Draws the Dotcleaner logos with a transparent background, for the console menus:
+Draws the Dotcleaner icon for the console menus, in the same style as other Knulli tools
+(e.g. PlayTime): one big square PNG, transparent background, white shapes with a thick
+black outline and one accent colour.
 
-  console/menu-logo/images/dotcleaner-image.png    512 x 512  SD card + sparkles  (<image>, <thumbnail>)
-  console/menu-logo/images/dotcleaner-marquee.png  ~780 x 240 card + "Dotcleaner" (<marquee>: the logo)
-  console/Onion/App/Dotcleaner/icon.png   64 x 64    Onion app icon
+  console/icons/dotcleaner.png           1024 x 1024  shown in the Ports / Tools menu
+  console/Onion/App/Dotcleaner/icon.png    64 x 64    Onion app icon
 
-A dark outline keeps them readable on light and dark themes.
+The launcher adds itself to the menu's gamelist.xml with <image>./icons/dotcleaner.png</image>.
 Run:  python3 tools/make_logos.py   (needs Pillow)
 """
+import math
 import os
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageDraw
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 S = 4                                   # draw 4x bigger, then shrink: smooth edges
-WHITE, BLUE, LIGHT, GOLD, OUTLINE = "#ffffff", "#2f6fde", "#a9c6f5", "#ffc928", "#13203a"
-FONTS = ["/usr/share/fonts/opentype/inter/Inter-ExtraBold.otf",
-         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]
+WHITE, BLACK, ACCENT, GREY = "#ffffff", "#111111", "#2f6fde", "#e9e9e9"
 
 
-def card_polygon(x, y, w, h, cut):
-    """SD card outline: a rectangle with the top-right corner cut."""
-    return [(x, y), (x + w - cut, y), (x + w, y + cut), (x + w, y + h), (x, y + h)]
+def rounded(points, r, steps=12):
+    """Polygon with rounded corners (radius r) as a list of points."""
+    out = []
+    n = len(points)
+    for i in range(n):
+        p0, p1, p2 = points[i - 1], points[i], points[(i + 1) % n]
+        v1 = (p0[0] - p1[0], p0[1] - p1[1])
+        v2 = (p2[0] - p1[0], p2[1] - p1[1])
+        l1, l2 = math.hypot(*v1), math.hypot(*v2)
+        u1, u2 = (v1[0] / l1, v1[1] / l1), (v2[0] / l2, v2[1] / l2)
+        a = math.acos(max(-1, min(1, u1[0] * u2[0] + u1[1] * u2[1])))
+        d = min(r / math.tan(a / 2), l1 / 2, l2 / 2)
+        s = (p1[0] + u1[0] * d, p1[1] + u1[1] * d)
+        e = (p1[0] + u2[0] * d, p1[1] + u2[1] * d)
+        for k in range(steps + 1):          # quadratic curve through the corner
+            t = k / steps
+            out.append(((1 - t) ** 2 * s[0] + 2 * (1 - t) * t * p1[0] + t ** 2 * e[0],
+                        (1 - t) ** 2 * s[1] + 2 * (1 - t) * t * p1[1] + t ** 2 * e[1]))
+    return out
 
 
-def sparkle(d, cx, cy, r, fill, outline=None, width=0):
-    """Four-pointed star."""
-    k = r * 0.28
-    pts = [(cx, cy - r), (cx + k, cy - k), (cx + r, cy), (cx + k, cy + k),
-           (cx, cy + r), (cx - k, cy + k), (cx - r, cy), (cx - k, cy - k)]
-    d.polygon(pts, fill=fill, outline=outline, width=width)
+def outlined(d, pts, fill, stroke):
+    """Filled shape with a black outline centred on its edge."""
+    d.polygon(pts, fill=fill)
+    d.line(pts + pts[:2], fill=BLACK, width=stroke, joint="curve")
 
 
-def draw_card(img, x, y, w, h, stroke):
-    """The SD card with its contacts and label lines, plus two sparkles, at (x, y) size w x h."""
+def star(cx, cy, r, pinch=0.22, steps=24):
+    """Four-pointed sparkle with curved sides."""
+    pts = []
+    tips = [(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy)]
+    for i in range(4):
+        a, b = tips[i], tips[(i + 1) % 4]
+        c = (cx + (a[0] + b[0] - 2 * cx) * pinch, cy + (a[1] + b[1] - 2 * cy) * pinch)
+        for k in range(steps):
+            t = k / steps
+            pts.append(((1 - t) ** 2 * a[0] + 2 * (1 - t) * t * c[0] + t ** 2 * b[0],
+                        (1 - t) ** 2 * a[1] + 2 * (1 - t) * t * c[1] + t ** 2 * b[1]))
+    return pts
+
+
+def icon(size):
+    B = size * S
+    img = Image.new("RGBA", (B, B), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    cut = w * 0.22
-    poly = card_polygon(x, y, w, h, cut)
-    # outline: the same shape, drawn bigger behind
-    d.polygon(poly, fill=OUTLINE)
-    m = Image.new("L", img.size, 0)
-    ImageDraw.Draw(m).polygon(poly, fill=255)
-    m = m.filter(ImageFilter.MaxFilter(stroke * 2 + 1))
-    img.paste(Image.new("RGBA", img.size, OUTLINE), (0, 0), m)
-    d.polygon(poly, fill=WHITE)
-    # contacts
-    pw, ph, gap = w * 0.085, h * 0.17, w * 0.045
-    px = x + w * 0.12
-    for i in range(5):
-        if px + pw > x + w - cut * 0.55:
-            break
-        d.rounded_rectangle([px, y + h * 0.07, px + pw, y + h * 0.07 + ph], radius=pw * 0.35, fill=BLUE)
-        px += pw + gap
-    # label lines
-    for i, f in enumerate((0.62, 0.48, 0.36)):
-        ly = y + h * (0.46 + i * 0.12)
-        d.rounded_rectangle([x + w * 0.14, ly, x + w * (0.14 + f), ly + h * 0.055], radius=h * 0.03, fill=LIGHT)
-    # sparkles, with the same outline
-    for cx, cy, r in ((x + w * 1.0, y + h * 0.78, w * 0.42), (x + w * 0.80, y + h * 1.04, w * 0.17)):
-        sm = Image.new("L", img.size, 0)
-        sparkle(ImageDraw.Draw(sm), cx, cy, r, 255)
-        sm = sm.filter(ImageFilter.MaxFilter(stroke * 2 + 1))
-        img.paste(Image.new("RGBA", img.size, OUTLINE), (0, 0), sm)
-        sparkle(d, cx, cy, r, GOLD)
+    st = int(B * 0.030)                                       # outline width (like PlayTime)
 
+    # faint grey ring behind, like the clock face behind PlayTime's controller
+    d.ellipse([B * 0.36, B * 0.06, B * 0.94, B * 0.64], outline=GREY, width=int(B * 0.035))
 
-def logo_image(size):
-    big = size * S
-    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
-    w, h = big * 0.50, big * 0.66
-    draw_card(img, big * 0.17, big * 0.10, w, h, stroke=max(2, int(big * 0.018)))
-    return img.resize((size, size), Image.LANCZOS)
+    # SD card: rounded, top-right corner cut
+    x0, y0, x1, y1 = B * 0.16, B * 0.14, B * 0.64, B * 0.88
+    cut = (x1 - x0) * 0.30
+    card = rounded([(x0, y0), (x1 - cut, y0), (x1, y0 + cut), (x1, y1), (x0, y1)], B * 0.05)
+    outlined(d, card, WHITE, st)
 
+    # contacts (black, like the D-pad)
+    w, h, gap = B * 0.048, B * 0.15, B * 0.028
+    x = x0 + B * 0.075
+    for _ in range(4):
+        d.rounded_rectangle([x, y0 + B * 0.075, x + w, y0 + B * 0.075 + h], radius=w * 0.45, fill=BLACK)
+        x += w + gap
+    # label: one accent bar and two black lines
+    d.rounded_rectangle([x0 + B * 0.075, y0 + B * 0.40, x1 - B * 0.075, y0 + B * 0.47],
+                        radius=B * 0.035, fill=ACCENT)
+    for i, f in enumerate((0.72, 0.50)):
+        ly = y0 + B * (0.55 + i * 0.09)
+        d.rounded_rectangle([x0 + B * 0.075, ly, x0 + B * 0.075 + (x1 - x0 - B * 0.15) * f, ly + B * 0.045],
+                            radius=B * 0.022, fill=BLACK)
 
-def logo_marquee(width, height):
-    W, H = width * S, height * S
-    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    ch = H * 0.70
-    stroke = max(2, int(H * 0.025))
-    draw_card(img, H * 0.10, H * 0.08, ch * 0.76, ch, stroke)
-    font = next((f for f in FONTS if os.path.exists(f)), None)
-    size = int(H * 0.40)
-    ft = ImageFont.truetype(font, size) if font else ImageFont.load_default()
-    d = ImageDraw.Draw(img)
-    tx, ty = H * 0.95, H * 0.5
-    d.text((tx, ty), "Dotcleaner", font=ft, anchor="lm", fill=WHITE,
-           stroke_width=int(stroke * 1.4), stroke_fill=OUTLINE)
-    box = img.getbbox()                                   # trim the empty right side
-    img = img.crop((0, 0, min(W, box[2] + H * 0.08), H))
-    return img.resize((int(img.width / S), height), Image.LANCZOS)
+    # sparkles in the accent colour, with a transparent gap where they cross the card
+    for cx, cy, r in ((B * 0.71, B * 0.73, B * 0.19), (B * 0.85, B * 0.42, B * 0.085)):
+        mask = Image.new("L", img.size, 0)
+        ImageDraw.Draw(mask).polygon(star(cx, cy, r + st * 1.6, pinch=0.26), fill=255)
+        img.putalpha(Image.composite(Image.new("L", img.size, 0), img.getchannel("A"), mask))
+        d = ImageDraw.Draw(img)
+        d.polygon(star(cx, cy, r), fill=ACCENT)
+
+    box = img.getbbox()                                       # fill the square, like PlayTime
+    side = max(box[2] - box[0], box[3] - box[1]) * 1.04
+    cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+    canvas = Image.new("RGBA", (int(side), int(side)), (0, 0, 0, 0))
+    canvas.paste(img.crop(box), (int(side / 2 - (cx - box[0])), int(side / 2 - (cy - box[1]))))
+    return canvas.resize((size, size), Image.LANCZOS)
 
 
 def main():
-    out = os.path.join(ROOT, "console", "menu-logo", "images")
+    out = os.path.join(ROOT, "console", "icons")
     os.makedirs(out, exist_ok=True)
-    logo_image(512).save(os.path.join(out, "dotcleaner-image.png"), optimize=True)
-    logo_marquee(900, 240).save(os.path.join(out, "dotcleaner-marquee.png"), optimize=True)
-    logo_image(64).save(os.path.join(ROOT, "console", "Onion", "App", "Dotcleaner", "icon.png"), optimize=True)
-    print("logos saved in console/menu-logo/images and the Onion app")
+    big = icon(1024)
+    big.save(os.path.join(out, "dotcleaner.png"), optimize=True)
+    big.resize((64, 64), Image.LANCZOS).save(
+        os.path.join(ROOT, "console", "Onion", "App", "Dotcleaner", "icon.png"), optimize=True)
+    print("icon saved in console/icons/dotcleaner.png and the Onion app")
 
 
 if __name__ == "__main__":

@@ -13,7 +13,6 @@ No more ghost games. Your games, saves and BIOS are never touched.
 [![Release](https://img.shields.io/github/v/release/Shadowix84/Dotcleaner-Multi-Software?label=version)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Shadowix84/Dotcleaner-Multi-Software/total?label=downloads)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases)
 [![Tests](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/ci.yml/badge.svg)](https://github.com/Shadowix84/Dotcleaner-Multi-Software/actions/workflows/ci.yml)
-[![Discord (French)](https://img.shields.io/badge/Discord-French%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/4FbhkuhRMm)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 🌐 [Website](https://shadowix84.github.io/Dotcleaner-Multi-Software/) · 🇫🇷 [Version française](README.fr.md)
@@ -84,22 +83,22 @@ Choose your language in the top-right menu:
 Clean the card **without a computer**, from the console's menu — no keyboard needed.
 
 1. Download [**Dotcleaner-console.zip**](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest/download/Dotcleaner-console.zip) and unzip it. Inside: `Dotcleaner.sh`
-   (the launcher), `Onion/` (the Onion app), `menu-logo/` (optional logo) and a `README.txt`.
-2. Copy the launcher to the card (create the folder if it does not exist):
+   (the launcher), `icons/` (its icon for the menu), `Onion/` (the Onion app) and a `README.txt`.
+2. Copy `Dotcleaner.sh` **and the `icons` folder** to the card (create the folder if it does not exist):
 
    | Firmware (consoles) | Copy | Card name on a computer |
    | --- | --- | --- |
-   | **ArkOS**, dArkOS (R36S, RG351, RG353…) | `Dotcleaner.sh` → `ports/` | `EASYROMS` |
-   | **Knulli** (RG40XXV, RG35XX…) | `Dotcleaner.sh` → `roms/tools/` | `SHARE` |
-   | **Batocera** | `Dotcleaner.sh` → `roms/ports/` | `SHARE` |
-   | **ROCKNIX**, AmberELEC, JELOS, EmuELEC | `Dotcleaner.sh` → `roms/ports/` | depends on the card |
+   | **ArkOS**, dArkOS (R36S, RG351, RG353…) | `Dotcleaner.sh` + `icons/` → `ports/` | `EASYROMS` |
+   | **Knulli** (RG40XXV, RG35XX…) | `Dotcleaner.sh` + `icons/` → `roms/tools/` | `SHARE` |
+   | **Batocera** | `Dotcleaner.sh` + `icons/` → `roms/ports/` | `SHARE` |
+   | **ROCKNIX**, AmberELEC, JELOS, EmuELEC | `Dotcleaner.sh` + `icons/` → `roms/ports/` | depends on the card |
    | **Onion** (Miyoo Mini) | the `Onion/App/Dotcleaner` folder → `App/` | depends on the card |
    | muOS, MinUI, spruceOS, others | `dotcleaner.sh` anywhere, then over SSH: `sh dotcleaner.sh --console` | depends on the card |
 
 3. On the console, open **Ports → Dotcleaner** — **Tools → Dotcleaner** on Knulli, **Apps → Dotcleaner**
    on Onion. On Knulli / Batocera, update the game lists first so it appears.
 
-The launcher finds the ROM card by itself and cleans it without asking.
+The launcher finds the ROM card by itself — or both cards, or every games partition — and cleans them without asking.
 
 **What you see depends on the firmware:**
 
@@ -118,26 +117,27 @@ Everywhere, a **`dotcleaner.log`** file is written next to the launcher (on Knul
 the `SHARE` card): it lists what was found and deleted — send it with any bug report. If ghost games
 are still listed afterwards, update the game lists.
 
-<details>
-<summary><b>Optional: Dotcleaner's logo in the console menu</b></summary>
+**Its icon in the menu.** Like other console tools (PlayTime on Knulli…), the launcher adds itself to
+the menu with its icon (`gamelist.xml` next to it):
 
-<p align="center"><img src="docs/console-menu-logo.png" alt="The Dotcleaner logo in the ArkOS and Knulli menus" width="760"></p>
+<p align="center"><img src="docs/console-menu-logo.png" alt="The Dotcleaner icon in the ArkOS and Knulli menus" width="760"></p>
 
-The `menu-logo/` folder of the zip holds the logo (transparent background) and a `gamelist.xml`,
-the file the menu reads to show pictures. With the card in your computer:
+- **Knulli / Batocera:** automatic, the first time you start it (the menu itself saves the icon).
+- **ArkOS and others:** if the icon is still missing after a restart, the menu rewrote its list. Put the
+  card in your computer, open `gamelist.xml` next to `Dotcleaner.sh` and add these two lines inside the
+  Dotcleaner `<game>` block:
 
-1. Copy the `images` folder of `menu-logo/` next to `Dotcleaner.sh` (`ports/`, or `roms/tools/` on Knulli).
-2. **No `gamelist.xml` there yet?** Copy `menu-logo/gamelist.xml` too.
-   **There is one already** (PortMaster creates one)? **Do not replace it**: open it and paste the
-   `<game>…</game>` block of `menu-logo/gamelist.xml` just before the last line `</gameList>`.
-
-Do it with the card in your computer, not on the running console: the menu rewrites this file.
-Onion does not need it: the Onion app has its own icon.
-</details>
+  ```xml
+  <image>./icons/dotcleaner.png</image>
+  <thumbnail>./icons/dotcleaner.png</thumbnail>
+  ```
 
 > [!TIP]
-> **Two SD cards?** The launcher cleans the ROM card it finds first. A version that cleans both cards
-> is coming — see the [roadmap](#️-roadmap) and the [FAQ](#faq) for what to do until then.
+> **Two SD cards, or one card split in several partitions?** Nothing to set up: the launcher finds
+> every card and partition that holds a `roms` folder and cleans them all, one after the other —
+> `/roms` and `/roms2` on ArkOS, both `SHARE` cards on Knulli, `/mnt/mmc` and `/mnt/sdcard` on muOS…
+> A partition without games (the system or `BOOT` partition) is left alone, and a card seen under two
+> names is cleaned once.
 
 ## ⌨️ The shell version (terminal)
 
@@ -174,7 +174,7 @@ dotcleaner -w "/Volumes/NO NAME"     # also remove Windows files
 | `-e`, `--eject` | Eject the drive when done (macOS) |
 | `-v`, `--verbose` | List every deleted item |
 | `-q`, `--quiet` | Only print errors |
-| `--console` | Console mode: find the ROM card and clean it with the simple screen |
+| `--console` | Console mode: find the ROM card(s) and clean them with the simple screen |
 | `-h`, `--help` / `-V`, `--version` | Help / version |
 
 Exit codes: `0` OK · `1` error on at least one drive · `2` wrong usage · `130` interrupted.
@@ -255,24 +255,21 @@ Dotcleaner warns you before erasing them. Tick **Keep the drive's Trash** (`-k`)
 <details>
 <summary><b>My console has two SD cards.</b></summary>
 
-For now the launcher cleans the ROM card it finds first (for example `/roms` on ArkOS). To clean the
-other card: put it in your computer and use the app, or connect over SSH and run `dotcleaner.sh`
-without options — the menu lists both cards (`/roms2` on ArkOS). A launcher that cleans both cards
-in one go is [planned](#️-roadmap).
+Since 2.4.0 the launcher cleans **both cards** in one go — and every partition holding a `roms`
+folder when one card is split in several. The screen lists each card it found, then a single progress
+bar for all of them. Over SSH, `dotcleaner.sh` without options shows the same cards in its menu.
 </details>
 
 ## 🗺️ Roadmap
 
-- [ ] **Console version for two SD cards** — for handhelds with a system card and a games card
-      (R36S, RG40XXV, RG35XX…): find both cards and clean them in one go from the Ports menu.
+- [x] **Console version for two SD cards** and for cards split in several partitions — done in 2.4.0.
 - Ideas? [Suggest one](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=feature_request.yml).
 
 What changed in each version: [CHANGELOG](CHANGELOG.md).
 
 ## Community
 
-- 💬 **[Discord](https://discord.gg/4FbhkuhRMm) — French-speaking community 🇫🇷.**
-  Prefer English? Open an issue on GitHub: questions are welcome in any language.
+- 💬 Questions? Open an issue on GitHub, in English or in French.
 - 🐞 [Report a bug](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=bug_report.yml) ·
   💡 [Suggest an idea](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=feature_request.yml) ·
   🌍 [Improve a translation](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=translation.yml)

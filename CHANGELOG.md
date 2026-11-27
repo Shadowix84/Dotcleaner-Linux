@@ -2,6 +2,38 @@
 
 All notable changes to Dotcleaner. Downloads: [latest release](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest).
 
+## [2.4.0] — 2026-11-27 — Two SD cards, and the icon in the console menu
+
+### Two SD cards, or one card split in partitions
+- **The console launcher now cleans every card and partition that holds games**, one after the other,
+  with one progress bar: `/roms` and `/roms2` on ArkOS / dArkOS, both `SHARE` cards on Knulli (with two
+  cards `/userdata` is one of them), `/storage/games-internal` and `games-external` on ROCKNIX,
+  `/mnt/mmc` and `/mnt/sdcard` on muOS, and on any firmware every other mounted card or partition with
+  a `roms` folder. Nothing to set up.
+- A card reached by two paths is cleaned once (the whole card is preferred to its games folder),
+  union folders (mergerfs) are skipped because their cards are cleaned directly, and a partition
+  without games (system, `BOOT`) is left alone.
+- Tested with real ext4 partitions: ArkOS with two cards, Knulli with two cards, one card split in two
+  game partitions plus a boot partition, ROCKNIX. 7 new tests run with every shell.
+
+### Icon in the console menu, added automatically
+- **The launcher adds itself to the menu with its icon**, like other console tools (PlayTime on Knulli):
+  copy `Dotcleaner.sh` **and the `icons` folder** next to each other. New icon in the same style
+  (white, black outline, one accent colour), also used by the Onion app.
+- **Knulli / Batocera:** fully automatic. The menu keeps its game list in memory and rewrites
+  `gamelist.xml` when it quits, so the icon is handed to the menu itself through its local web API —
+  it then saves it with the entry. Tested with the Knulli/Batocera menu (theme art-book-next): launch,
+  quit, restart — the icon and the description are there.
+- **ArkOS and others:** the launcher adds the entry to `gamelist.xml`. If the menu rewrites it (it does
+  when it already had a `gamelist.xml` at start-up), two lines added once with the card in a computer
+  are enough — explained in `README.txt` and the README.
+- The launcher only ever **adds** lines to `gamelist.xml`: other games are kept, an unknown format is
+  left alone, the new file is checked before it replaces the old one. 6 new tests.
+- The optional `menu-logo/` folder of 2.3.2 is replaced by `icons/`.
+
+### Community
+- The Discord is gone: questions and help now go through GitHub issues, in English or in French.
+
 ## [2.3.2] — 2026-11-22 — Logo in the console menus
 
 ### On the console

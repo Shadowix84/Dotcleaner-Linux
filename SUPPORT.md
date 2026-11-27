@@ -6,8 +6,6 @@
    On the console, attach `dotcleaner.log` (next to the launcher on the card).
 3. **An idea, or a junk file Dotcleaner should clean?** Open a [feature request](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=feature_request.yml).
 4. **A translation to fix or a new language?** Open a [translation request](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=translation.yml).
-5. **Want to chat?** Join the [Discord](https://discord.gg/4FbhkuhRMm) — it is a **French-speaking**
-   community 🇫🇷. In English, GitHub issues are the best place: questions are welcome there too.
 
 Issues can be written in English or in French.
 

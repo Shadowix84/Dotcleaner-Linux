@@ -40,7 +40,11 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "..", "dotcleaner.sh")
 CORE = os.path.join(HERE, "..", "app", "dotcleaner_core.py")
-LAUNCHER = os.path.join(HERE, "..", "console", "Dotcleaner.sh")
+# The launcher writes next to itself (dotcleaner.log, gamelist.xml when an icon sits there):
+# run a copy in a temporary folder, never the one in the repository.
+_LAUNCHER_DIR = tempfile.mkdtemp(prefix="dotcleaner-launcher.")
+LAUNCHER = os.path.join(_LAUNCHER_DIR, "Dotcleaner.sh")
+shutil.copy(os.path.join(HERE, "..", "console", "Dotcleaner.sh"), LAUNCHER)
 WINDOWS = os.name == "nt"
 
 # ---- Referee: the rules, re-implemented independently -----------------------
