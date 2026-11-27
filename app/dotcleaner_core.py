@@ -27,7 +27,7 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 
-VERSION = "2.4.0"
+VERSION = "2.5.0"
 
 JUNK_FILES = (".DS_Store", ".apdisk")          # plus every name starting with "._"
 SYSTEM_DIRS = (".Spotlight-V100", ".Trashes", ".fseventsd", ".TemporaryItems",
@@ -36,7 +36,9 @@ ARCHIVE_DIRS = ("__MACOSX",)
 WINDOWS_FILES = ("Thumbs.db", "ehthumbs.db", "desktop.ini")
 MAC_FILESYSTEMS = {"apfs", "hfs", "hfsplus", "hfs+"}
 # ROM folders of console firmwares, when the app runs on the handheld itself
-CONSOLE_ROOTS = ("/userdata", "/roms", "/roms2", "/storage/roms", "/mnt/mmc", "/mnt/SDCARD", "/mnt/sdcard")
+# ROM cards of the console itself (same list as KNOWN_ROOTS in dotcleaner.sh)
+CONSOLE_ROOTS = ("/userdata", "/roms", "/roms2", "/storage/roms", "/storage/games-internal",
+                 "/storage/games-external", "/mnt/mmc", "/mnt/sdcard", "/mnt/SDCARD", "/recalbox/share")
 
 SYSTEM = platform.system()          # "Darwin", "Windows", "Linux"
 

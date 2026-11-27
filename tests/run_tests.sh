@@ -329,6 +329,26 @@ make_card "$SD1"; printf '/dev/mmcblk1p1 %s exfat rw 0 0\n' "$SD1" >"$MNT"
 run_cards "$SD1/roms"
 check "same card twice: the whole card is cleaned once" eval 'rc_is 0 && junk_gone "$SD1" && keep_list "$SD1" && out_has "^\[1/4\] ROM card$" && out_has "12 items deleted"'
 
+# --- More firmwares and devices -------------------------------------------------------------
+# packages for Onion / spruceOS, TrimUI / CrossMix-OS, MinUI / NextUI, muOS: the same launcher
+PK="$HERE/../console"; export PK   # used inside the eval tests below
+check "packages: Onion, TrimUI, MinUI use the same launcher" eval 'cmp -s "$PK/Dotcleaner.sh" "$PK/Onion/App/Dotcleaner/launch.sh" && cmp -s "$PK/Dotcleaner.sh" "$PK/TrimUI/Apps/Dotcleaner/launch.sh" && cmp -s "$PK/Dotcleaner.sh" "$PK/MinUI/Dotcleaner.pak/launch.sh"'
+check "packages: muOS launcher = same script + its HELP line" eval 'sed -n 2p "$PK/muOS/MUOS/application/Dotcleaner/mux_launch.sh" | grep -q "^# HELP: " && sed 2d "$PK/muOS/MUOS/application/Dotcleaner/mux_launch.sh" | cmp -s - "$PK/Dotcleaner.sh"'
+check "packages: app folders have config.json and icon" eval 'for _a in Onion/App TrimUI/Apps; do grep -q "\"launch\": \"launch.sh\"" "$PK/$_a/Dotcleaner/config.json" && [ -s "$PK/$_a/Dotcleaner/icon.png" ] || exit 1; done'
+
+# games folders other than "roms": EmuDeck (Emulation/roms), MinUI (Roms), muOS (ROMS)
+DECK="$TMP/deck"; rm -rf "$DECK"; mkdir -p "$DECK"; make_card "$DECK/sdcard"
+mkdir -p "$DECK/card/Emulation"; mv "$DECK/sdcard/roms" "$DECK/card/Emulation/roms"; cp -R "$DECK/sdcard/." "$DECK/card/"
+mkdir -p "$DECK/minui"; make_card "$DECK/minui"; mv "$DECK/minui/roms" "$DECK/minui/Roms"
+printf '/dev/mmcblk0p1 %s exfat rw 0 0\n/dev/sdb1 %s vfat rw 0 0\n' "$DECK/card" "$DECK/minui" >"$MNT"
+run_cards ""
+check "games folders Emulation/roms (EmuDeck) and Roms (MinUI) found" eval 'rc_is 0 && out_has "ROM cards: 2" && [ ! -e "$DECK/card/Emulation/roms/gba/._Pokemon Emerald.gba" ] && [ -e "$DECK/card/Emulation/roms/gba/Pokemon Emerald.gba" ] && [ ! -e "$DECK/minui/Roms/gba/.DS_Store" ] && [ -e "$DECK/minui/Roms/gba/.hidden_save.srm" ] && [ ! -e "$DECK/card/.Spotlight-V100" ]'
+
+# find without -xdev (some very old BusyBox): still cleans, keeps everything else
+make_card
+DOTCLEANER_NO_XDEV=1; export DOTCLEANER_NO_XDEV; run -y "$CARD"; unset DOTCLEANER_NO_XDEV
+check "old find without -xdev: junk deleted, rest kept" eval 'rc_is 0 && junk_gone && keep_list'
+
 # --- Console mode: menu entry with the icon (gamelist.xml next to the launcher) -------------
 PD="$TMP/ports"; GL="$PD/gamelist.xml"
 mkdir -p "$PD/icons"; cp "$LAUNCHER" "$PD/Dotcleaner.sh"

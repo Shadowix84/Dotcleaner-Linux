@@ -66,7 +66,7 @@ jobs:
             echo "| 🪟 on my **Windows** PC (10 / 11) | [**Dotcleaner-Windows.exe**]($DL/Dotcleaner-Windows.exe) |"
             echo "| 🐧 on **Linux** (PC, Steam Deck) | [**Dotcleaner-Linux-x86_64**]($DL/Dotcleaner-Linux-x86_64) |"
             echo "| 🐧 on a **Raspberry Pi** (64-bit) | [**Dotcleaner-Linux-arm64**]($DL/Dotcleaner-Linux-arm64) |"
-            echo "| 🎮 **on the console itself** — ArkOS, Knulli, Batocera, ROCKNIX, Onion… | [**Dotcleaner-console.zip**]($DL/Dotcleaner-console.zip) — its \`README.txt\` says where to copy it |"
+            echo "| 🎮 **on the console itself** — ArkOS, Knulli, Batocera, ROCKNIX, muOS, MinUI, TrimUI, Onion… | [**Dotcleaner-console.zip**]($DL/Dotcleaner-console.zip) — its \`README.txt\` says where to copy it |"
             echo
             echo "The other files below are for advanced use, and *Source code* is added by GitHub: you can ignore them."
             echo

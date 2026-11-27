@@ -92,11 +92,17 @@ Clean the card **without a computer**, from the console's menu — no keyboard n
    | **Knulli** (RG40XXV, RG35XX…) | `Dotcleaner.sh` + `icons/` → `roms/tools/` | `SHARE` |
    | **Batocera** | `Dotcleaner.sh` + `icons/` → `roms/ports/` | `SHARE` |
    | **ROCKNIX**, AmberELEC, JELOS, EmuELEC | `Dotcleaner.sh` + `icons/` → `roms/ports/` | depends on the card |
-   | **Onion** (Miyoo Mini) | the `Onion/App/Dotcleaner` folder → `App/` | depends on the card |
-   | muOS, MinUI, spruceOS, others | `dotcleaner.sh` anywhere, then over SSH: `sh dotcleaner.sh --console` | depends on the card |
+   | **muOS** (RG35XX, RG40XX, TrimUI Brick…) | the `muOS/MUOS/application/Dotcleaner` folder → `MUOS/application/` | `ROMS` |
+   | **MinUI**, NextUI (TrimUI, Miyoo, RG35XX…) | the `MinUI/Dotcleaner.pak` folder → `Tools/<device>/` ¹ | depends on the card |
+   | **TrimUI** stock OS, CrossMix-OS | the `TrimUI/Apps/Dotcleaner` folder → `Apps/` | depends on the card |
+   | **Onion**, spruceOS (Miyoo Mini, A30) | the `Onion/App/Dotcleaner` folder → `App/` | depends on the card |
+   | Recalbox, RetroPie, Lakka, others | `dotcleaner.sh` anywhere, then over SSH: `sh dotcleaner.sh --console` | depends on the card |
 
-3. On the console, open **Ports → Dotcleaner** — **Tools → Dotcleaner** on Knulli, **Apps → Dotcleaner**
-   on Onion. On Knulli / Batocera, update the game lists first so it appears.
+   ¹ `<device>` is the folder already in `Tools`: `tg5040` (TrimUI Smart Pro, Brick), `miyoomini`,
+   `my282` (Miyoo A30), `rg35xxplus`…
+
+3. On the console, open **Ports → Dotcleaner** — **Tools** on Knulli and MinUI, **Apps** on Onion,
+   spruceOS and TrimUI, **Applications** on muOS. On Knulli / Batocera, update the game lists first so it appears.
 
 The launcher finds the ROM card by itself — or both cards, or every games partition — and cleans them without asking.
 
@@ -204,17 +210,41 @@ Exit codes: `0` OK · `1` error on at least one drive · `2` wrong usage · `130
 
 ## Compatibility
 
-| System | App | Shell / launcher |
+**Computers**
+
+| System | App | Shell |
 | --- | --- | --- |
 | macOS 13+ (Intel & Apple Silicon) | ✅ | ✅ |
 | macOS 12 or older | — | ✅ |
 | Windows 10 / 11 | ✅ | ✅ in WSL |
 | Linux x86_64 — Steam Deck, Ubuntu 22.04+, Debian 12+, Fedora… | ✅ | ✅ |
 | Linux ARM64 — Raspberry Pi OS 13+, Ubuntu 24.04+… | ✅ | ✅ |
-| **Consoles** — ArkOS, dArkOS, Knulli, Batocera, ROCKNIX, AmberELEC, JELOS, EmuELEC, Onion, muOS, MinUI, Allium, spruceOS, TrimUI, RetroPie | — | ✅ |
+| Older Linux, 32-bit Raspberry Pi, ChromeOS (Linux) | — | ✅ |
+
+**Consoles** — the launcher finds every card and partition with games by itself.
+
+| Firmware | Devices (examples) | Start it from | Cards cleaned | Tested |
+| --- | --- | --- | --- | --- |
+| ArkOS, dArkOS | R36S, RG351, RG353, RGB30 | Ports | `/roms` + `/roms2` | on an R36S, real menu |
+| Knulli | RG40XXV, RG35XX, TrimUI Smart Pro | Tools | both `SHARE` cards | on an RG40XXV, real menu |
+| Batocera | PC, Raspberry Pi, handhelds | Ports | `/userdata` + other drives | real menu |
+| ROCKNIX, AmberELEC, JELOS, EmuELEC, UnofficialOS | RG353, RGB30, Retroid Pocket 5 | Ports | internal + external games | simulated card |
+| muOS | RG35XX, RG40XX, TrimUI Brick | Applications | SD1 + SD2 | simulated card |
+| MinUI, NextUI | TrimUI Brick / Smart Pro, Miyoo, RG35XX | Tools | the card | simulated card |
+| TrimUI stock OS, CrossMix-OS | TrimUI Smart Pro, Brick | Apps | the card | simulated card |
+| Onion, spruceOS | Miyoo Mini, Miyoo A30 | Apps | the card | simulated card |
+| Recalbox, RetroPie, Lakka | Raspberry Pi, PC | SSH: `sh dotcleaner.sh --console` | `share` / `roms` | simulated card |
+| Steam Deck with EmuDeck or RetroDECK | Steam Deck | the Linux app, or the shell | the SD card (`Emulation/roms`) | simulated card |
+| Android handhelds | Retroid, AYN Odin, RG556… | put the card in a computer and use the app | — | — |
+
+*Real menu*: tested with the menu software of the firmware (EmulationStation) running the launcher.
+*Simulated card*: tested with real partitions mounted where that firmware mounts them, the launcher
+started from its real folder. A problem on your device? [Tell us](https://github.com/Shadowix84/Dotcleaner-Multi-Software/issues/new?template=bug_report.yml)
+with `dotcleaner.log`.
 
 If the Linux app does not start, install `libxcb-cursor0`. The shell version is plain POSIX `sh`: it
-runs with bash, dash, BusyBox, ksh, mksh, posh, yash and zsh.
+runs with bash, dash, BusyBox, ksh, mksh, posh, yash and zsh, and with the very old BusyBox of some
+firmwares (no `find -exec … +`, no `find -xdev`).
 
 ## FAQ
 

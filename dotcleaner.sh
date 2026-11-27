@@ -14,7 +14,7 @@
 
 set -u
 
-VERSION="2.4.0"
+VERSION="2.5.0"
 PROG=${0##*/}
 
 # --- What gets removed (keep in sync with app/dotcleaner_core.py) ------------
@@ -136,7 +136,8 @@ junk_find() {
   set -f  # the '._*' pattern must reach find untouched
   # shellcheck disable=SC2086  # $_jf_or is meant to vanish when empty
   {
-    set -- "$_jf_root" -xdev
+    set -- "$_jf_root"
+    if find_xdev; then set -- "$@" -xdev; fi        # stay on this card
     # Folders left completely untouched (-k, safe mode)
     if [ -n "$PRUNE_DIRS" ]; then
       set -- "$@" -type d \(
@@ -182,6 +183,15 @@ _jf_run() {
       progress) find "$@" -exec sh -c 'rm -rf "$1" && echo 1' sh {} \; ;;
     esac
   fi
+}
+
+# find_xdev -> true when find knows -xdev (stay on one card); a few old BusyBox do not
+XDEV=''
+find_xdev() {
+  if [ -z "$XDEV" ]; then
+    if [ -z "${DOTCLEANER_NO_XDEV:-}" ] && find / -xdev -prune >/dev/null 2>&1; then XDEV=yes; else XDEV=no; fi
+  fi
+  [ "$XDEV" = yes ]
 }
 
 # exec_plus -> true when find supports "-exec ... {} +" (some old BusyBox do not)
@@ -302,8 +312,11 @@ is_mountpoint() {
 #   Knulli, Batocera         /userdata (SHARE), /media/SHARE, /media/SHARE_1... (other card)
 #   ROCKNIX, AmberELEC, JELOS /storage/roms, /storage/games-internal, /storage/games-external
 #   muOS                     /mnt/mmc (SD1), /mnt/sdcard (SD2)
-#   Onion, MinUI, spruceOS   /mnt/SDCARD
-#   any firmware             every other mounted card or partition with a roms folder
+#   Onion, MinUI, NextUI, spruceOS, TrimUI, CrossMix-OS, GarlicOS, Koriki   /mnt/SDCARD
+#   Recalbox                 /recalbox/share
+#   RetroPie, EmuDeck, RetroDECK   ~/RetroPie/roms, ~/Emulation/roms, ~/retrodeck/roms
+#   any firmware             every other mounted card or partition with a games folder
+#                            (roms, ROMS, Roms, Emulation/roms, retrodeck/roms)
 # The same partition reached by two paths (/userdata = /media/SHARE_1 on Knulli with two
 # cards) is kept once; union folders (mergerfs, overlay) are skipped: their real cards
 # are cleaned directly.
@@ -316,9 +329,18 @@ KNOWN_ROOTS='/userdata
 /storage/games-external
 /mnt/mmc
 /mnt/sdcard
-/mnt/SDCARD'
+/mnt/SDCARD
+/recalbox/share'
 
-# mounted cards / partitions (not the system) holding a roms folder
+# games_dir DIR -> the games folder inside DIR (roms, ROMS, Roms, EmuDeck, RetroDECK), if any
+games_dir() {
+  for _sub in roms ROMS Roms Emulation/roms retrodeck/roms; do
+    if [ -d "$1/$_sub" ] && [ ! -L "$1/$_sub" ]; then printf '%s\n' "$1/$_sub"; return 0; fi
+  done
+  return 1
+}
+
+# mounted cards / partitions (not the system) holding a games folder
 mounted_game_dirs() {
   _mf=${DOTCLEANER_MOUNTS:-/proc/mounts}
   [ -r "$_mf" ] || return 0
@@ -326,8 +348,8 @@ mounted_game_dirs() {
     while read -r _ft _mp; do
       case $_ft in vfat|exfat|ntfs|ntfs3|fuseblk|msdos|ext2|ext3|ext4|f2fs|btrfs|xfs|hfsplus) ;; *) continue ;; esac
       _mp=$(printf '%s' "$_mp" | sed 's/\\040/ /g; s/\\011/	/g')
-      case $_mp in /media/*|/mnt/*|/run/media/*|/storage/*|/userdata/*) ;; *) [ -n "${DOTCLEANER_MOUNTS:-}" ] || continue ;; esac
-      if [ -d "$_mp/roms" ] || [ -d "$_mp/ROMS" ] || [ -d "$_mp/Roms" ]; then printf '%s\n' "$_mp"; fi
+      case $_mp in /media/*|/mnt/*|/run/media/*|/storage/*|/userdata/*|/recalbox/*) ;; *) [ -n "${DOTCLEANER_MOUNTS:-}" ] || continue ;; esac
+      if games_dir "$_mp" >/dev/null; then printf '%s\n' "$_mp"; fi
     done
 }
 
@@ -339,10 +361,7 @@ fs_of_mount() {
 
 # dir_id PATH -> device:inode of the folder that holds the games (same id = same place)
 dir_id() {
-  _g=$1
-  for _sub in roms ROMS Roms; do
-    if [ -d "$1/$_sub" ]; then _g=$1/$_sub; break; fi
-  done
+  _g=$(games_dir "$1") || _g=$1
   stat -L -c '%d:%i' "$_g" 2>/dev/null && return 0
   stat -L -f '%d:%i' "$_g" 2>/dev/null && return 0        # BSD / macOS stat
   # shellcheck disable=SC2012
@@ -363,15 +382,17 @@ console_roots() {
       case $_cr in */userdata) [ -d "$_cr/roms" ] || continue ;; esac   # Knulli, Batocera
       printf '%s\n' "$_cr"
     done
-    if [ -z "${DOTCLEANER_KNOWN_ROOTS+x}" ] && [ -n "${HOME:-}" ] && [ -d "$HOME/RetroPie/roms" ]; then
-      printf '%s\n' "$HOME/RetroPie/roms"
+    if [ -z "${DOTCLEANER_KNOWN_ROOTS+x}" ] && [ -n "${HOME:-}" ]; then
+      for _cr in "$HOME/RetroPie/roms" "$HOME/Emulation/roms" "$HOME/retrodeck/roms"; do
+        if [ -d "$_cr" ] && [ ! -L "$_cr" ]; then printf '%s\n' "$_cr"; fi
+      done
     fi
     mounted_game_dirs
   } | while IFS= read -r _cr; do
     case $(fs_of_mount "$_cr") in fuse.mergerfs|mergerfs|overlay|aufs|unionfs*) continue ;; esac
     # rank 0: the whole card (games in its roms folder), 1: the games folder itself
     _rank=1
-    if [ -d "$_cr/roms" ] || [ -d "$_cr/ROMS" ] || [ -d "$_cr/Roms" ]; then _rank=0; fi
+    if games_dir "$_cr" >/dev/null; then _rank=0; fi
     printf '%s\t%s\t%s\n' "$(dir_id "$_cr")" "$_rank" "$_cr"
   done | awk -F '\t' '
     $1 == ":" { next }
@@ -399,6 +420,10 @@ candidate_dirs() {
     done
     for _cd in /media/* /run/media/*; do
       if [ -d "$_cd" ] && is_mountpoint "$_cd"; then printf '%s\n' "$_cd"; fi
+    done
+    # Android (Termux): SD cards and USB drives as /storage/XXXX-XXXX
+    for _cd in /storage/*-*; do
+      if [ -d "$_cd" ] && [ ! -L "$_cd" ]; then printf '%s\n' "$_cd"; fi
     done
     # ChromeOS Linux, Windows WSL (USB drives as /mnt/d, /mnt/e...)
     for _cd in /mnt/chromeos/removable/* /mnt/[d-z]; do

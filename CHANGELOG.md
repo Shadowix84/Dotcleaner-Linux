@@ -2,6 +2,26 @@
 
 All notable changes to Dotcleaner. Downloads: [latest release](https://github.com/Shadowix84/Dotcleaner-Multi-Software/releases/latest).
 
+## [2.5.0] — 2026-11-27 — Works on many more devices
+
+### New firmwares, ready to copy
+- The console zip now has a folder for each kind of firmware, all with the same launcher:
+  - **muOS** (RG35XX, RG40XX, TrimUI Brick…): `muOS/MUOS/application/Dotcleaner` → **Applications**;
+  - **MinUI, NextUI** (TrimUI, Miyoo, RG35XX…): `MinUI/Dotcleaner.pak` → **Tools**;
+  - **TrimUI stock OS, CrossMix-OS**: `TrimUI/Apps/Dotcleaner` → **Apps**;
+  - **Onion, spruceOS** (Miyoo Mini, Miyoo A30): `Onion/App/Dotcleaner` → **Apps**.
+- Cards found on more systems: **Recalbox** (`/recalbox/share`), **Steam Deck** with **EmuDeck**
+  (`Emulation/roms`) or **RetroDECK** (`retrodeck/roms`), games folders named `roms`, `Roms` or `ROMS`.
+- Android SD cards (`/storage/XXXX-XXXX`) are listed in the terminal menu (Termux).
+- Works with very old BusyBox `find` that does not know `-xdev`.
+
+### Checked
+- Each new package was started from its real place on a card mounted where the firmware mounts it:
+  muOS with two cards, MinUI on a TrimUI Brick layout, TrimUI / CrossMix-OS, Recalbox, Steam Deck SD
+  card with EmuDeck. 5 new tests, run with 9 shells, with the BusyBox tools and with the awk of macOS.
+- The README compatibility table now says, for each firmware, where to start it, which cards are
+  cleaned and how it was tested.
+
 ## [2.4.0] — 2026-11-27 — Two SD cards, and the icon in the console menu
 
 ### Two SD cards, or one card split in partitions

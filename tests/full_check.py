@@ -363,7 +363,7 @@ def app_tests():
 MUTATIONS = [
     ("shell", "dotcleaner.sh", "JUNK_FILES='._* .DS_Store .apdisk'", "JUNK_FILES='._* .DS_Store .apdisk *.srm'", "deletes saves (*.srm)"),
     ("shell", "dotcleaner.sh", "JUNK_FILES='._* .DS_Store .apdisk'", "JUNK_FILES='._* .DS_Store'", "forgets .apdisk"),
-    ("shell", "dotcleaner.sh", 'set -- "$_jf_root" -xdev', 'set -- -L "$_jf_root" -xdev', "follows symlinks"),
+    ("shell", "dotcleaner.sh", '    set -- "$_jf_root"\n', '    set -- -L "$_jf_root"\n', "follows symlinks"),
     ("shell", "dotcleaner.sh", "set -- \"$@\" -o -type f \\(", "set -- \"$@\" -o \\(", "deletes links named like junk"),
     ("shell", "dotcleaner.sh", "JUNK_DIRS=$ARCHIVE_DIRS\n    PRUNE_DIRS=$SYSTEM_DIRS", "JUNK_DIRS=\"$SYSTEM_DIRS $ARCHIVE_DIRS\"\n    PRUNE_DIRS=''", "ignores safe mode"),
     ("console", "dotcleaner.sh", 'do rm -rf "${1}" "${2}"', 'do rm -rf "${1}" "${1%/*}"/*.zip "${2}"', "console batch deletes games next to junk"),
