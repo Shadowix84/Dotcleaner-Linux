@@ -637,9 +637,13 @@ register_menu() {
         }
         { print }' "$_gl" >"$_tmp" || { rm -f "$_tmp"; return 1; }
     elif grep -q '</gameList>' "$_gl"; then
-      _entry=$(menu_entry "$_me")
-      awk -v e="$_entry" '!d && index($0, "</gameList>") { sub(/<\/gameList>/, e "\n</gameList>"); d = 1 } { print }' \
-        "$_gl" >"$_tmp" || { rm -f "$_tmp"; return 1; }
+      # the entry goes through the environment: some awk (macOS) refuse a newline in -v
+      DC_ENTRY=$(menu_entry "$_me") awk '
+        !d && (i = index($0, "</gameList>")) {
+          if (i > 1) print substr($0, 1, i - 1)
+          print ENVIRON["DC_ENTRY"]; print substr($0, i); d = 1; next
+        }
+        { print }' "$_gl" >"$_tmp" || { rm -f "$_tmp"; return 1; }
     else
       return 1                                    # unknown format: leave it alone
     fi
