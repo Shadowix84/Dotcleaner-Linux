@@ -5,7 +5,8 @@
 #     "## [x.y.z] — date — <short title>";
 #   - adds a notice "This is an old version" with a link to the latest release at the top
 #     of every release except the latest one (and removes it from the latest one);
-#   - removes links that are no longer used (the Discord).
+#   - keeps the "What's new" part of each release equal to its CHANGELOG section, so a
+#     correction made in the CHANGELOG reaches the release page too.
 # Safe to run again: the notice is added only once.
 #
 # Needs: gh (logged in with GH_TOKEN), jq, GITHUB_REPOSITORY=owner/repo, run from the repo root.
@@ -34,9 +35,23 @@ remove_notice() {
   printf '%s\n' "$1" | awk -v m="$MARKER" '$0 == m { skip = 3; next } skip > 0 { skip--; next } { print }'
 }
 
-# drop_old_links BODY -> BODY without the Discord link (removed from the project)
-drop_old_links() {
-  printf '%s\n' "$1" | sed 's/ · \[Discord\](https:\/\/discord\.gg\/[A-Za-z0-9]*)\( ([^)]*)\)\{0,1\}//'
+# changes VERSION -> the CHANGELOG section of VERSION (without its heading)
+changes() {
+  [ -f CHANGELOG.md ] || return 0
+  awk -v v="[$1]" '/^## \[/ { if (p) exit; if (index($0, v)) { p = 1; next } } p' CHANGELOG.md |
+    awk 'NF { n = NR } { line[NR] = $0 } END { s = 1; while (s <= n && line[s] == "") s++; for (i = s; i <= n; i++) print line[i] }'
+}
+
+# sync_changes BODY VERSION -> BODY whose "## ✨ What's new..." part is the CHANGELOG section
+sync_changes() {
+  DC_CHANGES=$(changes "$2")
+  if [ -z "$DC_CHANGES" ]; then printf '%s\n' "$1"; return 0; fi
+  export DC_CHANGES
+  printf '%s\n' "$1" | awk '
+    skip && (/^## / || /^<details>/) { skip = 0 }
+    skip { next }
+    /^## .*What.s new/ { print; print ""; print ENVIRON["DC_CHANGES"]; print ""; skip = 1; next }
+    { print }'
 }
 
 if [ "${1:-}" = "--self-test" ]; then
@@ -44,10 +59,15 @@ if [ "${1:-}" = "--self-test" ]; then
   b=$(add_notice "Notes")
   [ "$(add_notice "$b")" = "$b" ] || { echo "notice added twice"; exit 1; }
   [ "$(remove_notice "$b")" = "Notes" ] || { echo "notice not removed"; exit 1; }
-  l='[FAQ](x) · [Report a bug](y) · [Discord](https://discord.gg/4FbhkuhRMm) (French-speaking community)'
-  [ "$(drop_old_links "$l")" = '[FAQ](x) · [Report a bug](y)' ] || { echo "Discord link not removed"; exit 1; }
-  l='[FAQ](x) · [Discord](https://discord.gg/4FbhkuhRMm) (French) · [All changes](z)'
-  [ "$(drop_old_links "$l")" = '[FAQ](x) · [All changes](z)' ] || { echo "Discord link not removed (middle)"; exit 1; }
+  t=$(mktemp -d "${TMPDIR:-/tmp}/tidy.XXXXXX")
+  printf '## [9.9.9] — 2026-01-01 — Test\n\n- new text\n\n## [9.9.8] — 2026-01-01\n- old\n' >"$t/CHANGELOG.md"
+  b=$(printf '## ⬇️ Download\n\nx\n\n## ✨ What'"'"'s new in 9.9.9\n\n- old text\n- more\n\n<details>\ny\n</details>')
+  want=$(printf '## ⬇️ Download\n\nx\n\n## ✨ What'"'"'s new in 9.9.9\n\n- new text\n\n<details>\ny\n</details>')
+  [ "$(cd "$t" && sync_changes "$b" 9.9.9)" = "$want" ] || { rm -rf "$t"; echo "What's new not synced"; exit 1; }
+  [ "$(cd "$t" && sync_changes "$want" 9.9.9)" = "$want" ] || { rm -rf "$t"; echo "sync not stable"; exit 1; }
+  rm "$t/CHANGELOG.md"
+  [ "$(cd "$t" && sync_changes "$b" 9.9.9)" = "$b" ] || { rm -rf "$t"; echo "body changed without CHANGELOG"; exit 1; }
+  rm -rf "$t"
   echo "self-test ok"
   exit 0
 fi
@@ -56,7 +76,7 @@ fi
 latest=$(gh api "repos/$REPO/releases/latest" -q .tag_name)
 gh api "repos/$REPO/releases?per_page=100" -q '.[] | "\(.id) \(.tag_name)"' | while read -r id tag; do
   body=$(gh api "repos/$REPO/releases/$id" -q .body)
-  body=$(drop_old_links "$body")
+  body=$(sync_changes "$body" "${tag#v}")
   if [ "$tag" = "$latest" ]; then body=$(remove_notice "$body"); else body=$(add_notice "$body"); fi
   title=$(release_title "${tag#v}")
   jq -n --arg n "$title" --arg b "$body" '{name: $n, body: $b}' |

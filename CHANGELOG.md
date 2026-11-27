@@ -51,8 +51,8 @@ All notable changes to Dotcleaner. Downloads: [latest release](https://github.co
   left alone, the new file is checked before it replaces the old one. 6 new tests.
 - The optional `menu-logo/` folder of 2.3.2 is replaced by `icons/`.
 
-### Community
-- The Discord is gone: questions and help now go through GitHub issues, in English or in French.
+### Help
+- Questions and help go through GitHub issues, in English or in French.
 
 ## [2.3.2] — 2026-11-22 — Logo in the console menus
 
@@ -79,8 +79,7 @@ All notable changes to Dotcleaner. Downloads: [latest release](https://github.co
 
 ### Documentation
 - Clearer READMEs: which version to use, before/after example, console setup in 3 steps, what each
-  firmware shows, FAQ for two SD cards, roadmap (console version for two SD cards), Discord marked as
-  a French-speaking community.
+  firmware shows, FAQ for two SD cards, roadmap (console version for two SD cards).
 
 ## [2.3.0] — 2026-11-21 — New look for the app and the website
 
